@@ -1,0 +1,489 @@
+// VoiceLearn - Session Manager
+// Orchestrates voice conversation sessions
+//
+// Part of Core Components (TDD Section 3.2)
+
+import Foundation
+@preconcurrency import AVFoundation
+import Combine
+import Logging
+
+// MARK: - Session State
+
+/// State machine for session management
+public enum SessionState: String, Sendable {
+    case idle = "Idle"
+    case userSpeaking = "User Speaking"
+    case aiThinking = "AI Thinking"
+    case aiSpeaking = "AI Speaking"
+    case interrupted = "Interrupted"
+    case processingUserUtterance = "Processing Utterance"
+    case error = "Error"
+    
+    /// Whether the session is actively running
+    public var isActive: Bool {
+        switch self {
+        case .idle, .error:
+            return false
+        default:
+            return true
+        }
+    }
+}
+
+// MARK: - Session Configuration
+
+/// Configuration for a voice session
+public struct SessionConfig: Codable, Sendable {
+    /// Audio configuration
+    public var audio: AudioEngineConfig
+    
+    /// LLM configuration
+    public var llm: LLMConfig
+    
+    /// TTS voice configuration
+    public var voice: TTSVoiceConfig
+    
+    /// System prompt for the AI
+    public var systemPrompt: String
+    
+    /// Enable cost tracking
+    public var enableCostTracking: Bool
+    
+    /// Maximum session duration in seconds (0 = unlimited)
+    public var maxDuration: TimeInterval
+    
+    /// Enable interruption handling
+    public var enableInterruptions: Bool
+    
+    public static let `default` = SessionConfig(
+        audio: .default,
+        llm: .default,
+        voice: .default,
+        systemPrompt: """
+            You are a helpful AI tutor engaged in a voice conversation. 
+            Keep responses concise and conversational. 
+            Ask follow-up questions to check understanding.
+            """,
+        enableCostTracking: true,
+        maxDuration: 5400, // 90 minutes
+        enableInterruptions: true
+    )
+    
+    public init(
+        audio: AudioEngineConfig = .default,
+        llm: LLMConfig = .default,
+        voice: TTSVoiceConfig = .default,
+        systemPrompt: String = "",
+        enableCostTracking: Bool = true,
+        maxDuration: TimeInterval = 5400,
+        enableInterruptions: Bool = true
+    ) {
+        self.audio = audio
+        self.llm = llm
+        self.voice = voice
+        self.systemPrompt = systemPrompt
+        self.enableCostTracking = enableCostTracking
+        self.maxDuration = maxDuration
+        self.enableInterruptions = enableInterruptions
+    }
+}
+
+// MARK: - Session Manager
+
+/// Orchestrates voice conversation sessions
+///
+/// Responsibilities:
+/// - State machine management
+/// - Turn-taking between user and AI
+/// - Interruption handling
+/// - Service coordination (VAD, STT, LLM, TTS)
+/// - Context management for long conversations
+public actor SessionManager: ObservableObject {
+    
+    // MARK: - Properties
+    
+    private let logger = Logger(label: "com.voicelearn.session")
+    
+    /// Current session state
+    @MainActor @Published public private(set) var state: SessionState = .idle
+    
+    /// Current user transcript (interim/final)
+    @MainActor @Published public private(set) var userTranscript: String = ""
+    
+    /// Current AI response being spoken
+    @MainActor @Published public private(set) var aiResponse: String = ""
+    
+    /// Conversation history
+    private var conversationHistory: [LLMMessage] = []
+    
+    /// Services
+    private var audioEngine: AudioEngine?
+    private var sttService: (any STTService)?
+    private var ttsService: (any TTSService)?
+    private var llmService: (any LLMService)?
+    private var telemetry: TelemetryEngine
+    private var curriculum: CurriculumEngine?
+    
+    /// Configuration
+    private var config: SessionConfig
+    
+    /// Session tracking
+    private var sessionStartTime: Date?
+    private var currentTurnStartTime: Date?
+    
+    /// Stream cancellation
+    private var sttStreamTask: Task<Void, Never>?
+    private var llmStreamTask: Task<Void, Never>?
+    private var ttsStreamTask: Task<Void, Never>?
+    private var audioSubscription: AnyCancellable?
+    
+    // MARK: - Initialization
+    
+    public init(
+        config: SessionConfig = .default,
+        telemetry: TelemetryEngine,
+        curriculum: CurriculumEngine? = nil
+    ) {
+        self.config = config
+        self.telemetry = telemetry
+        self.curriculum = curriculum
+        logger.info("SessionManager initialized")
+    }
+    
+    // MARK: - Session Lifecycle
+    
+    /// Start a new session
+    public func startSession(
+        sttService: any STTService,
+        ttsService: any TTSService,
+        llmService: any LLMService,
+        vadService: any VADService
+    ) async throws {
+        guard await state == .idle else {
+            logger.warning("Cannot start session: not in idle state")
+            return
+        }
+        
+        logger.info("Starting session")
+        
+        // Store services
+        self.sttService = sttService
+        self.ttsService = ttsService
+        self.llmService = llmService
+        
+        // Create and configure audio engine
+        audioEngine = AudioEngine(
+            config: config.audio,
+            vadService: vadService,
+            telemetry: telemetry
+        )
+        
+        try await audioEngine?.configure(config: config.audio)
+        
+        // Configure TTS voice
+        await ttsService.configure(config.voice)
+        
+        // Initialize conversation with system prompt
+        conversationHistory = [
+            LLMMessage(role: .system, content: config.systemPrompt)
+        ]
+        
+        // Start telemetry session
+        await telemetry.startSession()
+        sessionStartTime = Date()
+        
+        // Start audio capture
+        try await audioEngine?.start()
+        
+        // Subscribe to audio stream for VAD events
+        subscribeToAudioStream()
+        
+        // Transition to listening state
+        await setState(.userSpeaking)
+        
+        // Start STT streaming
+        try await startSTTStreaming()
+        
+        logger.info("Session started successfully")
+    }
+    
+    /// Stop the current session
+    public func stopSession() async {
+        logger.info("Stopping session")
+        
+        // Cancel all streaming tasks
+        sttStreamTask?.cancel()
+        llmStreamTask?.cancel()
+        ttsStreamTask?.cancel()
+        audioSubscription?.cancel()
+        
+        // Stop services
+        await audioEngine?.stop()
+        try? await sttService?.stopStreaming()
+        
+        // End telemetry
+        await telemetry.endSession()
+        
+        // Clear state
+        conversationHistory.removeAll()
+        await MainActor.run {
+            userTranscript = ""
+            aiResponse = ""
+        }
+        
+        await setState(.idle)
+        
+        logger.info("Session stopped")
+    }
+    
+    // MARK: - State Management
+    
+    private func setState(_ newState: SessionState) async {
+        let oldState = await state
+        logger.debug("State transition: \(oldState.rawValue) -> \(newState.rawValue)")
+        
+        await MainActor.run {
+            state = newState
+        }
+    }
+    
+    // MARK: - Audio Stream Handling
+    
+    private func subscribeToAudioStream() {
+        guard let audioEngine = audioEngine else { return }
+        
+        audioSubscription = audioEngine.audioStream
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] (buffer, vadResult) in
+                guard let self = self else { return }
+                Task.detached {
+                    await self.handleVADResult(vadResult, buffer: buffer)
+                }
+            }
+    }
+    
+    private func handleVADResult(_ result: VADResult, buffer: AVAudioPCMBuffer) async {
+        let currentState = await state
+        
+        switch currentState {
+        case .userSpeaking:
+            // Send audio to STT
+            try? await sttService?.sendAudio(buffer)
+            
+            // Check for end of speech
+            if !result.isSpeech {
+                // User stopped speaking - wait for STT final result
+                // (handled in STT stream)
+            }
+            
+        case .aiSpeaking:
+            // Check for interruption
+            if config.enableInterruptions && result.isSpeech && result.confidence > config.audio.bargeInThreshold {
+                await handleInterruption()
+            }
+            
+        default:
+            break
+        }
+    }
+    
+    // MARK: - STT Handling
+    
+    private func startSTTStreaming() async throws {
+        guard let sttService = sttService,
+              let format = await audioEngine?.format else {
+            throw SessionError.servicesNotConfigured
+        }
+        
+        let stream = try await sttService.startStreaming(audioFormat: format)
+        
+        sttStreamTask = Task {
+            for await result in stream {
+                await handleSTTResult(result)
+            }
+        }
+    }
+    
+    private func handleSTTResult(_ result: STTResult) async {
+        // Update transcript
+        await MainActor.run {
+            userTranscript = result.transcript
+        }
+        
+        // Record latency
+        await telemetry.recordLatency(.sttEmission, result.latency)
+        
+        // If final result, process the utterance
+        if result.isFinal && result.isEndOfUtterance && !result.transcript.isEmpty {
+            await processUserUtterance(result.transcript)
+        }
+    }
+    
+    // MARK: - Utterance Processing
+    
+    private func processUserUtterance(_ transcript: String) async {
+        logger.info("Processing user utterance: \(transcript.prefix(50))...")
+        
+        await setState(.processingUserUtterance)
+        currentTurnStartTime = Date()
+        
+        // Add to conversation history
+        conversationHistory.append(LLMMessage(role: .user, content: transcript))
+        
+        // Record event
+        await telemetry.recordEvent(.userFinishedSpeaking(transcript: transcript))
+        
+        // Generate AI response
+        await generateAIResponse()
+    }
+    
+    // MARK: - LLM Handling
+    
+    private func generateAIResponse() async {
+        await setState(.aiThinking)
+        
+        guard let llmService = llmService else { return }
+        
+        do {
+            let stream = try await llmService.streamCompletion(
+                messages: conversationHistory,
+                config: config.llm
+            )
+            
+            var fullResponse = ""
+            var isFirstToken = true
+            
+            llmStreamTask = Task {
+                for await token in stream {
+                    if isFirstToken {
+                        isFirstToken = false
+                        await self.telemetry.recordEvent(.llmFirstTokenReceived)
+                        
+                        // Record TTFT
+                        if let turnStart = self.currentTurnStartTime {
+                            let ttft = Date().timeIntervalSince(turnStart)
+                            await self.telemetry.recordLatency(.llmFirstToken, ttft)
+                        }
+                        
+                        // Start speaking while streaming
+                        await self.setState(.aiSpeaking)
+                    }
+                    
+                    fullResponse += token.content
+                    
+                    await MainActor.run {
+                        self.aiResponse = fullResponse
+                    }
+                    
+                    // Stream text to TTS
+                    // (In production, buffer sentences before TTS)
+                    
+                    if token.isDone {
+                        break
+                    }
+                }
+                
+                // Add AI response to history
+                self.conversationHistory.append(LLMMessage(role: .assistant, content: fullResponse))
+                
+                // Synthesize and play TTS
+                await self.synthesizeAndPlayResponse(fullResponse)
+            }
+            
+        } catch {
+            logger.error("LLM generation failed: \(error.localizedDescription)")
+            await setState(.error)
+        }
+    }
+    
+    // MARK: - TTS Handling
+    
+    private func synthesizeAndPlayResponse(_ text: String) async {
+        guard let ttsService = ttsService else { return }
+        
+        do {
+            let stream = try await ttsService.synthesize(text: text)
+            
+            ttsStreamTask = Task {
+                for await chunk in stream {
+                    // Record TTFB on first chunk
+                    if chunk.isFirst, let ttfb = chunk.timeToFirstByte {
+                        await self.telemetry.recordLatency(.ttsTTFB, ttfb)
+                    }
+                    
+                    // Play audio chunk
+                    try? await self.audioEngine?.playAudio(chunk)
+                    
+                    if chunk.isLast {
+                        break
+                    }
+                }
+                
+                // Record end-to-end latency
+                if let turnStart = self.currentTurnStartTime {
+                    let e2e = Date().timeIntervalSince(turnStart)
+                    await self.telemetry.recordLatency(.endToEndTurn, e2e)
+                }
+                
+                // Ready for next user turn
+                await self.telemetry.recordEvent(.aiFinishedSpeaking)
+                await self.setState(.userSpeaking)
+                
+                // Clear AI response display
+                await MainActor.run {
+                    self.aiResponse = ""
+                }
+            }
+            
+        } catch {
+            logger.error("TTS synthesis failed: \(error.localizedDescription)")
+            await setState(.error)
+        }
+    }
+    
+    // MARK: - Interruption Handling
+    
+    private func handleInterruption() async {
+        logger.info("Handling user interruption")
+        
+        await setState(.interrupted)
+        await telemetry.recordEvent(.userInterrupted)
+        
+        // Cancel current TTS playback
+        ttsStreamTask?.cancel()
+        llmStreamTask?.cancel()
+        await audioEngine?.stopPlayback()
+        
+        // Clear buffers if configured
+        if config.audio.ttsClearOnInterrupt {
+            try? await ttsService?.flush()
+        }
+        
+        // Return to listening
+        await setState(.userSpeaking)
+        
+        await MainActor.run {
+            aiResponse = ""
+        }
+    }
+}
+
+// MARK: - Session Errors
+
+public enum SessionError: Error, LocalizedError {
+    case servicesNotConfigured
+    case sessionAlreadyActive
+    case sessionNotActive
+    
+    public var errorDescription: String? {
+        switch self {
+        case .servicesNotConfigured:
+            return "Required services not configured"
+        case .sessionAlreadyActive:
+            return "Session is already active"
+        case .sessionNotActive:
+            return "No active session"
+        }
+    }
+}

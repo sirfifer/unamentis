@@ -1,0 +1,421 @@
+# VoiceLearn - Testing Guide
+
+## Testing Philosophy
+
+**Core Principle**: Real implementations, no mocks.
+
+### Why No Mocks?
+
+- **Real behavior**: Tests use actual implementations
+- **Integration confidence**: Catches real issues
+- **Simple**: No complex mocking infrastructure
+- **Honest**: Tests reflect actual system behavior
+
+### Test Doubles
+
+Only use simple test doubles when necessary:
+- Fake implementations for expensive operations
+- Stubs for unavoidable external dependencies (network, APIs)
+- **Never** complex mocking frameworks
+
+## Test Structure
+
+### Directory Layout
+
+```
+VoiceLearnTests/
+├── Unit/                    # Fast, isolated tests
+│   ├── AudioEngineTests.swift
+│   ├── SessionManagerTests.swift
+│   ├── CurriculumEngineTests.swift
+│   └── TelemetryTests.swift
+├── Integration/             # Multi-component tests
+│   ├── STTIntegrationTests.swift
+│   ├── TTSIntegrationTests.swift
+│   ├── LLMIntegrationTests.swift
+│   └── FullPipelineTests.swift
+├── E2E/                     # End-to-end scenarios
+│   ├── ConversationFlowTests.swift
+│   ├── InterruptionTests.swift
+│   └── LongSessionTests.swift
+└── Helpers/                 # Test utilities
+    ├── TestConfiguration.swift
+    ├── AudioTestHelpers.swift
+    └── NetworkTestHelpers.swift
+```
+
+### Test Categories
+
+**Unit Tests** - Single component, fast
+- Target: <100ms per test
+- Run on every save
+- No network, no disk I/O
+
+**Integration Tests** - Multiple components
+- Target: <1s per test
+- May use disk, local network
+- Run before commit
+
+**E2E Tests** - Full system
+- Target: <60s per test
+- Use real APIs (if keys provided)
+- Run before PR merge
+
+## Running Tests
+
+### Quick Tests (Unit only)
+
+```bash
+./scripts/test-quick.sh
+
+# Or in Xcode
+⌘ + U with Unit scheme
+```
+
+### All Tests
+
+```bash
+./scripts/test-all.sh
+
+# Or
+xcodebuild test -scheme VoiceLearn
+```
+
+### E2E Tests
+
+```bash
+# Requires API keys in .env
+./scripts/test-e2e.sh
+```
+
+### Specific Tests
+
+```bash
+# Single test class
+xcodebuild test \
+  -scheme VoiceLearn \
+  -only-testing:VoiceLearnTests/Unit/AudioEngineTests
+
+# Single test method
+xcodebuild test \
+  -scheme VoiceLearn \
+  -only-testing:VoiceLearnTests/Unit/AudioEngineTests/testVADDetection
+```
+
+## Writing Tests
+
+### Example: Unit Test
+
+```swift
+import XCTest
+@testable import VoiceLearn
+
+final class AudioEngineTests: XCTestCase {
+    var audioEngine: AudioEngine!
+    var testConfig: AudioEngineConfig!
+    
+    override func setUp() async throws {
+        testConfig = AudioEngineConfig(
+            sampleRate: 16000,
+            bufferSize: 512,
+            enableVoiceProcessing: false  // Faster for tests
+        )
+        
+        // Real AudioEngine, not a mock!
+        audioEngine = AudioEngine(
+            config: testConfig,
+            vadService: SileroVAD(),  // Real VAD
+            telemetry: TelemetryEngine()
+        )
+    }
+    
+    func testVADDetection() async throws {
+        try await audioEngine.configure(config: testConfig)
+        try await audioEngine.start()
+        
+        // Load test audio file
+        let testAudio = try loadTestAudio("speech-sample.wav")
+        
+        // Process through real pipeline
+        var detectedSpeech = false
+        for buffer in testAudio.buffers {
+            let (_, vadResult) = await audioEngine.processBuffer(buffer)
+            if vadResult.isSpeech {
+                detectedSpeech = true
+                break
+            }
+        }
+        
+        XCTAssertTrue(detectedSpeech, "VAD should detect speech in test audio")
+    }
+}
+```
+
+### Example: Integration Test
+
+```swift
+final class STTIntegrationTests: XCTestCase {
+    func testAssemblyAITranscription() async throws {
+        // Skip if no API key
+        let apiKey = ProcessInfo.processInfo.environment["ASSEMBLYAI_API_KEY"]
+        try XCTSkipIf(apiKey == nil, "ASSEMBLYAI_API_KEY not set")
+        
+        // Real AssemblyAI service
+        let stt = AssemblyAISTT(apiKey: apiKey!)
+        let testAudio = try loadTestAudio("hello-world.wav")
+        
+        let stream = try await stt.startStreaming(audioFormat: testAudio.format)
+        
+        var finalTranscript = ""
+        for buffer in testAudio.buffers {
+            try await stt.sendAudio(buffer)
+        }
+        
+        for await result in stream {
+            if result.isFinal {
+                finalTranscript = result.transcript
+                break
+            }
+        }
+        
+        XCTAssertTrue(
+            finalTranscript.lowercased().contains("hello"),
+            "Should transcribe 'hello world'"
+        )
+    }
+}
+```
+
+### Example: E2E Test
+
+```swift
+final class ConversationFlowTests: XCTestCase {
+    func testFullConversation() async throws {
+        // This test uses REAL APIs
+        let config = loadE2EConfig()  // Loads from .env
+        
+        let sessionManager = SessionManager(
+            audioEngine: AudioEngine(...),
+            sttService: AssemblyAISTT(...),  // Real
+            ttsService: DeepgramAura2(...),  // Real
+            llmService: OpenAILLM(...),      // Real
+            ...
+        )
+        
+        try await sessionManager.startSession(topic: nil)
+        
+        // Simulate user speaking
+        let userAudio = try loadTestAudio("user-question.wav")
+        for buffer in userAudio.buffers {
+            await sessionManager.processAudioBuffer(buffer)
+        }
+        
+        // Wait for AI response
+        await wait(for: sessionManager.state, equals: .aiSpeaking, timeout: 10)
+        
+        // Verify transcript captured
+        let transcript = sessionManager.currentTranscript
+        XCTAssertFalse(transcript.isEmpty)
+    }
+}
+```
+
+## Test Data
+
+### Audio Fixtures
+
+Located in `Tests/Fixtures/`:
+
+- `speech-sample.wav` - Clean speech for VAD testing
+- `hello-world.wav` - "Hello world" for STT testing
+- `long-audio.wav` - 2 minutes for session testing
+- `noisy-speech.wav` - Background noise testing
+
+Generate fixtures:
+```bash
+cd Tests/Fixtures
+./generate-test-audio.sh
+```
+
+### Test Configurations
+
+```swift
+struct TestConfiguration {
+    // Fast configuration for unit tests
+    static let unit = AudioEngineConfig(
+        sampleRate: 16000,
+        bufferSize: 512,
+        enableVoiceProcessing: false,
+        vadThreshold: 0.5
+    )
+    
+    // Real-world config for integration tests
+    static let integration = AudioEngineConfig(
+        sampleRate: 48000,
+        bufferSize: 1024,
+        enableVoiceProcessing: true,
+        vadThreshold: 0.6
+    )
+}
+```
+
+## Performance Testing
+
+### Latency Tests
+
+```swift
+func testE2ELatency() async throws {
+    let startTime = Date()
+    
+    // Process full turn
+    await sessionManager.processUserUtterance("What is AI?")
+    
+    let latency = Date().timeIntervalSince(startTime)
+    
+    XCTAssertLessThan(
+        latency,
+        0.5,  // 500ms target
+        "E2E latency should be under 500ms"
+    )
+}
+```
+
+### Memory Tests
+
+```swift
+func testMemoryStability() async throws {
+    let initialMemory = getMemoryUsage()
+    
+    // Run 90-minute simulation
+    for _ in 0..<90 {
+        await sessionManager.simulateOneMinute()
+    }
+    
+    let finalMemory = getMemoryUsage()
+    let growth = finalMemory - initialMemory
+    
+    XCTAssertLessThan(
+        growth,
+        50_000_000,  // 50MB
+        "Memory growth should be under 50MB"
+    )
+}
+```
+
+## Continuous Integration
+
+Tests run automatically on:
+- Every push to `main` or `develop`
+- Every pull request
+- Nightly (full E2E suite)
+
+See `.github/workflows/ios.yml` for configuration.
+
+### CI Environment
+
+- **Runner**: macOS 14
+- **Xcode**: 15.2
+- **Simulator**: iPhone 16 Pro Max
+- **Timeout**: 30 minutes
+
+## Best Practices
+
+### DO ✅
+
+- Use real implementations
+- Test actual behavior
+- Keep tests fast (unit <100ms)
+- Use descriptive test names
+- Test edge cases
+- Use test fixtures
+- Run tests before committing
+
+### DON'T ❌
+
+- Use complex mocking frameworks
+- Mock everything
+- Write brittle tests
+- Test implementation details
+- Ignore flaky tests
+- Skip setup/teardown
+- Commit failing tests
+
+## Debugging Tests
+
+### Print Debug Info
+
+```swift
+func testVAD() async throws {
+    XCTContext.runActivity(named: "Processing audio") { _ in
+        print("Buffer size: \(buffer.frameLength)")
+        print("VAD threshold: \(config.vadThreshold)")
+    }
+}
+```
+
+### Breakpoint Tests
+
+Set breakpoint in test, run with:
+```bash
+xcodebuild test -scheme VoiceLearn \
+  -only-testing:MyTest/testMethod
+```
+
+### View Test Logs
+
+```bash
+# Latest test log
+cat ~/Library/Developer/Xcode/DerivedData/.../Logs/Test/*.xcresult
+```
+
+## Test Coverage
+
+### View Coverage
+
+```bash
+# Run with coverage
+xcodebuild test \
+  -scheme VoiceLearn \
+  -enableCodeCoverage YES
+
+# View report
+open DerivedData/.../coverage.lcov
+```
+
+### Coverage Targets
+
+- **Unit Tests**: >80% coverage
+- **Integration Tests**: Critical paths
+- **E2E Tests**: User flows
+
+## Troubleshooting
+
+### Issue: Tests timeout
+
+**Solution**: Increase timeout or check for deadlocks
+```swift
+wait(for: [expectation], timeout: 10)
+```
+
+### Issue: Flaky tests
+
+**Solution**: Add proper async/await, don't use sleep()
+```swift
+// ❌ Bad
+sleep(1)
+
+// ✅ Good
+await asyncOperation()
+```
+
+### Issue: Tests fail in CI but pass locally
+
+**Check**:
+- Simulator differences
+- Environment variables
+- File paths (use Bundle)
+- Network availability
+
+---
+
+**Questions?** See [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue.

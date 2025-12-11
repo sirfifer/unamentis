@@ -1,0 +1,14 @@
+--indent 4
+--indentcase false
+--trimwhitespace always
+--header strip
+--wraparguments before-first
+--wrapcollections before-first
+--maxwidth 120
+--decimalgrouping 3,4
+--binarygrouping 4,8
+--octalgrouping 4,8
+--hexgrouping 4,8
+--ifdef no-indent
+--importgrouping testable-bottom
+--swiftversion 6.0

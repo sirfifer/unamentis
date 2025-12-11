@@ -1,0 +1,50 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build iOS App",
+      "type": "shell",
+      "command": "xcodebuild",
+      "args": [
+        "-scheme",
+        "VoiceLearn",
+        "-destination",
+        "platform=iOS Simulator,name=iPhone 16 Pro Max",
+        "build"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "./scripts/test-all.sh",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Quick Tests",
+      "type": "shell",
+      "command": "./scripts/test-quick.sh",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "SwiftLint",
+      "type": "shell",
+      "command": "swiftlint",
+      "args": ["lint", "--strict"],
+      "problemMatcher": []
+    },
+    {
+      "label": "SwiftFormat",
+      "type": "shell",
+      "command": "swiftformat",
+      "args": ["."],
+      "problemMatcher": []
+    }
+  ]
+}

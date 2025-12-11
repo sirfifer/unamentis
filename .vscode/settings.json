@@ -1,0 +1,21 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "swift.path": "/usr/bin/swift",
+  "swift.buildPath": ".build",
+  "swift.enableFastParsing": true,
+  "files.associations": {
+    "*.swift": "swift"
+  },
+  "files.exclude": {
+    "**/.build": true,
+    "**/DerivedData": true,
+    "**/.swiftpm": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/DerivedData": true
+  }
+}

@@ -1,0 +1,47 @@
+included:
+  - VoiceLearn
+excluded:
+  - Pods
+  - .build
+  - DerivedData
+  - VoiceLearn/Generated
+
+opt_in_rules:
+  - closure_spacing
+  - explicit_init
+  - fatal_error_message
+  - first_where
+  - implicitly_unwrapped_optional
+  - multiline_parameters
+  - overridden_super_call
+  - prohibited_super_call
+  - sorted_imports
+  - vertical_parameter_alignment_on_call
+
+disabled_rules:
+  - todo
+  - trailing_whitespace
+
+line_length:
+  warning: 120
+  error: 200
+
+function_body_length:
+  warning: 60
+  error: 100
+
+file_length:
+  warning: 500
+  error: 1000
+
+type_body_length:
+  warning: 300
+  error: 500
+
+identifier_name:
+  min_length:
+    warning: 2
+  max_length:
+    warning: 50
+
+reporter: "xcode"

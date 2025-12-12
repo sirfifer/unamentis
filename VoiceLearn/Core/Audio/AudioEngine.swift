@@ -25,9 +25,19 @@ public actor AudioEngine: ObservableObject {
     private let logger = Logger(label: "com.voicelearn.audio")
     private let engine = AVAudioEngine()
     private let session = AVAudioSession.sharedInstance()
-    
+    private let playerNode = AVAudioPlayerNode()
+
     private var vadService: any VADService
     private let telemetry: TelemetryEngine
+
+    /// Whether TTS playback is currently active
+    public private(set) var isPlaying = false
+
+    /// Queue of scheduled audio buffers for sequential playback
+    private var pendingBuffers: [AVAudioPCMBuffer] = []
+
+    /// Current playback format (set when first chunk arrives)
+    private var playbackFormat: AVAudioFormat?
     
     /// Current configuration
     public private(set) var config: AudioEngineConfig
@@ -116,13 +126,22 @@ public actor AudioEngine: ObservableObject {
                 logger.warning("Voice processing not available: \(error.localizedDescription)")
             }
         }
-        
+
         // Configure VAD
         await vadService.configure(
             threshold: config.vadThreshold,
             contextWindow: config.vadContextWindow
         )
-        
+
+        // Attach player node for TTS playback (if not already attached)
+        if !engine.attachedNodes.contains(playerNode) {
+            engine.attach(playerNode)
+        }
+
+        // Connect player node to output (will reconnect with correct format when playing)
+        let outputFormat = engine.outputNode.outputFormat(forBus: 0)
+        engine.connect(playerNode, to: engine.mainMixerNode, format: outputFormat)
+
         // Prepare engine
         engine.prepare()
         
@@ -236,17 +255,145 @@ public actor AudioEngine: ObservableObject {
         await telemetry.recordLatency(.audioProcessing, processingTime)
     }
     
-    /// Stop audio playback (for interruptions)
+    /// Stop audio playback (for interruptions/barge-in)
     public func stopPlayback() async {
-        // Stop any TTS audio currently playing
-        // Implementation depends on playback mechanism
         logger.debug("Stopping audio playback")
+
+        // Stop the player node
+        playerNode.stop()
+
+        // Clear pending buffers
+        pendingBuffers.removeAll()
+
+        isPlaying = false
+        playbackFormat = nil
+
+        await telemetry.recordEvent(.ttsPlaybackInterrupted)
     }
-    
+
     /// Play audio buffer (for TTS output)
+    ///
+    /// Handles streaming TTS chunks by queueing them for sequential playback.
+    /// Automatically handles format conversion when needed.
     public func playAudio(_ chunk: TTSAudioChunk) async throws {
-        // Convert chunk to PCMBuffer and schedule for playback
-        // Implementation depends on playback mechanism
+        logger.debug("Playing TTS chunk", metadata: [
+            "sequence": .stringConvertible(chunk.sequenceNumber),
+            "isFirst": .stringConvertible(chunk.isFirst),
+            "isLast": .stringConvertible(chunk.isLast),
+            "dataSize": .stringConvertible(chunk.audioData.count)
+        ])
+
+        // Ensure engine is running
+        guard isRunning else {
+            throw AudioEngineError.notRunning
+        }
+
+        // Convert chunk to PCM buffer
+        let buffer: AVAudioPCMBuffer
+        do {
+            buffer = try chunk.toAVAudioPCMBuffer()
+        } catch {
+            logger.error("Failed to convert TTS chunk to buffer: \(error)")
+            throw AudioEngineError.bufferConversionFailed
+        }
+
+        guard let bufferFormat = buffer.format as AVAudioFormat? else {
+            throw AudioEngineError.bufferConversionFailed
+        }
+
+        // Handle first chunk - setup playback
+        if chunk.isFirst {
+            // Stop any existing playback
+            if isPlaying {
+                playerNode.stop()
+                pendingBuffers.removeAll()
+            }
+
+            // Reconnect player node with correct format if needed
+            if playbackFormat != bufferFormat {
+                engine.disconnectNodeOutput(playerNode)
+                engine.connect(playerNode, to: engine.mainMixerNode, format: bufferFormat)
+                playbackFormat = bufferFormat
+            }
+
+            isPlaying = true
+
+            // Record TTFB if available
+            if let ttfb = chunk.timeToFirstByte {
+                await telemetry.recordLatency(.ttsTimeToFirstByte, ttfb)
+            }
+
+            await telemetry.recordEvent(.ttsPlaybackStarted)
+        }
+
+        // Schedule buffer for playback
+        playerNode.scheduleBuffer(buffer) { [weak self] in
+            Task {
+                await self?.handleBufferCompletion(isLastChunk: chunk.isLast)
+            }
+        }
+
+        // Start playing if not already
+        if !playerNode.isPlaying {
+            playerNode.play()
+        }
+    }
+
+    /// Handle completion of a buffer playback
+    private func handleBufferCompletion(isLastChunk: Bool) async {
+        if isLastChunk {
+            isPlaying = false
+            playbackFormat = nil
+            await telemetry.recordEvent(.ttsPlaybackCompleted)
+            logger.debug("TTS playback completed")
+        }
+    }
+
+    /// Play raw audio data with specified format
+    ///
+    /// Convenience method for playing audio from sources other than TTS
+    public func playRawAudio(_ data: Data, format: AVAudioFormat) async throws {
+        guard isRunning else {
+            throw AudioEngineError.notRunning
+        }
+
+        let bytesPerFrame = format.streamDescription.pointee.mBytesPerFrame
+        let frameCount = UInt32(data.count) / bytesPerFrame
+
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+            throw AudioEngineError.bufferConversionFailed
+        }
+
+        buffer.frameLength = frameCount
+
+        data.withUnsafeBytes { rawBuffer in
+            if let baseAddress = rawBuffer.baseAddress {
+                if format.commonFormat == .pcmFormatFloat32 {
+                    memcpy(buffer.floatChannelData?[0], baseAddress, data.count)
+                } else if format.commonFormat == .pcmFormatInt16 {
+                    memcpy(buffer.int16ChannelData?[0], baseAddress, data.count)
+                }
+            }
+        }
+
+        // Reconnect player node with correct format if needed
+        if playbackFormat != format {
+            engine.disconnectNodeOutput(playerNode)
+            engine.connect(playerNode, to: engine.mainMixerNode, format: format)
+            playbackFormat = format
+        }
+
+        isPlaying = true
+
+        playerNode.scheduleBuffer(buffer) { [weak self] in
+            Task {
+                await self?.handleBufferCompletion(isLastChunk: true)
+            }
+        }
+
+        if !playerNode.isPlaying {
+            playerNode.play()
+        }
     }
     
     // MARK: - Thermal Management

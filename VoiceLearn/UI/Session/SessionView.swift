@@ -293,36 +293,184 @@ struct MetricsBadge: View {
 
 struct SessionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    
+    @StateObject private var settings = SessionSettingsModel()
+
     var body: some View {
         NavigationStack {
             List {
+                // MARK: Audio Settings
                 Section("Audio") {
-                    // Audio settings will go here
-                    Text("Audio settings coming soon")
-                        .foregroundStyle(.secondary)
+                    Picker("Sample Rate", selection: $settings.sampleRate) {
+                        Text("16 kHz").tag(16000.0)
+                        Text("24 kHz").tag(24000.0)
+                        Text("48 kHz").tag(48000.0)
+                    }
+
+                    Picker("Buffer Size", selection: $settings.bufferSize) {
+                        Text("256 (Low Latency)").tag(UInt32(256))
+                        Text("512").tag(UInt32(512))
+                        Text("1024 (Default)").tag(UInt32(1024))
+                        Text("2048 (Stable)").tag(UInt32(2048))
+                    }
+
+                    Toggle("Voice Processing", isOn: $settings.enableVoiceProcessing)
+                    Toggle("Echo Cancellation", isOn: $settings.enableEchoCancellation)
+                    Toggle("Noise Suppression", isOn: $settings.enableNoiseSuppression)
                 }
-                
-                Section("Voice") {
-                    // TTS voice settings
-                    Text("Voice settings coming soon")
-                        .foregroundStyle(.secondary)
+
+                // MARK: VAD Settings
+                Section("Voice Activity Detection") {
+                    Picker("VAD Provider", selection: $settings.vadProvider) {
+                        ForEach(VADProvider.allCases, id: \.self) { provider in
+                            Text(provider.displayName).tag(provider)
+                        }
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("VAD Threshold: \(settings.vadThreshold, specifier: "%.2f")")
+                        Slider(value: $settings.vadThreshold, in: 0.1...0.9, step: 0.05)
+                    }
+
+                    Toggle("Enable Barge-In", isOn: $settings.enableBargeIn)
+
+                    if settings.enableBargeIn {
+                        VStack(alignment: .leading) {
+                            Text("Barge-In Threshold: \(settings.bargeInThreshold, specifier: "%.2f")")
+                            Slider(value: $settings.bargeInThreshold, in: 0.3...0.9, step: 0.05)
+                        }
+                    }
                 }
-                
-                Section("Model") {
-                    // LLM model settings
-                    Text("Model settings coming soon")
-                        .foregroundStyle(.secondary)
+
+                // MARK: Voice Settings
+                Section("Voice (TTS)") {
+                    Picker("Provider", selection: $settings.ttsProvider) {
+                        ForEach(TTSProvider.allCases, id: \.self) { provider in
+                            Text(provider.displayName).tag(provider)
+                        }
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Speaking Rate: \(settings.speakingRate, specifier: "%.1f")x")
+                        Slider(value: $settings.speakingRate, in: 0.5...2.0, step: 0.1)
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Volume: \(Int(settings.volume * 100))%")
+                        Slider(value: $settings.volume, in: 0.0...1.0, step: 0.1)
+                    }
+                }
+
+                // MARK: LLM Settings
+                Section("AI Model") {
+                    Picker("Provider", selection: $settings.llmProvider) {
+                        ForEach(LLMProvider.allCases, id: \.self) { provider in
+                            Text(provider.displayName).tag(provider)
+                        }
+                    }
+
+                    Picker("Model", selection: $settings.llmModel) {
+                        ForEach(settings.llmProvider.availableModels, id: \.self) { model in
+                            Text(model).tag(model)
+                        }
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text("Temperature: \(settings.temperature, specifier: "%.1f")")
+                        Slider(value: $settings.temperature, in: 0.0...2.0, step: 0.1)
+                    }
+
+                    Stepper("Max Tokens: \(settings.maxTokens)", value: $settings.maxTokens, in: 256...4096, step: 256)
+                }
+
+                // MARK: Session Settings
+                Section("Session") {
+                    Toggle("Cost Tracking", isOn: $settings.enableCostTracking)
+                    Toggle("Auto-Save Transcript", isOn: $settings.autoSaveTranscript)
+
+                    Picker("Max Duration", selection: $settings.maxDuration) {
+                        Text("30 minutes").tag(TimeInterval(1800))
+                        Text("60 minutes").tag(TimeInterval(3600))
+                        Text("90 minutes").tag(TimeInterval(5400))
+                        Text("Unlimited").tag(TimeInterval(0))
+                    }
                 }
             }
             .navigationTitle("Session Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Reset") {
+                        settings.resetToDefaults()
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
             }
         }
+    }
+}
+
+// MARK: - Session Settings Model
+
+@MainActor
+class SessionSettingsModel: ObservableObject {
+    // Audio
+    @Published var sampleRate: Double = 48000
+    @Published var bufferSize: UInt32 = 1024
+    @Published var enableVoiceProcessing = true
+    @Published var enableEchoCancellation = true
+    @Published var enableNoiseSuppression = true
+
+    // VAD
+    @Published var vadProvider: VADProvider = .silero
+    @Published var vadThreshold: Float = 0.5
+    @Published var enableBargeIn = true
+    @Published var bargeInThreshold: Float = 0.7
+
+    // TTS
+    @Published var ttsProvider: TTSProvider = .elevenLabsFlash
+    @Published var speakingRate: Float = 1.0
+    @Published var volume: Float = 1.0
+
+    // LLM
+    @Published var llmProvider: LLMProvider = .anthropic {
+        didSet {
+            // Update model when provider changes
+            if !llmProvider.availableModels.contains(llmModel) {
+                llmModel = llmProvider.availableModels.first ?? ""
+            }
+        }
+    }
+    @Published var llmModel: String = "claude-3-5-sonnet-20241022"
+    @Published var temperature: Float = 0.7
+    @Published var maxTokens: Int = 1024
+
+    // Session
+    @Published var enableCostTracking = true
+    @Published var autoSaveTranscript = true
+    @Published var maxDuration: TimeInterval = 5400
+
+    func resetToDefaults() {
+        sampleRate = 48000
+        bufferSize = 1024
+        enableVoiceProcessing = true
+        enableEchoCancellation = true
+        enableNoiseSuppression = true
+        vadProvider = .silero
+        vadThreshold = 0.5
+        enableBargeIn = true
+        bargeInThreshold = 0.7
+        ttsProvider = .elevenLabsFlash
+        speakingRate = 1.0
+        volume = 1.0
+        llmProvider = .anthropic
+        llmModel = "claude-3-5-sonnet-20241022"
+        temperature = 0.7
+        maxTokens = 1024
+        enableCostTracking = true
+        autoSaveTranscript = true
+        maxDuration = 5400
     }
 }
 

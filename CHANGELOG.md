@@ -8,20 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project structure
-- Core audio pipeline with VAD integration
-- Curriculum management system
-- Progress tracking
-- Multi-provider support (STT, TTS, LLM)
-- Session management for extended voice conversations
-- Telemetry and cost tracking
-- SwiftUI-based user interface
+- TTS streaming playback via AVAudioPlayerNode in AudioEngine
+- Integration test suite (16+ tests) in VoiceSessionIntegrationTests.swift
+- Debug & Testing UI (DiagnosticsView, AudioTestView, ProviderTestView)
+- DEBUG_TESTING_UI.md documentation for troubleshooting tools
+- TestDataFactory helpers for creating test Core Data entities
 
 ### Changed
-- Nothing yet
+- Updated TESTING.md with integration test documentation
+- Updated AGENTS.md with MockVADService (test spy) documentation
+- Updated README.md with current implementation status
+- All Part 1 autonomous tasks now complete
 
 ### Fixed
-- Nothing yet
+- SessionManagerTests MainActor isolation errors
+- TelemetryEngine switch case for ttsTimeToFirstByte latency type
 
 ## [0.1.0] - 2025-12-11
 

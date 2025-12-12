@@ -265,6 +265,8 @@ public enum AudioEngineError: Error, Sendable {
     case invalidConfiguration(String)
     case notRunning
     case alreadyRunning
+    case playbackFailed(String)
+    case bufferConversionFailed
 }
 
 extension AudioEngineError: LocalizedError {
@@ -282,6 +284,10 @@ extension AudioEngineError: LocalizedError {
             return "Audio engine is not running"
         case .alreadyRunning:
             return "Audio engine is already running"
+        case .playbackFailed(let message):
+            return "Audio playback failed: \(message)"
+        case .bufferConversionFailed:
+            return "Failed to convert audio data to playable buffer"
         }
     }
 }

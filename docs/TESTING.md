@@ -24,24 +24,25 @@ Only use simple test doubles when necessary:
 
 ```
 VoiceLearnTests/
-├── Unit/                    # Fast, isolated tests
-│   ├── AudioEngineTests.swift
-│   ├── SessionManagerTests.swift
-│   ├── CurriculumEngineTests.swift
-│   └── TelemetryTests.swift
-├── Integration/             # Multi-component tests
-│   ├── STTIntegrationTests.swift
-│   ├── TTSIntegrationTests.swift
-│   ├── LLMIntegrationTests.swift
-│   └── FullPipelineTests.swift
-├── E2E/                     # End-to-end scenarios
+├── Unit/                    # Fast, isolated tests (103+ tests)
+│   ├── AudioEngineTests.swift       # Audio capture, VAD, playback
+│   ├── SessionManagerTests.swift    # Session lifecycle, state machine
+│   ├── CurriculumEngineTests.swift  # Curriculum loading, progress
+│   ├── TelemetryEngineTests.swift   # Metrics, cost tracking
+│   ├── ProgressTrackerTests.swift   # Progress persistence
+│   ├── DocumentProcessorTests.swift # PDF/text processing
+│   └── ...more service tests
+├── Integration/             # Multi-component tests (16+ tests)
+│   ├── VoiceSessionIntegrationTests.swift  # Full pipeline tests
+│   └── ...                  # Telemetry, curriculum, Core Data
+├── E2E/                     # End-to-end scenarios (requires API keys)
 │   ├── ConversationFlowTests.swift
 │   ├── InterruptionTests.swift
 │   └── LongSessionTests.swift
 └── Helpers/                 # Test utilities
-    ├── TestConfiguration.swift
-    ├── AudioTestHelpers.swift
-    └── NetworkTestHelpers.swift
+    ├── MockServices.swift           # MockLLMService, MockEmbeddingService
+    ├── TestDataFactory.swift        # Core Data test helpers
+    └── AudioTestHelpers.swift       # Audio buffer utilities
 ```
 
 ### Test Categories
@@ -387,6 +388,48 @@ open DerivedData/.../coverage.lcov
 - **Unit Tests**: >80% coverage
 - **Integration Tests**: Critical paths
 - **E2E Tests**: User flows
+
+## Integration Tests
+
+The integration test suite (`VoiceSessionIntegrationTests.swift`) tests multiple components working together:
+
+### Test Classes
+
+**VoiceSessionIntegrationTests** - Core integration tests:
+- `testTelemetry_tracksLatencyMetrics` - Verifies latency recording (STT, LLM, TTS, E2E)
+- `testTelemetry_tracksCosts` - Verifies cost tracking across providers
+- `testTelemetry_recordsEvents` - Verifies event logging
+- `testMockLLM_streamsResponse` - Tests mock LLM streaming behavior
+- `testMockLLM_validatesInput` - Tests input validation
+- `testMockLLM_simulatesErrors` - Tests error condition simulation
+- `testCurriculumContext_injectedIntoSession` - Tests context generation
+- `testCurriculumNavigation_acrossTopics` - Tests topic navigation
+- `testProgressTracking_updatesOnTopicCompletion` - Tests progress persistence
+- `testCoreData_curriculumPersistence` - Tests curriculum storage
+- `testCoreData_topicProgressPersistence` - Tests progress storage
+- `testCoreData_documentAssociation` - Tests document relationships
+
+**AudioPipelineIntegrationTests** - Audio system tests:
+- `testAudioEngine_configuresVAD` - Tests VAD configuration
+- `testAudioEngine_processesBufferThroughVAD` - Tests audio processing
+- `testAudioEngine_stopsPlaybackOnInterrupt` - Tests barge-in handling
+
+**ThermalManagementIntegrationTests** - Thermal handling:
+- `testThermalStateChange_recordsTelemetry` - Tests thermal event logging
+
+### Running Integration Tests
+
+```bash
+# Run all integration tests
+xcodebuild test -project VoiceLearn.xcodeproj -scheme VoiceLearn \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:VoiceLearnTests/Integration
+
+# Run specific integration test class
+xcodebuild test -project VoiceLearn.xcodeproj -scheme VoiceLearn \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:VoiceLearnTests/VoiceSessionIntegrationTests
+```
 
 ## Troubleshooting
 

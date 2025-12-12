@@ -50,8 +50,25 @@ public struct HistoryView: View {
             } message: {
                 Text("This will permanently delete all session history.")
             }
+            .sheet(isPresented: $viewModel.showExportSheet) {
+                if let url = viewModel.exportURL {
+                    ShareSheet(items: [url])
+                }
+            }
         }
     }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Empty State
@@ -296,19 +313,126 @@ struct MetricsCard: View {
 class HistoryViewModel: ObservableObject {
     @Published var sessions: [SessionSummary] = []
     @Published var showClearConfirmation = false
-    
+    @Published var exportURL: URL?
+    @Published var showExportSheet = false
+
+    private let persistence = PersistenceController.shared
+
     init() {
-        // TODO: Load from Core Data
+        loadFromCoreData()
     }
-    
+
+    func loadFromCoreData() {
+        do {
+            let coreDataSessions = try persistence.fetchRecentSessions(limit: 100)
+            sessions = coreDataSessions.compactMap { session -> SessionSummary? in
+                guard let id = session.id,
+                      let startTime = session.startTime else {
+                    return nil
+                }
+
+                // Get transcript entries for preview
+                let transcriptEntries = (session.transcript?.array as? [TranscriptEntry]) ?? []
+                let preview = transcriptEntries.prefix(3).compactMap { entry -> TranscriptPreview? in
+                    guard let content = entry.content, let role = entry.role else { return nil }
+                    return TranscriptPreview(isUser: role == "user", content: String(content.prefix(100)))
+                }
+
+                // Calculate average latency from metrics snapshot if available
+                var avgLatency: TimeInterval = 0.3 // default
+                if let metricsData = session.metricsSnapshot {
+                    // Try decoding the full MetricsSnapshot format first
+                    if let metrics = try? JSONDecoder().decode(MetricsSnapshot.self, from: metricsData) {
+                        avgLatency = TimeInterval(metrics.latencies.e2eMedianMs) / 1000.0
+                    } else if let legacyMetrics = try? JSONDecoder().decode(SessionMetricsData.self, from: metricsData),
+                              let lat = legacyMetrics.avgLatency {
+                        avgLatency = lat
+                    }
+                }
+
+                return SessionSummary(
+                    id: id,
+                    startTime: startTime,
+                    duration: session.duration,
+                    topicName: session.topic?.title,
+                    turnCount: transcriptEntries.count,
+                    totalCost: session.totalCost as Decimal? ?? 0,
+                    avgLatency: avgLatency,
+                    transcriptPreview: preview
+                )
+            }
+        } catch {
+            print("Failed to fetch sessions: \(error)")
+            sessions = []
+        }
+    }
+
     func exportAllSessions() {
-        // TODO: Implement export
+        do {
+            let coreDataSessions = try persistence.fetchRecentSessions(limit: 1000)
+            let exportData = coreDataSessions.map { session -> [String: Any] in
+                var dict: [String: Any] = [
+                    "id": session.id?.uuidString ?? "",
+                    "startTime": session.startTime?.ISO8601Format() ?? "",
+                    "duration": session.duration,
+                    "totalCost": (session.totalCost as NSDecimalNumber?)?.doubleValue ?? 0
+                ]
+
+                if let topic = session.topic {
+                    dict["topic"] = topic.title ?? "Unknown"
+                }
+
+                // Include transcript
+                if let entries = session.transcript?.array as? [TranscriptEntry] {
+                    dict["transcript"] = entries.map { entry in
+                        [
+                            "role": entry.role ?? "unknown",
+                            "content": entry.content ?? "",
+                            "timestamp": entry.timestamp?.ISO8601Format() ?? ""
+                        ]
+                    }
+                }
+
+                return dict
+            }
+
+            let jsonData = try JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
+
+            // Write to temp file
+            let tempDir = FileManager.default.temporaryDirectory
+            let fileName = "voicelearn_sessions_\(Date().ISO8601Format()).json"
+            let fileURL = tempDir.appendingPathComponent(fileName)
+            try jsonData.write(to: fileURL)
+
+            exportURL = fileURL
+            showExportSheet = true
+        } catch {
+            print("Failed to export sessions: \(error)")
+        }
     }
-    
+
     func clearHistory() {
-        // TODO: Clear Core Data
-        sessions.removeAll()
+        let context = persistence.viewContext
+
+        // Fetch all sessions
+        let request = Session.fetchRequest()
+        do {
+            let sessions = try context.fetch(request)
+            for session in sessions {
+                context.delete(session)
+            }
+            try persistence.save()
+            self.sessions.removeAll()
+        } catch {
+            print("Failed to clear sessions: \(error)")
+        }
     }
+}
+
+// Helper struct for session metrics decoding from legacy format
+private struct SessionMetricsData: Codable {
+    let avgLatency: TimeInterval?
+    let totalCost: Double?
 }
 
 // MARK: - Data Models

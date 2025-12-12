@@ -43,6 +43,9 @@ public enum TelemetryEvent: Sendable {
     // TTS events
     case ttsChunkCompleted(text: String, duration: TimeInterval)
     case ttsStreamFailed(Error)
+    case ttsPlaybackStarted
+    case ttsPlaybackCompleted
+    case ttsPlaybackInterrupted
     
     // Curriculum events
     case topicStarted(topic: String)
@@ -58,6 +61,7 @@ public enum LatencyType: String, Sendable {
     case sttEmission = "stt_emission"
     case llmFirstToken = "llm_first_token"
     case ttsTTFB = "tts_ttfb"
+    case ttsTimeToFirstByte = "tts_time_to_first_byte"
     case endToEndTurn = "e2e_turn"
 }
 
@@ -251,7 +255,7 @@ public actor TelemetryEngine: ObservableObject {
             metrics.sttLatencies.append(value)
         case .llmFirstToken:
             metrics.llmLatencies.append(value)
-        case .ttsTTFB:
+        case .ttsTTFB, .ttsTimeToFirstByte:
             metrics.ttsLatencies.append(value)
         case .endToEndTurn:
             metrics.e2eLatencies.append(value)

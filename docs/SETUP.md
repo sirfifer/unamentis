@@ -293,8 +293,9 @@ GitHub Actions is configured in `.github/workflows/ios.yml`.
 ## Next Steps
 
 - Read [TESTING.md](TESTING.md) for testing strategy
+- Read [DEBUG_TESTING_UI.md](DEBUG_TESTING_UI.md) for built-in troubleshooting tools
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) for workflow
-- Start with Week 1 implementation
+- Review [TASK_STATUS.md](TASK_STATUS.md) for current implementation status
 
 ---
 

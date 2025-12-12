@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0AE70F58F9AF402CBDE2AD87 /* VoiceSessionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE205BDB5E24F1B94CB519E /* VoiceSessionIntegrationTests.swift */; };
 		000CCBD668C2818134BBB9D8 /* SessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356C6AB03EB875128D5945B /* SessionManagerTests.swift */; };
 		01E12BE332E2E3ED3B56C918 /* CurriculumModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAEF1C26EA42FA0CC980DB14 /* CurriculumModels.swift */; };
 		098AA76289CAF765C05E5F4D /* AnalyticsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF288D2538186C5B5000DD2 /* AnalyticsViewModelTests.swift */; };
@@ -108,6 +109,7 @@
 		C07F55967DD85A530CF98851 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C2F47CEED72DFFD39384E43C /* DeepgramTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepgramTTSService.swift; sourceTree = "<group>"; };
 		CDECFDD641B04BF76BFF029D /* ElevenLabsTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElevenLabsTTSService.swift; sourceTree = "<group>"; };
+		CFE205BDB5E24F1B94CB519E /* VoiceSessionIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSessionIntegrationTests.swift; sourceTree = "<group>"; };
 		D356C6AB03EB875128D5945B /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
 		E84372C34CDB567D72A2D878 /* DocumentProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentProcessorTests.swift; sourceTree = "<group>"; };
 		EAEF1C26EA42FA0CC980DB14 /* CurriculumModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumModels.swift; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 		57251395F7B2784207909006 /* Integration */ = {
 			isa = PBXGroup;
 			children = (
+				CFE205BDB5E24F1B94CB519E /* VoiceSessionIntegrationTests.swift */,
 			);
 			path = Integration;
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				000CCBD668C2818134BBB9D8 /* SessionManagerTests.swift in Sources */,
 				1B532AA91F37FB00F3776A20 /* TelemetryEngineTests.swift in Sources */,
 				BF409C6E576B70EDDF1B8422 /* VoiceLearnTests.swift in Sources */,
+				0AE70F58F9AF402CBDE2AD87 /* VoiceSessionIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

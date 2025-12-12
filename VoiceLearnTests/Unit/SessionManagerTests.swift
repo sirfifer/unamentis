@@ -18,7 +18,8 @@ final class SessionManagerTests: XCTestCase {
     }
     
     // MARK: - Initialization Tests
-    
+
+    @MainActor
     func testSessionManagerInitialization() async throws {
         let manager = SessionManager(telemetry: telemetry)
         
@@ -33,13 +34,14 @@ final class SessionManagerTests: XCTestCase {
         XCTAssertTrue(response.isEmpty)
     }
     
+    @MainActor
     func testSessionManagerWithCustomConfig() async throws {
         let config = SessionConfig(
             systemPrompt: "Custom tutor prompt",
             enableCostTracking: false,
             maxDuration: 3600
         )
-        
+
         let manager = SessionManager(config: config, telemetry: telemetry)
         
         let state = await manager.state

@@ -311,11 +311,28 @@ actor FaithfulMockLLM: LLMService {
 ### Current Mock Inventory
 
 **Valid mocks (external paid APIs):**
-- `MockLLMService` - LLM API calls cost money
-- `MockEmbeddingService` - Embedding API calls cost money
+- `MockLLMService` - LLM API calls cost money (in `VoiceLearnTests/Helpers/MockServices.swift`)
+- `MockEmbeddingService` - Embedding API calls cost money (in `VoiceLearnTests/Helpers/MockServices.swift`)
+
+**Test Spies (for behavior verification):**
+- `MockVADService` - A test spy (not a mock) that tracks method calls for verification while providing controllable VAD results. Located in `VoiceLearnTests/Unit/AudioEngineTests.swift`. This is acceptable because:
+  - VAD is on-device (Silero model), not a paid API
+  - The spy allows testing AudioEngine's VAD integration without loading the ML model
+  - It tracks `configureWasCalled`, `processBufferWasCalled`, and `lastConfiguration` for test assertions
+  - It provides controllable `shouldDetectSpeech` and `speechConfidence` for testing different scenarios
 
 **Should NOT be mocked (use real implementations):**
 - `TelemetryEngine` - Internal, use real with in-memory store
 - `PersistenceController` - Use `PersistenceController(inMemory: true)`
 - File operations - Use temp directories
 - Cosine similarity, chunking, etc. - Test real implementations
+
+### Test Data Helpers
+
+`TestDataFactory` (in `VoiceLearnTests/Helpers/MockServices.swift`) provides helpers for creating test data:
+- `createCurriculum(in:name:topicCount:)` - Creates test curricula with optional topics
+- `createTopic(in:title:orderIndex:mastery:)` - Creates test topics
+- `createDocument(in:title:type:content:summary:)` - Creates test documents
+- `createProgress(in:for:timeSpent:quizScores:)` - Creates test progress records
+
+These are NOT mocks. They create real Core Data entities in an in-memory store.

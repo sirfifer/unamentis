@@ -216,6 +216,7 @@ final class CurriculumEngineTests: XCTestCase {
         try await curriculumEngine.startTopic(topic)
         
         // When
+        try await curriculumEngine.updateProgress(topic: topic, timeSpent: 60, conceptsCovered: [])
         try await curriculumEngine.completeTopic(topic, masteryLevel: 0.9)
         
         // Then

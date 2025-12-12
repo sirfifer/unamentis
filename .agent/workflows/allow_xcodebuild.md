@@ -37,3 +37,13 @@ xcodebuild clean build -scheme VoiceLearn -destination 'platform=iOS Simulator,n
 ```bash
 xcodebuild test -scheme VoiceLearn -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
+
+7. Run CurriculumEngineTests Only:
+```bash
+xcodebuild test -scheme VoiceLearn -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:VoiceLearnTests/CurriculumEngineTests
+```
+
+8. Run ProgressTrackerTests Only (iPhone 17 Pro):
+```bash
+xcodebuild test -scheme VoiceLearn -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:VoiceLearnTests/ProgressTrackerTests
+```

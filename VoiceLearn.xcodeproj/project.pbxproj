@@ -29,7 +29,6 @@
 		63F3D9D850D9235A2A45C6E8 /* STTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8998E9A5A77C8479C6840EC9 /* STTService.swift */; };
 		645B75E6E4117EEF61541600 /* TelemetryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47903B0E20EAF003FA79E708 /* TelemetryEngine.swift */; };
 		6544D5BDFF62389EE39CF048 /* LiveKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2B2AF5164826C00D3745FA7A /* LiveKit */; };
-		659549287AAB71F399D19B64 /* TestDataFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB78E1679120CB633741AA5C /* TestDataFactory.swift */; };
 		67AAFF06599079A85D50BDD1 /* ProgressTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796649153218922464580B05 /* ProgressTrackerTests.swift */; };
 		6D7A2DF632E0DC9E1D7FD41F /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 979A0008641BECA9718FB660 /* Logging */; };
 		6EEE0509CC6D6481D46DC973 /* MockServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8A6B9379FE371FFEDEF1AC /* MockServices.swift */; };
@@ -110,7 +109,6 @@
 		C2F47CEED72DFFD39384E43C /* DeepgramTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepgramTTSService.swift; sourceTree = "<group>"; };
 		CDECFDD641B04BF76BFF029D /* ElevenLabsTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElevenLabsTTSService.swift; sourceTree = "<group>"; };
 		D356C6AB03EB875128D5945B /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
-		DB78E1679120CB633741AA5C /* TestDataFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDataFactory.swift; sourceTree = "<group>"; };
 		E84372C34CDB567D72A2D878 /* DocumentProcessorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentProcessorTests.swift; sourceTree = "<group>"; };
 		EAEF1C26EA42FA0CC980DB14 /* CurriculumModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumModels.swift; sourceTree = "<group>"; };
 		EFC0F774D8EC0E30A1EC2D96 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
@@ -305,7 +303,6 @@
 			isa = PBXGroup;
 			children = (
 				3A8A6B9379FE371FFEDEF1AC /* MockServices.swift */,
-				DB78E1679120CB633741AA5C /* TestDataFactory.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -511,7 +508,6 @@
 				58D25B9D0FF5811916E1F00C /* ProviderTests.swift in Sources */,
 				000CCBD668C2818134BBB9D8 /* SessionManagerTests.swift in Sources */,
 				1B532AA91F37FB00F3776A20 /* TelemetryEngineTests.swift in Sources */,
-				659549287AAB71F399D19B64 /* TestDataFactory.swift in Sources */,
 				BF409C6E576B70EDDF1B8422 /* VoiceLearnTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

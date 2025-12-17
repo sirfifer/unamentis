@@ -130,6 +130,17 @@ public struct SettingsView: View {
 
                     Toggle("Debug Mode", isOn: $viewModel.debugMode)
                     Toggle("Verbose Logging", isOn: $viewModel.verboseLogging)
+
+                    Button("Load Sample Curriculum") {
+                        Task { await viewModel.loadSampleCurriculum() }
+                    }
+                    .disabled(viewModel.hasSampleCurriculum)
+
+                    if viewModel.hasSampleCurriculum {
+                        Button("Delete Sample Curriculum", role: .destructive) {
+                            Task { await viewModel.deleteSampleCurriculum() }
+                        }
+                    }
                 } header: {
                     Text("Debug & Testing")
                 } footer: {
@@ -271,6 +282,9 @@ class SettingsViewModel: ObservableObject {
     // Debug
     @Published var debugMode = false
     @Published var verboseLogging = false
+    @Published var hasSampleCurriculum = false
+
+    private let curriculumSeeder = SampleCurriculumSeeder()
 
     /// Available models for current provider
     var availableModels: [String] {
@@ -287,9 +301,17 @@ class SettingsViewModel: ObservableObject {
     init() {
         Task {
             await loadKeyStatus()
+            await checkSampleCurriculum()
         }
     }
-    
+
+    private func checkSampleCurriculum() async {
+        let exists = curriculumSeeder.hasSampleCurriculum()
+        await MainActor.run {
+            hasSampleCurriculum = exists
+        }
+    }
+
     private func loadKeyStatus() async {
         let status = await APIKeyManager.shared.getKeyStatus()
         await MainActor.run {
@@ -307,7 +329,25 @@ class SettingsViewModel: ObservableObject {
             await loadKeyStatus()
         }
     }
-    
+
+    func loadSampleCurriculum() async {
+        do {
+            try curriculumSeeder.seedPyTorchCurriculum()
+            await checkSampleCurriculum()
+        } catch {
+            print("Failed to seed sample curriculum: \(error)")
+        }
+    }
+
+    func deleteSampleCurriculum() async {
+        do {
+            try curriculumSeeder.deleteSampleCurriculum()
+            await checkSampleCurriculum()
+        } catch {
+            print("Failed to delete sample curriculum: \(error)")
+        }
+    }
+
     enum Preset {
         case balanced, lowLatency, highQuality, costOptimized
     }

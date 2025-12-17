@@ -21,6 +21,7 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 | GLM-ASR On-Device | **Implemented** | On-device STT with CoreML + llama.cpp |
 | iOS Simulator MCP | **Installed** | AI-driven testing capability |
 | Documentation | **Updated** | New guides for GLM-ASR and AI testing |
+| **UI Simulator Testing** | **Verified** | All tabs functional, navigation working |
 
 ---
 
@@ -220,3 +221,94 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 | AI_SIMULATOR_TESTING.md | AI-driven testing workflow |
 | (Updated) QUICKSTART.md | Current project state |
 | (Updated) SETUP.md | Model setup instructions |
+
+---
+
+## UI Simulator Testing Report (December 2025)
+
+### Test Environment
+- **Simulator**: iPhone 17 Pro (iOS 26.1)
+- **Build**: Debug (xcodebuild)
+- **Bundle ID**: com.voicelearn.app
+- **Test Method**: AppleScript automation + xcrun simctl screenshots
+
+### Tests Performed
+
+| Test | Result | Notes |
+|------|--------|-------|
+| App Launch | PASS | App launches successfully, PID assigned |
+| Tab Navigation - Session | PASS | Session view displays correctly |
+| Tab Navigation - Curriculum | PASS | Shows "No Curriculum Loaded" empty state |
+| Tab Navigation - History | PASS | Shows "No Sessions Yet" empty state |
+| Tab Navigation - Analytics | PASS | Displays metrics cards (zeroed) |
+| Tab Navigation - Settings | PASS | Full settings UI rendered |
+
+### UI Components Verified
+
+#### Session View
+- Main conversation interface present
+- Tab bar navigation functional
+
+#### Curriculum View
+- Title: "Curriculum" displays
+- Empty state with book icon
+- "Import a curriculum to get started" message
+- Proper styling and layout
+
+#### History View
+- Title: "History" displays
+- Clock icon with question mark
+- "No Sessions Yet" empty state
+- Informative message about first session
+
+#### Analytics View (AnalyticsView.swift)
+- Quick Stats cards (Sessions, Duration, Cost)
+- Latency Metrics card (STT, LLM TTFT, TTS TTFB, E2E)
+- Cost Breakdown card (STT, TTS, LLM costs)
+- Session Quality card (Turns, Interruptions, Throttle Events)
+- Export toolbar button
+
+#### Settings View (SettingsView.swift)
+- **API Keys Section**: 5 provider key rows (OpenAI, Anthropic, Deepgram, ElevenLabs, AssemblyAI)
+- **Audio Section**: Sample rate picker, Voice/Echo/Noise toggles
+- **Voice Detection Section**: VAD threshold, Interruption threshold, Enable toggle
+- **Language Model Section**: Provider picker, Model picker, Temperature slider, Max tokens
+- **Voice (TTS) Section**: Provider picker, Speaking rate slider
+- **Presets Section**: Balanced, Low Latency, High Quality, Cost Optimized buttons
+- **Debug & Testing Section**: Diagnostics, Audio Test, Provider Test navigation links
+- **About Section**: Version, Documentation link, Privacy Policy link
+
+### Screenshots Captured
+| File | Description |
+|------|-------------|
+| 01-initial-launch.png | Initial app launch state |
+| 02-session-tab.png | Session tab view |
+| 03-curriculum-tab.png | Curriculum empty state |
+| 04-history-tab.png | History empty state |
+| 05-analytics-tab.png | Analytics dashboard |
+| 06-settings-tab.png | Settings view |
+| 07-session-tab.png | Session tab revisited |
+| 08-settings-detail.png | Settings detail view |
+| 09-settings-scrolled.png | Settings scrolled |
+| 10-analytics-view.png | Analytics final view |
+
+**Screenshots location**: `/tmp/voicelearn-screenshots/`
+
+### AI Testing Capability Assessment
+
+| Capability | Status | Notes |
+|------------|--------|-------|
+| Simulator boot/shutdown | WORKING | xcrun simctl boot/shutdown |
+| App install | WORKING | xcrun simctl install |
+| App launch | WORKING | xcrun simctl launch |
+| Screenshot capture | WORKING | xcrun simctl io booted screenshot |
+| UI click interaction | WORKING | AppleScript System Events |
+| Keyboard input | PARTIAL | Arrow keys work, needs cliclick for swipe |
+| Scroll gestures | NEEDS WORK | Requires cliclick installation |
+| Deep navigation | WORKING | Tab bar navigation confirmed |
+
+### Recommendations
+1. Install `cliclick` for better gesture support: `brew install cliclick`
+2. Add accessibility identifiers to all interactive elements for reliable automation
+3. Consider XCUITest for more robust UI testing automation
+4. Current AppleScript approach works well for basic navigation testing

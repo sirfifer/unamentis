@@ -27,7 +27,9 @@ public actor STTProviderRouter: STTService {
 
     private let logger = Logger(label: "com.voicelearn.stt.router")
 
+    #if LLAMA_AVAILABLE
     private let onDeviceService: GLMASROnDeviceSTTService?
+    #endif
     private let glmASRService: any STTService
     private let deepgramService: any STTService
     private let healthMonitor: GLMASRHealthMonitor
@@ -80,7 +82,8 @@ public actor STTProviderRouter: STTService {
 
     // MARK: - Initialization
 
-    /// Initialize STT provider router
+    #if LLAMA_AVAILABLE
+    /// Initialize STT provider router with on-device support
     /// - Parameters:
     ///   - onDeviceService: On-device GLM-ASR service (optional, for supported devices)
     ///   - glmASRService: Server-based GLM-ASR service
@@ -129,6 +132,30 @@ public actor STTProviderRouter: STTService {
             onDeviceAvailable = false
         }
     }
+    #else
+    /// Initialize STT provider router (server-only mode)
+    /// - Parameters:
+    ///   - glmASRService: Server-based GLM-ASR service
+    ///   - deepgramService: Fallback Deepgram service
+    ///   - healthMonitor: Health monitor for server GLM-ASR
+    public init(
+        glmASRService: any STTService,
+        deepgramService: any STTService,
+        healthMonitor: GLMASRHealthMonitor
+    ) {
+        self.glmASRService = glmASRService
+        self.deepgramService = deepgramService
+        self.healthMonitor = healthMonitor
+        self.activeProvider = glmASRService
+
+        logger.info("STTProviderRouter initialized (server-only mode)")
+
+        // Start health monitoring
+        Task {
+            await self.startHealthMonitoring()
+        }
+    }
+    #endif
 
     deinit {
         healthMonitorTask?.cancel()
@@ -201,11 +228,13 @@ public actor STTProviderRouter: STTService {
     }
 
     private func selectProvider() -> any STTService {
+        #if LLAMA_AVAILABLE
         // Priority 1: On-device if available and models loaded
         if onDeviceAvailable, let onDevice = onDeviceService {
             logger.debug("Selecting on-device GLM-ASR")
             return onDevice
         }
+        #endif
 
         // Priority 2: Server GLM-ASR if healthy
         switch healthStatus {
@@ -227,8 +256,10 @@ public actor STTProviderRouter: STTService {
 
     /// Try to re-enable on-device mode
     public func tryEnableOnDeviceMode() async {
+        #if LLAMA_AVAILABLE
         guard let onDevice = onDeviceService else { return }
         await tryLoadOnDeviceModels(onDevice)
+        #endif
     }
 }
 

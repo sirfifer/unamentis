@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="24E5035b" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Curriculum" representedClassName="Curriculum" syncable="YES" codeGenerationType="manual/none">
+    <entity name="Curriculum" representedClassName="Curriculum" syncable="YES" codeGenerationType="class">
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
@@ -8,7 +8,7 @@
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="topics" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Topic" inverseName="curriculum" inverseEntity="Topic"/>
     </entity>
-    <entity name="Document" representedClassName="Document" syncable="YES" codeGenerationType="manual/none">
+    <entity name="Document" representedClassName="Document" syncable="YES" codeGenerationType="class">
         <attribute name="content" optional="YES" attributeType="String"/>
         <attribute name="embedding" optional="YES" attributeType="Binary"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
@@ -18,7 +18,7 @@
         <attribute name="type" attributeType="String" defaultValueString="text"/>
         <relationship name="topic" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Topic" inverseName="documents" inverseEntity="Topic"/>
     </entity>
-    <entity name="Session" representedClassName="Session" syncable="YES" codeGenerationType="manual/none">
+    <entity name="Session" representedClassName="Session" syncable="YES" codeGenerationType="class">
         <attribute name="config" optional="YES" attributeType="Binary"/>
         <attribute name="duration" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="endTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -29,7 +29,7 @@
         <relationship name="transcript" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="TranscriptEntry" inverseName="session" inverseEntity="TranscriptEntry"/>
         <relationship name="topic" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Topic" inverseName="sessions" inverseEntity="Topic"/>
     </entity>
-    <entity name="Topic" representedClassName="Topic" syncable="YES" codeGenerationType="manual/none">
+    <entity name="Topic" representedClassName="Topic" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="mastery" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="objectives" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[String]"/>
@@ -41,14 +41,14 @@
         <relationship name="progress" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="TopicProgress" inverseName="topic" inverseEntity="TopicProgress"/>
         <relationship name="sessions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Session" inverseName="topic" inverseEntity="Session"/>
     </entity>
-    <entity name="TopicProgress" representedClassName="TopicProgress" syncable="YES" codeGenerationType="manual/none">
+    <entity name="TopicProgress" representedClassName="TopicProgress" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="lastAccessed" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="quizScores" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[Float]"/>
         <attribute name="timeSpent" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="topic" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Topic" inverseName="progress" inverseEntity="Topic"/>
     </entity>
-    <entity name="TranscriptEntry" representedClassName="TranscriptEntry" syncable="YES" codeGenerationType="manual/none">
+    <entity name="TranscriptEntry" representedClassName="TranscriptEntry" syncable="YES" codeGenerationType="class">
         <attribute name="content" attributeType="String"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="role" attributeType="String"/>

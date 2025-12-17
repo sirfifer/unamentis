@@ -8,8 +8,9 @@ import SwiftUI
 struct CurriculumView: View {
     @EnvironmentObject var appState: AppState
     @State private var topics: [Topic] = []
+    @State private var curriculumName: String?
     @State private var isLoading = false
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -20,33 +21,83 @@ struct CurriculumView: View {
                         description: Text("Import a curriculum to get started.")
                     )
                 } else {
-                    ForEach(topics, id: \.id) { topic in
-                        TopicRow(topic: topic)
-                            .onTapGesture {
-                                startTopic(topic)
+                    if let name = curriculumName {
+                        Section {
+                            ForEach(topics, id: \.id) { topic in
+                                TopicRow(topic: topic)
+                                    .onTapGesture {
+                                        startTopic(topic)
+                                    }
                             }
+                        } header: {
+                            Text(name)
+                        } footer: {
+                            Text("\(topics.count) topics")
+                        }
+                    } else {
+                        ForEach(topics, id: \.id) { topic in
+                            TopicRow(topic: topic)
+                                .onTapGesture {
+                                    startTopic(topic)
+                                }
+                        }
                     }
                 }
             }
             .navigationTitle("Curriculum")
             .task {
-                await loadTopics()
+                await loadCurriculumAndTopics()
             }
             .refreshable {
-                await loadTopics()
+                await loadCurriculumAndTopics()
             }
         }
     }
-    
-    private func loadTopics() async {
-        guard let engine = appState.curriculum else { return }
+
+    private func loadCurriculumAndTopics() async {
         isLoading = true
-        
+
+        // First, try to load first available curriculum from Core Data
+        await loadFirstCurriculum()
+
+        // Then load topics from the active curriculum
+        guard let engine = appState.curriculum else {
+            await MainActor.run {
+                self.isLoading = false
+            }
+            return
+        }
+
         let loadedTopics = await engine.getTopics()
-        
+        let name = await engine.activeCurriculum?.name
+
         await MainActor.run {
             self.topics = loadedTopics
+            self.curriculumName = name
             self.isLoading = false
+        }
+    }
+
+    private func loadFirstCurriculum() async {
+        guard let engine = appState.curriculum else { return }
+
+        // Check if we already have an active curriculum
+        let hasActive = await engine.activeCurriculum != nil
+        if hasActive { return }
+
+        // Load first available curriculum
+        let context = PersistenceController.shared.viewContext
+        let request = Curriculum.fetchRequest()
+        request.fetchLimit = 1
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Curriculum.createdAt, ascending: false)]
+
+        do {
+            let results = try context.fetch(request)
+            if let firstCurriculum = results.first, let id = firstCurriculum.id {
+                try await engine.loadCurriculum(id)
+            }
+        } catch {
+            print("Failed to load curriculum: \(error)")
         }
     }
     

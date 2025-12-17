@@ -33,6 +33,9 @@ packages:
   Collections:
     url: https://github.com/apple/swift-collections.git
     from: "1.1.0"
+  LlamaCpp:
+    url: https://github.com/StanfordBDHG/llama.cpp.git
+    from: "0.1.0"
 
 targets:
   VoiceLearn:
@@ -43,11 +46,17 @@ targets:
       - path: VoiceLearn
         excludes:
           - "**/.DS_Store"
+          - "**/ManagedObjects/**"  # Use auto-generated CoreData classes, exclude manual duplicates
+      - path: models/llama-3.2-3b-instruct-q4_k_m.gguf
+        buildPhase: resources
+        type: file
     dependencies:
       - package: LiveKit
       - package: SwiftLog
         product: Logging
       - package: Collections
+      - package: LlamaCpp
+        product: llama
     settings:
       base:
         INFOPLIST_FILE: VoiceLearn/Info.plist
@@ -55,6 +64,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_EMIT_LOC_STRINGS: YES
         GENERATE_INFOPLIST_FILE: NO
+        # Required for Stanford BDHG llama.cpp C++ interop
+        SWIFT_OBJC_INTEROP_MODE: objcxx
     info:
       path: VoiceLearn/Info.plist
       properties:

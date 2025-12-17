@@ -114,7 +114,10 @@ public final class SessionManager: ObservableObject {
     
     /// Current AI response being spoken
     @Published public private(set) var aiResponse: String = ""
-    
+
+    /// Current audio level (dB) for visualization
+    @Published public private(set) var audioLevel: Float = -60.0
+
     /// Conversation history
     private var conversationHistory: [LLMMessage] = []
     
@@ -138,6 +141,12 @@ public final class SessionManager: ObservableObject {
     private var llmStreamTask: Task<Void, Never>?
     private var ttsStreamTask: Task<Void, Never>?
     private var audioSubscription: AnyCancellable?
+
+    /// Silence detection for utterance completion
+    private var silenceStartTime: Date?
+    private var hasDetectedSpeech: Bool = false
+    private let silenceThreshold: TimeInterval = 1.5  // seconds of silence before completing utterance
+    private var pendingUtteranceTask: Task<Void, Never>?
     
     // MARK: - Initialization
     
@@ -193,7 +202,12 @@ public final class SessionManager: ObservableObject {
         // Start telemetry session
         await telemetry.startSession()
         sessionStartTime = Date()
-        
+
+        // Initialize silence tracking
+        hasDetectedSpeech = false
+        silenceStartTime = nil
+        pendingUtteranceTask = nil
+
         // Start audio capture
         try await audioEngine?.start()
         
@@ -212,29 +226,34 @@ public final class SessionManager: ObservableObject {
     /// Stop the current session
     public func stopSession() async {
         logger.info("Stopping session")
-        
+
         // Cancel all streaming tasks
         sttStreamTask?.cancel()
         llmStreamTask?.cancel()
         ttsStreamTask?.cancel()
+        pendingUtteranceTask?.cancel()
         audioSubscription?.cancel()
-        
+
         // Stop services
         await audioEngine?.stop()
         try? await sttService?.stopStreaming()
-        
+
         // End telemetry
         await telemetry.endSession()
-        
+
         // Clear state
         conversationHistory.removeAll()
+        silenceStartTime = nil
+        hasDetectedSpeech = false
+        pendingUtteranceTask = nil
         await MainActor.run {
             userTranscript = ""
             aiResponse = ""
+            audioLevel = -60.0
         }
-        
+
         await setState(.idle)
-        
+
         logger.info("Session stopped")
     }
     
@@ -253,11 +272,25 @@ public final class SessionManager: ObservableObject {
     
     private func subscribeToAudioStream() {
         guard let audioEngine = audioEngine else { return }
-        
+
         audioSubscription = audioEngine.audioStream
             .receive(on: DispatchQueue.main)
             .sink { [weak self] (buffer, vadResult) in
                 guard let self = self else { return }
+
+                // Calculate audio level from buffer for visualization
+                if let channelData = buffer.floatChannelData?[0] {
+                    let frameLength = Int(buffer.frameLength)
+                    var sum: Float = 0
+                    for i in 0..<frameLength {
+                        let sample = channelData[i]
+                        sum += sample * sample
+                    }
+                    let rms = sqrt(sum / Float(frameLength))
+                    let db = 20 * log10(max(rms, 1e-10))
+                    self.audioLevel = db
+                }
+
                 Task.detached {
                     await self.handleVADResult(vadResult, buffer: buffer)
                 }
@@ -266,27 +299,61 @@ public final class SessionManager: ObservableObject {
     
     private func handleVADResult(_ result: VADResult, buffer: AVAudioPCMBuffer) async {
         let currentState = await state
-        
+
         switch currentState {
         case .userSpeaking:
             // Send audio to STT
             try? await sttService?.sendAudio(buffer)
-            
-            // Check for end of speech
-            if !result.isSpeech {
-                // User stopped speaking - wait for STT final result
-                // (handled in STT stream)
+
+            // Track speech/silence for utterance detection
+            if result.isSpeech {
+                // User is speaking - mark speech detected and reset silence timer
+                hasDetectedSpeech = true
+                silenceStartTime = nil
+                pendingUtteranceTask?.cancel()
+                pendingUtteranceTask = nil
+            } else if hasDetectedSpeech {
+                // User was speaking but now silent - start or check silence timer
+                if silenceStartTime == nil {
+                    silenceStartTime = Date()
+                    logger.debug("Silence detected after speech, starting timer")
+
+                    // Schedule utterance completion after silence threshold
+                    pendingUtteranceTask = Task {
+                        try? await Task.sleep(nanoseconds: UInt64(silenceThreshold * 1_000_000_000))
+
+                        // Check if still silent and not cancelled
+                        guard !Task.isCancelled else { return }
+                        guard await self.state == .userSpeaking else { return }
+                        guard await !self.userTranscript.isEmpty else { return }
+
+                        let transcript = await self.userTranscript
+                        await self.logger.info("Silence threshold reached, completing utterance: \(transcript.prefix(50))...")
+                        await self.completeUtteranceFromSilence(transcript)
+                    }
+                }
             }
-            
+
         case .aiSpeaking:
             // Check for interruption
             if config.enableInterruptions && result.isSpeech && result.confidence > config.audio.bargeInThreshold {
                 await handleInterruption()
             }
-            
+
         default:
             break
         }
+    }
+
+    /// Complete utterance based on silence detection (used when STT doesn't provide final results)
+    private func completeUtteranceFromSilence(_ transcript: String) async {
+        // Reset silence tracking
+        silenceStartTime = nil
+        hasDetectedSpeech = false
+        pendingUtteranceTask = nil
+
+        // Process the utterance
+        await processUserUtterance(transcript)
     }
     
     // MARK: - STT Handling
@@ -307,16 +374,19 @@ public final class SessionManager: ObservableObject {
     }
     
     private func handleSTTResult(_ result: STTResult) async {
+        logger.debug("STT result - transcript: '\(result.transcript.prefix(30))...', isFinal: \(result.isFinal), isEndOfUtterance: \(result.isEndOfUtterance)")
+
         // Update transcript
         await MainActor.run {
             userTranscript = result.transcript
         }
-        
+
         // Record latency
         await telemetry.recordLatency(.sttEmission, result.latency)
-        
+
         // If final result, process the utterance
         if result.isFinal && result.isEndOfUtterance && !result.transcript.isEmpty {
+            logger.info("Got final STT result, will process utterance")
             await processUserUtterance(result.transcript)
         }
     }
@@ -429,11 +499,17 @@ public final class SessionManager: ObservableObject {
                 
                 // Ready for next user turn
                 await self.telemetry.recordEvent(.aiFinishedSpeaking)
+
+                // Reset silence tracking for new turn
+                self.hasDetectedSpeech = false
+                self.silenceStartTime = nil
+
                 await self.setState(.userSpeaking)
-                
-                // Clear AI response display
+
+                // Clear AI response display and user transcript for new turn
                 await MainActor.run {
                     self.aiResponse = ""
+                    self.userTranscript = ""
                 }
             }
             

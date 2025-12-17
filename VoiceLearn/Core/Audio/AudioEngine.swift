@@ -7,6 +7,14 @@
 import Combine
 import Logging
 
+// MARK: - Sendable Wrapper
+
+/// Wrapper to make non-Sendable types usable in @Sendable closures
+/// Used for PassthroughSubject in audio tap callback
+private struct UncheckedSendableBox<T>: @unchecked Sendable {
+    let value: T
+}
+
 // MARK: - Audio Engine
 
 /// Manages all iOS audio I/O with voice optimization and on-device VAD
@@ -173,15 +181,31 @@ public actor AudioEngine: ObservableObject {
         // Remove any existing tap
         inputNode.removeTap(onBus: 0)
         
-        // Install new tap - use detached task to avoid actor reentrancy issues
+        // Install new tap with @Sendable closure to avoid Swift 6 actor isolation crash
+        // The closure runs on a real-time audio thread and must not reference the actor
+        // Wrap non-Sendable types in UncheckedSendableBox for use in @Sendable closure
+        let audioSubjectBox = UncheckedSendableBox(value: self.audioStreamSubject)
+        let vadServiceBox = UncheckedSendableBox(value: self.vadService)
+        let telemetryBox = UncheckedSendableBox(value: self.telemetry)
+
         inputNode.installTap(
             onBus: 0,
             bufferSize: config.bufferSize,
             format: format
-        ) { buffer, _ in
-            // Use detached task to properly handle actor isolation
-            Task.detached { [weak self] in
-                await self?.processAudioBuffer(buffer)
+        ) { @Sendable buffer, _ in
+            // Process audio completely off the actor to avoid Swift 6 isolation crash
+            // Use Task.detached to ensure no actor context is inherited
+            Task.detached {
+                // Run VAD on the buffer
+                let vadResult = await vadServiceBox.value.processBuffer(buffer)
+
+                // Emit to subscribers via thread-safe subject
+                audioSubjectBox.value.send((buffer, vadResult))
+
+                // Record VAD events
+                if vadResult.isSpeech {
+                    await telemetryBox.value.recordEvent(.vadSpeechDetected(confidence: vadResult.confidence))
+                }
             }
         }
         

@@ -373,7 +373,6 @@ struct TopicDetailView: View {
         .navigationTitle(topic.title ?? "Topic")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
-        #endif
         .fullScreenCover(isPresented: $showingSession) {
             NavigationStack {
                 SessionView()
@@ -387,6 +386,21 @@ struct TopicDetailView: View {
                     }
             }
         }
+        #else
+        .sheet(isPresented: $showingSession) {
+            NavigationStack {
+                SessionView()
+                    .environmentObject(appState)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Done") {
+                                showingSession = false
+                            }
+                        }
+                    }
+            }
+        }
+        #endif
     }
 }
 

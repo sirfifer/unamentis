@@ -102,9 +102,63 @@ public actor APIKeyManager {
         return status
     }
     
-    /// Validate all required keys for a session
+    /// Validate all required keys for a session based on selected providers
+    /// Returns empty array if all required keys are present or if using on-device providers
     public func validateRequiredKeys() -> [KeyType] {
-        let required: [KeyType] = [.assemblyAI, .deepgram, .openAI]
+        var required: [KeyType] = []
+
+        // Check STT provider - read from UserDefaults
+        let sttRaw = UserDefaults.standard.string(forKey: "sttProvider") ?? ""
+        switch sttRaw {
+        case "AssemblyAI Universal-Streaming":
+            required.append(.assemblyAI)
+        case "Deepgram Nova-3":
+            required.append(.deepgram)
+        case "OpenAI Whisper":
+            required.append(.openAI)
+        case "Apple Speech (On-Device)", "GLM-ASR-Nano (On-Device)", "GLM-ASR-Nano (Self-Hosted)":
+            // On-device or self-hosted, no API key needed
+            break
+        default:
+            // Default to on-device if not set
+            break
+        }
+
+        // Check LLM provider
+        let llmRaw = UserDefaults.standard.string(forKey: "llmProvider") ?? ""
+        switch llmRaw {
+        case "OpenAI":
+            if !required.contains(.openAI) {
+                required.append(.openAI)
+            }
+        case "Anthropic Claude":
+            required.append(.anthropic)
+        case "Local MLX":
+            // On-device, no API key needed
+            break
+        default:
+            // Default to on-device if not set
+            break
+        }
+
+        // Check TTS provider
+        let ttsRaw = UserDefaults.standard.string(forKey: "ttsProvider") ?? ""
+        switch ttsRaw {
+        case "Deepgram Aura-2":
+            if !required.contains(.deepgram) {
+                required.append(.deepgram)
+            }
+        case "ElevenLabs Flash", "ElevenLabs Turbo":
+            required.append(.elevenLabs)
+        case "Apple TTS (On-Device)":
+            // On-device, no API key needed
+            break
+        default:
+            // Default to on-device if not set
+            break
+        }
+
+        logger.debug("Required keys based on settings: \(required.map { $0.displayName })")
         return required.filter { !hasKey($0) }
     }
     

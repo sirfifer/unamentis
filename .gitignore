@@ -65,3 +65,8 @@ models/
 *.onnx
 *.pt
 *.pth
+*.gguf
+
+# llama.cpp XCFramework (large binary, download separately)
+llama.xcframework/
+llama-xcframework.tar.gz

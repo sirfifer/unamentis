@@ -1,30 +1,35 @@
 // VoiceLearn - On-Device LLM Service
-// Local Language Model using llama.cpp
+// Local Language Model using llama.cpp (b7263+)
 //
 // This service provides fully on-device LLM inference with no network required.
-// Uses llama.cpp for efficient inference on Apple Silicon.
+// Uses llama.cpp XCFramework with C++ interop for efficient inference on Apple Silicon.
 //
-// Recommended models for iPhone 17 Pro Max (12GB RAM):
-// - Llama-3.2-3B-Instruct-Q4_K_M (~2GB)
-// - Phi-3-mini-4k-instruct-Q4_K_M (~2.2GB)
-// - Qwen2-1.5B-Instruct-Q4_K_M (~1GB)
+// Recommended models for iPhone (bundled):
+// - Ministral-3B-Instruct-Q4_K_M (~2.1GB) - Primary model, requires llama.cpp ≥b7263
+// - TinyLlama-1.1B-Chat-v1.0-Q4_K_M (~670MB) - Fallback for low-memory devices
 
 import Foundation
 import Logging
-
-// llama.cpp integration - requires C++ interop
-#if LLAMA_AVAILABLE
 import llama
-private let llamaAvailable = true
-#else
-private let llamaAvailable = false
-// Stub types for compilation when llama is not available
-private typealias llama_token = Int32
-private typealias llama_pos = Int32
-private typealias llama_seq_id = Int32
-#endif
 
-/// On-device LLM service using llama.cpp
+// MARK: - Batch Helpers
+
+private func llama_batch_clear(_ batch: inout llama_batch) {
+    batch.n_tokens = 0
+}
+
+private func llama_batch_add(_ batch: inout llama_batch, _ id: llama_token, _ pos: llama_pos, _ seq_ids: [llama_seq_id], _ logits: Bool) {
+    batch.token   [Int(batch.n_tokens)] = id
+    batch.pos     [Int(batch.n_tokens)] = pos
+    batch.n_seq_id[Int(batch.n_tokens)] = Int32(seq_ids.count)
+    for i in 0..<seq_ids.count {
+        batch.seq_id[Int(batch.n_tokens)]![Int(i)] = seq_ids[i]
+    }
+    batch.logits  [Int(batch.n_tokens)] = logits ? 1 : 0
+    batch.n_tokens += 1
+}
+
+/// On-device LLM service using Stanford BDHG llama.cpp
 ///
 /// Benefits:
 /// - Free (no API costs)
@@ -40,7 +45,6 @@ public actor OnDeviceLLMService: LLMService {
         case modelLoadFailed(String)
         case inferenceError(String)
         case notConfigured
-        case llamaNotAvailable
 
         public var errorDescription: String? {
             switch self {
@@ -48,7 +52,6 @@ public actor OnDeviceLLMService: LLMService {
             case .modelLoadFailed(let msg): return "Failed to load model: \(msg)"
             case .inferenceError(let msg): return "Inference error: \(msg)"
             case .notConfigured: return "On-device LLM not configured"
-            case .llamaNotAvailable: return "llama.cpp not available - requires C++ interop"
             }
         }
     }
@@ -58,48 +61,44 @@ public actor OnDeviceLLMService: LLMService {
         /// Path to GGUF model file
         public let modelPath: URL
         /// Context size (tokens)
-        public let contextSize: Int32
+        public let contextSize: UInt32
         /// Number of GPU layers
         public let gpuLayers: Int32
-        /// Number of threads
-        public let threads: Int
 
         public init(
             modelPath: URL,
-            contextSize: Int32 = 4096,
-            gpuLayers: Int32 = 99,
-            threads: Int = 4
+            contextSize: UInt32 = 2048,
+            gpuLayers: Int32 = 99
         ) {
             self.modelPath = modelPath
             self.contextSize = contextSize
             self.gpuLayers = gpuLayers
-            self.threads = threads
         }
 
         public static var `default`: Configuration {
-            // Look for model in app bundle or documents
-            // Priority: Llama-3.2 > GLM-ASR-nano (can also do chat)
-            let bundleLlamaPath = Bundle.main.url(
-                forResource: "llama-3.2-3b-instruct-q4km",
+            // Primary: Ministral 3B - high quality 3B model (requires llama.cpp ≥b7263)
+            if let bundleMinistralPath = Bundle.main.url(
+                forResource: "ministral-3b-instruct-q4_k_m",
                 withExtension: "gguf"
-            )
-            let bundleGLMPath = Bundle.main.url(
-                forResource: "glm-asr-nano-q4km",
+            ) {
+                return Configuration(modelPath: bundleMinistralPath, contextSize: 4096)
+            }
+
+            // Fallback to filesystem path for development
+            let ministralPath = "models/ministral-3b-instruct-q4_k_m.gguf"
+            if FileManager.default.fileExists(atPath: ministralPath) {
+                return Configuration(modelPath: URL(fileURLWithPath: ministralPath), contextSize: 4096)
+            }
+
+            // Final fallback: TinyLlama 1.1B for low-memory devices
+            if let bundleTinyLlamaPath = Bundle.main.url(
+                forResource: "tinyllama-1.1b-chat-v1.0.Q4_K_M",
                 withExtension: "gguf"
-            )
-            let documentsLlamaPath = FileManager.default.urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            ).first?.appendingPathComponent("models/llama-3.2-3b-instruct-q4km.gguf")
-            let documentsGLMPath = FileManager.default.urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            ).first?.appendingPathComponent("models/glm-asr-nano/glm-asr-nano-q4km.gguf")
+            ) {
+                return Configuration(modelPath: bundleTinyLlamaPath)
+            }
 
-            // Use first available model
-            let modelPath = bundleLlamaPath ?? bundleGLMPath ?? documentsLlamaPath ?? documentsGLMPath ?? URL(fileURLWithPath: "/models/chat.gguf")
-
-            return Configuration(modelPath: modelPath)
+            return Configuration(modelPath: URL(fileURLWithPath: "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"))
         }
     }
 
@@ -143,7 +142,7 @@ public actor OnDeviceLLMService: LLMService {
 
     public init(configuration: Configuration = .default) {
         self.configuration = configuration
-        logger.info("OnDeviceLLMService initialized")
+        logger.info("OnDeviceLLMService initialized with model path: \(configuration.modelPath.path)")
     }
 
     deinit {
@@ -154,49 +153,71 @@ public actor OnDeviceLLMService: LLMService {
     // MARK: - Model Loading
 
     public func loadModel() async throws {
-        guard !isLoaded else { return }
+        guard !isLoaded else {
+            print("[OnDeviceLLM] Model already loaded")
+            return
+        }
 
-        #if LLAMA_AVAILABLE
-        logger.info("Loading on-device LLM from \(configuration.modelPath.path)")
+        // Use the configured model path
+        let modelPath = configuration.modelPath.path
 
-        guard FileManager.default.fileExists(atPath: configuration.modelPath.path) else {
+        print("[OnDeviceLLM] loadModel() called, path: \(modelPath)")
+        logger.info("Loading on-device LLM from \(modelPath)")
+
+        guard FileManager.default.fileExists(atPath: modelPath) else {
+            print("[OnDeviceLLM] ERROR: Model file not found at: \(modelPath)")
+            logger.error("Model file not found at: \(modelPath)")
             throw OnDeviceLLMError.modelNotFound(configuration.modelPath.lastPathComponent)
         }
 
+        print("[OnDeviceLLM] Model file exists, initializing backend...")
+
         // Initialize llama backend
         llama_backend_init()
+        print("[OnDeviceLLM] Backend initialized")
 
         // Load model
         var modelParams = llama_model_default_params()
-        modelParams.n_gpu_layers = configuration.gpuLayers
 
-        model = llama_load_model_from_file(configuration.modelPath.path, modelParams)
+        #if targetEnvironment(simulator)
+        modelParams.n_gpu_layers = 0
+        print("[OnDeviceLLM] Running on simulator, n_gpu_layers = 0")
+        logger.info("Running on simulator, force use n_gpu_layers = 0")
+        #else
+        modelParams.n_gpu_layers = configuration.gpuLayers
+        print("[OnDeviceLLM] Running on device, n_gpu_layers = \(configuration.gpuLayers)")
+        #endif
+
+        print("[OnDeviceLLM] Loading model file (this may take a while for 2GB file)...")
+        model = llama_load_model_from_file(modelPath, modelParams)
         guard model != nil else {
+            print("[OnDeviceLLM] ERROR: llama_load_model_from_file failed!")
             throw OnDeviceLLMError.modelLoadFailed("llama_load_model_from_file failed")
         }
+        print("[OnDeviceLLM] Model loaded successfully!")
 
         // Create context
+        let nThreads = max(1, min(8, ProcessInfo.processInfo.processorCount - 2))
         var ctxParams = llama_context_default_params()
-        ctxParams.n_ctx = UInt32(configuration.contextSize)
-        ctxParams.n_threads = UInt32(configuration.threads)
-        ctxParams.n_threads_batch = UInt32(configuration.threads)
+        ctxParams.n_ctx = configuration.contextSize
+        ctxParams.n_threads = Int32(nThreads)
+        ctxParams.n_threads_batch = Int32(nThreads)
 
+        print("[OnDeviceLLM] Creating context with \(nThreads) threads, context size: \(configuration.contextSize)")
         context = llama_new_context_with_model(model, ctxParams)
         guard context != nil else {
             llama_free_model(model)
             model = nil
+            print("[OnDeviceLLM] ERROR: llama_new_context_with_model failed!")
             throw OnDeviceLLMError.modelLoadFailed("llama_new_context_with_model failed")
         }
 
         isLoaded = true
-        logger.info("On-device LLM loaded successfully")
-        #else
-        throw OnDeviceLLMError.llamaNotAvailable
-        #endif
+        print("[OnDeviceLLM] Context created - LLM ready!")
+        logger.info("On-device LLM loaded successfully with \(nThreads) threads")
     }
 
     public func unloadModel() {
-        #if LLAMA_AVAILABLE
         if let ctx = context {
             llama_free(ctx)
             context = nil
@@ -206,7 +227,6 @@ public actor OnDeviceLLMService: LLMService {
             model = nil
         }
         llama_backend_free()
-        #endif
         isLoaded = false
     }
 
@@ -216,18 +236,22 @@ public actor OnDeviceLLMService: LLMService {
         messages: [LLMMessage],
         config: LLMConfig
     ) async throws -> AsyncStream<LLMToken> {
+        print("[OnDeviceLLM] streamCompletion() called with \(messages.count) messages")
+
         // Load model if needed
         if !isLoaded {
+            print("[OnDeviceLLM] Model not loaded, loading now...")
             try await loadModel()
         }
 
-        #if LLAMA_AVAILABLE
         guard let ctx = context, let mdl = model else {
+            print("[OnDeviceLLM] ERROR: context or model is nil after loading!")
             throw OnDeviceLLMError.notConfigured
         }
 
         // Format messages into prompt
         let prompt = formatChatPrompt(messages: messages, systemPrompt: config.systemPrompt)
+        print("[OnDeviceLLM] Formatted prompt length: \(prompt.count) chars")
         logger.debug("Prompt: \(prompt.prefix(200))...")
 
         let startTime = Date()
@@ -236,106 +260,104 @@ public actor OnDeviceLLMService: LLMService {
             Task {
                 do {
                     // Tokenize prompt
+                    print("[OnDeviceLLM] Tokenizing prompt...")
                     let tokens = self.tokenize(prompt, model: mdl)
                     self.totalInputTokens += tokens.count
+                    print("[OnDeviceLLM] Tokenized to \(tokens.count) tokens")
 
-                    // Evaluate prompt
-                    var batch = llama_batch_init(Int32(tokens.count + config.maxTokens), 0, 1)
+                    // Create batch for processing
+                    var batch = llama_batch_init(512, 0, 1)
                     defer { llama_batch_free(batch) }
 
-                    // Add prompt tokens
+                    // Add prompt tokens to batch
+                    llama_batch_clear(&batch)
                     for (i, token) in tokens.enumerated() {
-                        batch.token[i] = token
-                        batch.pos[i] = Int32(i)
-                        batch.n_seq_id[i] = 1
-                        batch.seq_id[i]![0] = 0
-                        batch.logits[i] = 0
+                        llama_batch_add(&batch, token, Int32(i), [0], false)
                     }
-                    batch.logits[tokens.count - 1] = 1
-                    batch.n_tokens = Int32(tokens.count)
+                    batch.logits[Int(batch.n_tokens) - 1] = 1  // Enable logits for last token
 
+                    // Process prompt
+                    print("[OnDeviceLLM] Processing prompt through decoder...")
                     if llama_decode(ctx, batch) != 0 {
+                        print("[OnDeviceLLM] ERROR: Initial decode failed!")
                         throw OnDeviceLLMError.inferenceError("Initial decode failed")
                     }
+                    print("[OnDeviceLLM] Prompt processed, starting generation...")
 
                     // Generate tokens
-                    var nCur = Int32(tokens.count)
+                    var nCur = batch.n_tokens
                     let maxTokens = Int32(config.maxTokens)
-                    let nVocab = llama_n_vocab(mdl)
                     var generatedCount = 0
                     var firstTokenEmitted = false
+                    var temporaryInvalidCChars: [CChar] = []
+
+                    // Create a greedy sampler once for the generation loop (new llama.cpp b7263+ API)
+                    let sampler = llama_sampler_init_greedy()
+                    defer { llama_sampler_free(sampler) }
+
+                    // Get vocab from model for EOG check (new llama.cpp b7263+ API)
+                    let vocab = llama_model_get_vocab(mdl)
 
                     while nCur < Int32(tokens.count) + maxTokens {
-                        guard let logits = llama_get_logits_ith(ctx, -1) else {
-                            break
-                        }
+                        // Sample using greedy - the sampler gets logits from context at the last token position
+                        let newToken = llama_sampler_sample(sampler, ctx, batch.n_tokens - 1)
 
-                        // Sample next token
-                        var candidates = [llama_token_data]()
-                        candidates.reserveCapacity(Int(nVocab))
-                        for tokenId in 0..<nVocab {
-                            candidates.append(llama_token_data(
-                                id: tokenId,
-                                logit: logits[Int(tokenId)],
-                                p: 0
-                            ))
-                        }
-
-                        let newToken: llama_token = candidates.withUnsafeMutableBufferPointer { buffer in
-                            var candidatesArray = llama_token_data_array(
-                                data: buffer.baseAddress,
-                                size: buffer.count,
-                                sorted: false
-                            )
-                            llama_sample_temp(ctx, &candidatesArray, config.temperature)
-                            if let topP = config.topP {
-                                llama_sample_top_p(ctx, &candidatesArray, topP, 1)
+                        // Check for end of generation (use vocab, not model - new API)
+                        if llama_vocab_is_eog(vocab, newToken) {
+                            // Emit any remaining text
+                            if !temporaryInvalidCChars.isEmpty {
+                                let text = String(cString: temporaryInvalidCChars + [0])
+                                continuation.yield(LLMToken(
+                                    content: text,
+                                    isDone: false,
+                                    stopReason: nil,
+                                    tokenCount: generatedCount
+                                ))
                             }
-                            return llama_sample_token(ctx, &candidatesArray)
-                        }
-
-                        // Check for end of generation
-                        if llama_token_is_eog(mdl, newToken) {
                             break
                         }
 
                         // Decode token to text
-                        let tokenText = self.detokenize([newToken], model: mdl)
+                        let newTokenCChars = self.tokenToPiece(token: newToken, model: mdl)
+                        temporaryInvalidCChars.append(contentsOf: newTokenCChars)
+
+                        let tokenText: String
+                        if let string = String(validatingUTF8: temporaryInvalidCChars + [0]) {
+                            temporaryInvalidCChars.removeAll()
+                            tokenText = string
+                        } else {
+                            tokenText = ""
+                        }
 
                         // Record TTFT
-                        if !firstTokenEmitted {
+                        if !firstTokenEmitted && !tokenText.isEmpty {
                             let ttft = Date().timeIntervalSince(startTime)
                             self.ttftMeasurements.append(ttft)
                             firstTokenEmitted = true
                         }
 
-                        generatedCount += 1
+                        if !tokenText.isEmpty {
+                            generatedCount += 1
 
-                        // Emit token
-                        continuation.yield(LLMToken(
-                            content: tokenText,
-                            isDone: false,
-                            stopReason: nil,
-                            tokenCount: generatedCount
-                        ))
+                            // Emit token
+                            continuation.yield(LLMToken(
+                                content: tokenText,
+                                isDone: false,
+                                stopReason: nil,
+                                tokenCount: generatedCount
+                            ))
+                        }
 
                         // Prepare next batch
-                        self.batchClear(&batch)
-                        batch.token[0] = newToken
-                        batch.pos[0] = nCur
-                        batch.n_seq_id[0] = 1
-                        batch.seq_id[0]![0] = 0
-                        batch.logits[0] = 1
-                        batch.n_tokens = 1
+                        llama_batch_clear(&batch)
+                        llama_batch_add(&batch, newToken, nCur, [0], true)
 
                         if llama_decode(ctx, batch) != 0 {
+                            self.logger.error("llama_decode failed during generation")
                             break
                         }
 
                         nCur += 1
-
-                        // Check stop sequences
-                        // Note: Would need to track full output to properly check stop sequences
                     }
 
                     self.totalOutputTokens += generatedCount
@@ -355,45 +377,90 @@ public actor OnDeviceLLMService: LLMService {
                 }
             }
         }
-        #else
-        throw OnDeviceLLMError.llamaNotAvailable
-        #endif
     }
 
     // MARK: - Helpers
 
     private func formatChatPrompt(messages: [LLMMessage], systemPrompt: String?) -> String {
-        // Format for Llama-3 Instruct style
+        // Detect model type from configuration path
+        let modelName = configuration.modelPath.lastPathComponent.lowercased()
+
+        if modelName.contains("ministral") || modelName.contains("mistral") {
+            return formatMistralPrompt(messages: messages, systemPrompt: systemPrompt)
+        } else {
+            return formatTinyLlamaPrompt(messages: messages, systemPrompt: systemPrompt)
+        }
+    }
+
+    /// Format prompt for Mistral/Ministral models
+    /// Uses [INST] [/INST] format with system prompt at the beginning
+    private func formatMistralPrompt(messages: [LLMMessage], systemPrompt: String?) -> String {
         var prompt = ""
 
-        // Add system prompt if present
+        // Get system prompt
         let system = systemPrompt ?? messages.first(where: { $0.role == .system })?.content
-        if let system = system {
-            prompt += "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n\(system)<|eot_id|>"
-        } else {
-            prompt += "<|begin_of_text|>"
-        }
 
-        // Add conversation messages
+        // Build conversation
+        var isFirstUserMessage = true
         for message in messages where message.role != .system {
-            let role = message.role == .user ? "user" : "assistant"
-            prompt += "<|start_header_id|>\(role)<|end_header_id|>\n\n\(message.content)<|eot_id|>"
+            if message.role == .user {
+                if isFirstUserMessage {
+                    // Include system prompt with first user message
+                    if let system = system {
+                        prompt += "[INST] \(system)\n\n\(message.content) [/INST]"
+                    } else {
+                        prompt += "[INST] \(message.content) [/INST]"
+                    }
+                    isFirstUserMessage = false
+                } else {
+                    prompt += "[INST] \(message.content) [/INST]"
+                }
+            } else {
+                // Assistant response
+                prompt += "\(message.content)</s>"
+            }
         }
-
-        // Add assistant header for response
-        prompt += "<|start_header_id|>assistant<|end_header_id|>\n\n"
 
         return prompt
     }
 
-    #if LLAMA_AVAILABLE
+    /// Format prompt for TinyLlama ChatML style
+    /// Uses <|system|>, <|user|>, <|assistant|> tags
+    private func formatTinyLlamaPrompt(messages: [LLMMessage], systemPrompt: String?) -> String {
+        var prompt = ""
+
+        // Add system prompt
+        let system = systemPrompt ?? messages.first(where: { $0.role == .system })?.content
+        if let system = system {
+            prompt += "<|system|>\n\(system)</s>\n"
+        }
+
+        // Add conversation messages
+        for message in messages where message.role != .system {
+            if message.role == .user {
+                prompt += "<|user|>\n\(message.content)</s>\n"
+            } else {
+                prompt += "<|assistant|>\n\(message.content)</s>\n"
+            }
+        }
+
+        // Add assistant prompt for generation
+        prompt += "<|assistant|>\n"
+
+        return prompt
+    }
+
     private func tokenize(_ text: String, model: OpaquePointer) -> [llama_token] {
         let utf8Count = text.utf8.count
-        let maxTokens = utf8Count + 16
-        let tokens = UnsafeMutablePointer<llama_token>.allocate(capacity: maxTokens)
+        let nTokens = utf8Count + 2
+        let tokens = UnsafeMutablePointer<llama_token>.allocate(capacity: nTokens)
         defer { tokens.deallocate() }
 
-        let tokenCount = llama_tokenize(model, text, Int32(utf8Count), tokens, Int32(maxTokens), true, false)
+        // Get vocab from model - new API in llama.cpp b7263+
+        let vocab = llama_model_get_vocab(model)
+
+        // New API: llama_tokenize(vocab, text, text_len, tokens, n_tokens_max, add_special, parse_special)
+        let tokenCount = llama_tokenize(vocab, text, Int32(utf8Count), tokens, Int32(nTokens), true, false)
 
         var result: [llama_token] = []
         for i in 0..<Int(max(0, tokenCount)) {
@@ -402,28 +469,31 @@ public actor OnDeviceLLMService: LLMService {
         return result
     }
 
-    private func detokenize(_ tokens: [llama_token], model: OpaquePointer) -> String {
-        var result = ""
-        let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: 256)
-        defer { buffer.deallocate() }
+    private func tokenToPiece(token: llama_token, model: OpaquePointer) -> [CChar] {
+        let result = UnsafeMutablePointer<Int8>.allocate(capacity: 8)
+        result.initialize(repeating: Int8(0), count: 8)
+        defer { result.deallocate() }
 
-        for token in tokens {
-            let length = llama_token_to_piece(model, token, buffer, 256, false)
-            if length > 0 {
-                buffer[Int(length)] = 0
-                if let str = String(cString: buffer, encoding: .utf8) {
-                    result += str
-                }
-            }
+        // Get vocab from model - new API in llama.cpp b7263+
+        let vocab = llama_model_get_vocab(model)
+
+        // New API: llama_token_to_piece(vocab, token, buf, length, lstrip, special)
+        // lstrip = 0 means don't strip leading whitespace
+        // special = false means don't handle special tokens specially
+        let nTokens = llama_token_to_piece(vocab, token, result, 8, 0, false)
+
+        if nTokens < 0 {
+            let newResult = UnsafeMutablePointer<Int8>.allocate(capacity: Int(-nTokens))
+            newResult.initialize(repeating: Int8(0), count: Int(-nTokens))
+            defer { newResult.deallocate() }
+            let nNewTokens = llama_token_to_piece(vocab, token, newResult, Int32(-nTokens), 0, false)
+            let bufferPointer = UnsafeBufferPointer(start: newResult, count: Int(nNewTokens))
+            return Array(bufferPointer)
+        } else {
+            let bufferPointer = UnsafeBufferPointer(start: result, count: Int(nTokens))
+            return Array(bufferPointer)
         }
-
-        return result
     }
-
-    private func batchClear(_ batch: inout llama_batch) {
-        batch.n_tokens = 0
-    }
-    #endif
 }
 
 // MARK: - Device Capability Check
@@ -438,7 +508,7 @@ extension OnDeviceLLMService {
         }
 
         #if targetEnvironment(simulator)
-        // Check if model exists for simulator testing
+        // Simulator may work but performance will be poor
         return FileManager.default.fileExists(
             atPath: Configuration.default.modelPath.path
         )
@@ -449,6 +519,35 @@ extension OnDeviceLLMService {
 
     /// Check if on-device models are available
     public static var areModelsAvailable: Bool {
-        FileManager.default.fileExists(atPath: Configuration.default.modelPath.path)
+        // Check for Ministral 3B in bundle (primary - requires llama.cpp ≥b7263)
+        if let bundleURL = Bundle.main.url(forResource: "ministral-3b-instruct-q4_k_m", withExtension: "gguf") {
+            let exists = FileManager.default.fileExists(atPath: bundleURL.path)
+            print("[OnDeviceLLM] Ministral 3B bundle URL: \(bundleURL.path), exists: \(exists)")
+            if exists { return true }
+        }
+
+        // Check filesystem path for Ministral 3B (development)
+        let ministralPath = "models/ministral-3b-instruct-q4_k_m.gguf"
+        if FileManager.default.fileExists(atPath: ministralPath) {
+            print("[OnDeviceLLM] Ministral 3B filesystem path exists: \(ministralPath)")
+            return true
+        }
+
+        // Fallback: check for TinyLlama 1.1B in bundle
+        if let bundleURL = Bundle.main.url(forResource: "tinyllama-1.1b-chat-v1.0.Q4_K_M", withExtension: "gguf") {
+            let exists = FileManager.default.fileExists(atPath: bundleURL.path)
+            print("[OnDeviceLLM] TinyLlama bundle URL: \(bundleURL.path), exists: \(exists)")
+            if exists { return true }
+        }
+
+        // Fallback: check filesystem path for TinyLlama (development)
+        let tinyLlamaPath = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
+        if FileManager.default.fileExists(atPath: tinyLlamaPath) {
+            print("[OnDeviceLLM] TinyLlama filesystem path exists: \(tinyLlamaPath)")
+            return true
+        }
+
+        print("[OnDeviceLLM] No models available")
+        return false
     }
 }

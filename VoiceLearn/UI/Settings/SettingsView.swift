@@ -222,8 +222,10 @@ public struct SettingsView: View {
                         TextField("e.g., 192.168.1.100", text: $viewModel.logServerIP)
                             .textFieldStyle(.roundedBorder)
                             .autocorrectionDisabled()
+                            #if os(iOS)
                             .textInputAutocapitalization(.never)
                             .keyboardType(.numbersAndPunctuation)
+                            #endif
                     }
 
                     Toggle("Remote Logging", isOn: $viewModel.remoteLoggingEnabled)

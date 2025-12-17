@@ -19,18 +19,9 @@ import Foundation
 import Accelerate
 import Logging
 
-// llama.cpp integration - requires C++ interop which needs Xcode project configuration
-// When building with Xcode and C++ interop enabled, define LLAMA_AVAILABLE
-#if LLAMA_AVAILABLE
-import llama
-private let llamaAvailable = true
-#else
+// GLM-ASR decoder disabled - use Apple Speech fallback for STT
+// The LLM service (OnDeviceLLMService) handles LLM inference using LocalLLMClient
 private let llamaAvailable = false
-// Stub types for compilation when llama is not available
-private typealias llama_token = Int32
-private typealias llama_pos = Int32
-private typealias llama_seq_id = Int32
-#endif
 
 /// On-device GLM-ASR STT service using CoreML + llama.cpp
 ///
@@ -241,7 +232,8 @@ public actor GLMASROnDeviceSTTService: STTService {
 
         logger.info("Loaded llama.cpp model with \(nThreads) threads")
         #else
-        throw OnDeviceError.modelLoadFailed("llama.cpp not available - requires C++ interop")
+        logger.error("llama.cpp not available - build requires C++ interop enabled in Xcode (LLAMA_AVAILABLE flag)")
+        throw OnDeviceError.modelLoadFailed("llama.cpp not available - requires Xcode build with C++ interop enabled")
         #endif
     }
 
@@ -487,6 +479,9 @@ public actor GLMASROnDeviceSTTService: STTService {
         let maxTokens: Int32 = 256
         let nVocab = llama_n_vocab(model)
 
+        // Get vocab from model for EOG check (new llama.cpp b7263+ API)
+        let vocab = llama_model_get_vocab(model)
+
         while nCur < maxTokens {
             // Get logits for the last token
             guard let logits = llama_get_logits_ith(context, -1) else {
@@ -516,8 +511,8 @@ public actor GLMASROnDeviceSTTService: STTService {
                 return llama_sample_token_greedy(context, &candidatesArray)
             }
 
-            // Check for end of generation
-            if llama_token_is_eog(model, newToken) {
+            // Check for end of generation (use vocab, not model - new API)
+            if llama_vocab_is_eog(vocab, newToken) {
                 break
             }
 
@@ -542,7 +537,8 @@ public actor GLMASROnDeviceSTTService: STTService {
         // Detokenize
         return detokenize(outputTokens, model: model)
         #else
-        throw OnDeviceError.inferenceError("llama.cpp not available")
+        logger.error("Cannot run LLaMA decoder - llama.cpp not available")
+        throw OnDeviceError.inferenceError("llama.cpp not available - requires Xcode build with C++ interop")
         #endif
     }
 
@@ -629,22 +625,31 @@ extension GLMASROnDeviceSTTService {
     /// Returns true for devices with:
     /// - A17 Pro or newer (iPhone 15 Pro+)
     /// - At least 8GB RAM
+    /// - Models available in app bundle
     public static var isDeviceSupported: Bool {
+        let logger = Logger(label: "com.voicelearn.glmasr.support")
+
         // Check available memory
         let memoryGB = ProcessInfo.processInfo.physicalMemory / (1024 * 1024 * 1024)
+        logger.debug("Device memory: \(memoryGB)GB")
         guard memoryGB >= 8 else {
+            logger.info("Device not supported: insufficient memory (\(memoryGB)GB < 8GB)")
             return false
         }
 
-        // Check for Neural Engine capability via CoreML
-        // A17 Pro and newer have significantly better Neural Engine
         #if targetEnvironment(simulator)
-        // Allow simulator testing if models are present in the default location
-        let modelDir = Configuration.default.modelDirectory
-        let encoderPath = modelDir.appendingPathComponent("GLMASRWhisperEncoder.mlpackage").path
-        return FileManager.default.fileExists(atPath: encoderPath)
+        // Simulator: GLM-ASR CoreML models are too large/complex to load on simulator
+        // Always return false to use Apple Speech fallback instead
+        // Real device testing is required for GLM-ASR functionality
+        logger.info("GLM-ASR not supported on simulator - use Apple Speech fallback")
+        return false
         #else
-        return true  // Further hardware checks could be added
+        // On device: check if models are in the bundle
+        guard let bundleURL = Bundle.main.resourceURL else {
+            return false
+        }
+        let encoderPath = bundleURL.appendingPathComponent("GLMASRWhisperEncoder.mlpackage").path
+        return FileManager.default.fileExists(atPath: encoderPath)
         #endif
     }
 }

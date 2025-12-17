@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Combine
+import Logging
 
 #if os(macOS)
 import AppKit
@@ -62,7 +63,29 @@ public struct SessionView: View {
                             await viewModel.toggleSession(appState: appState)
                         }
                     )
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 20)
+
+                    // Debug LLM Test Button (for testing without voice)
+                    #if DEBUG
+                    VStack(spacing: 8) {
+                        Button("Test LLM Directly") {
+                            Task {
+                                await viewModel.testOnDeviceLLM()
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.orange)
+
+                        if !viewModel.debugTestResult.isEmpty {
+                            Text(viewModel.debugTestResult)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal)
+                                .lineLimit(3)
+                        }
+                    }
+                    .padding(.bottom, 20)
+                    #endif
                 }
                 .padding(.horizontal, 20)
             }
@@ -508,9 +531,54 @@ class SessionViewModel: ObservableObject {
     @Published var errorMessage: String = ""
     @Published var lastLatency: TimeInterval = 0
     @Published var sessionCost: Decimal = 0
-    
+    @Published var debugTestResult: String = ""
+
+    private let logger = Logger(label: "com.voicelearn.session.viewmodel")
     private var sessionManager: SessionManager?
     private var subscribers = Set<AnyCancellable>()
+
+    /// Debug test function to directly test on-device LLM without voice input
+    func testOnDeviceLLM() async {
+        logger.info("[DEBUG] Starting direct LLM test")
+        print("[DEBUG] Starting direct LLM test")
+
+        debugTestResult = "Testing LLM..."
+
+        let llmService = OnDeviceLLMService()
+
+        let messages = [
+            LLMMessage(role: .system, content: "You are a helpful assistant. Be brief."),
+            LLMMessage(role: .user, content: "Hello! Say hi in one sentence.")
+        ]
+
+        let config = LLMConfig.default
+
+        do {
+            print("[DEBUG] Calling streamCompletion...")
+            let stream = try await llmService.streamCompletion(messages: messages, config: config)
+
+            var response = ""
+            print("[DEBUG] Iterating stream...")
+
+            for await token in stream {
+                response += token.content
+                debugTestResult = "Response: \(response)"
+                print("[DEBUG] Token: '\(token.content)', isDone: \(token.isDone)")
+
+                if token.isDone {
+                    break
+                }
+            }
+
+            debugTestResult = "Success: \(response)"
+            print("[DEBUG] LLM test complete: \(response)")
+
+        } catch {
+            debugTestResult = "Error: \(error.localizedDescription)"
+            print("[DEBUG] LLM test error: \(error)")
+            logger.error("[DEBUG] LLM test failed: \(error)")
+        }
+    }
     
     var isSessionActive: Bool {
         state.isActive
@@ -542,15 +610,22 @@ class SessionViewModel: ObservableObject {
         let vadService: any VADService = SileroVADService()
 
         // Configure STT based on settings
+        logger.info("STT provider setting: \(sttProviderSetting.rawValue)")
         switch sttProviderSetting {
-        case .glmASROnDevice, .appleSpeech:
-            if GLMASROnDeviceSTTService.isDeviceSupported {
+        case .glmASROnDevice:
+            // Try GLM-ASR first, fall back to Apple Speech if models not available
+            let isSupported = GLMASROnDeviceSTTService.isDeviceSupported
+            logger.info("GLM-ASR isDeviceSupported: \(isSupported)")
+            if isSupported {
+                logger.info("Using GLMASROnDeviceSTTService")
                 sttService = GLMASROnDeviceSTTService()
             } else {
-                errorMessage = "On-device STT not available on this device. Please select a cloud provider in Settings."
-                showError = true
-                return
+                logger.warning("GLM-ASR not supported on this device/simulator, using Apple Speech fallback")
+                sttService = AppleSpeechSTTService()
             }
+        case .appleSpeech:
+            logger.info("Using AppleSpeechSTTService (user selected)")
+            sttService = AppleSpeechSTTService()
         case .deepgramNova3:
             guard let apiKey = await appState.apiKeys.getKey(.deepgram) else {
                 errorMessage = "Deepgram API key not configured. Please add it in Settings or switch to on-device mode."
@@ -566,14 +641,9 @@ class SessionViewModel: ObservableObject {
             }
             sttService = AssemblyAISTTService(apiKey: apiKey)
         default:
-            // Fallback to on-device if available
-            if GLMASROnDeviceSTTService.isDeviceSupported {
-                sttService = GLMASROnDeviceSTTService()
-            } else {
-                errorMessage = "No STT provider available. Please configure API keys in Settings."
-                showError = true
-                return
-            }
+            // Default fallback to Apple Speech (always available)
+            logger.info("Using Apple Speech as default STT provider")
+            sttService = AppleSpeechSTTService()
         }
 
         // Configure TTS based on settings
@@ -599,14 +669,19 @@ class SessionViewModel: ObservableObject {
         }
 
         // Configure LLM based on settings
+        logger.info("LLM provider setting: \(llmProviderSetting.rawValue)")
         switch llmProviderSetting {
         case .localMLX:
-            if OnDeviceLLMService.areModelsAvailable {
+            let modelsAvailable = OnDeviceLLMService.areModelsAvailable
+            logger.info("OnDeviceLLMService.areModelsAvailable: \(modelsAvailable)")
+            if modelsAvailable {
+                logger.info("Using OnDeviceLLMService")
                 llmService = OnDeviceLLMService()
             } else {
-                errorMessage = "On-device LLM models not found. Please add models to the app bundle or select a cloud provider in Settings."
-                showError = true
-                return
+                // Fall back to MockLLMService when on-device models aren't available
+                // This enables testing without requiring large model files
+                logger.warning("On-device LLM not available, using MockLLMService for testing")
+                llmService = MockLLMService()
             }
         case .anthropic:
             guard let apiKey = await appState.apiKeys.getKey(.anthropic) else {
@@ -641,6 +716,10 @@ class SessionViewModel: ObservableObject {
             )
 
         } catch {
+            logger.error("Session start failed: \(error.localizedDescription)", metadata: [
+                "error_type": "\(type(of: error))",
+                "full_error": "\(error)"
+            ])
             errorMessage = "Failed to start session: \(error.localizedDescription)"
             showError = true
             await stopSession()
@@ -674,9 +753,11 @@ class SessionViewModel: ObservableObject {
         manager.$aiResponse
             .receive(on: DispatchQueue.main)
             .assign(to: &$aiResponse)
-            
-        // Note: Audio level isn't currently published by SessionManager in this simplified version
-        // We would need to hook into AudioEngine for that, but for now we'll leave it as is.
+
+        // Bind audio level for visualization
+        manager.$audioLevel
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$audioLevel)
     }
 }
 

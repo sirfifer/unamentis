@@ -59,9 +59,47 @@ struct VoiceLearnApp: App {
 /// Root content view with tab navigation
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
-    
+    @State private var debugTestResult: String = ""
+    @State private var isTestingLLM: Bool = false
+
     var body: some View {
         TabView {
+            // Debug LLM test view on first tab in DEBUG builds
+            #if DEBUG
+            VStack(spacing: 20) {
+                Text("LLM Debug Test")
+                    .font(.title)
+
+                if isTestingLLM {
+                    ProgressView("Testing LLM...")
+                } else {
+                    Button("Test On-Device LLM") {
+                        Task {
+                            await testOnDeviceLLM()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+
+                ScrollView {
+                    Text(debugTestResult)
+                        .font(.system(.body, design: .monospaced))
+                        .padding()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+                .padding()
+            }
+            .tabItem {
+                Label("Debug", systemImage: "ladybug")
+            }
+            .task {
+                // Auto-run test on launch for debugging
+                await testOnDeviceLLM()
+            }
+            #endif
+
             SessionView()
                 .tabItem {
                     Label("Session", systemImage: "waveform")
@@ -88,6 +126,53 @@ struct ContentView: View {
                 }
         }
     }
+
+    #if DEBUG
+    /// Debug test function to directly test on-device LLM without voice input
+    private func testOnDeviceLLM() async {
+        print("[DEBUG] Starting direct LLM test")
+        isTestingLLM = true
+        debugTestResult = "Testing LLM...\n"
+
+        let llmService = OnDeviceLLMService()
+
+        let messages = [
+            LLMMessage(role: .system, content: "You are a helpful assistant. Be brief."),
+            LLMMessage(role: .user, content: "Hello! Say hi in one sentence.")
+        ]
+
+        let config = LLMConfig.default
+
+        do {
+            debugTestResult += "[DEBUG] Calling streamCompletion...\n"
+            print("[DEBUG] Calling streamCompletion...")
+            let stream = try await llmService.streamCompletion(messages: messages, config: config)
+
+            var response = ""
+            debugTestResult += "[DEBUG] Iterating stream...\n"
+            print("[DEBUG] Iterating stream...")
+
+            for await token in stream {
+                response += token.content
+                debugTestResult = "Response so far: \(response)\n"
+                print("[DEBUG] Token: '\(token.content)', isDone: \(token.isDone)")
+
+                if token.isDone {
+                    break
+                }
+            }
+
+            debugTestResult = "SUCCESS!\n\nResponse:\n\(response)"
+            print("[DEBUG] LLM test complete: \(response)")
+
+        } catch {
+            debugTestResult = "ERROR:\n\(error.localizedDescription)\n\nFull error:\n\(error)"
+            print("[DEBUG] LLM test error: \(error)")
+        }
+
+        isTestingLLM = false
+    }
+    #endif
 }
 
 
@@ -188,9 +273,14 @@ public class AppState: ObservableObject {
         await patchPanel.setEndpointStatus("llama-70b-server", status: .unavailable)
         await patchPanel.setEndpointStatus("llama-8b-server", status: .unavailable)
 
-        // On-device endpoints start as unavailable until models are loaded
-        // In a real implementation, we'd check if models exist on device
-        await patchPanel.setEndpointStatus("llama-3b-device", status: .unavailable)
+        // Check if on-device LLM models are available
+        let hasOnDeviceLLM = OnDeviceLLMService.areModelsAvailable
+        if hasOnDeviceLLM {
+            await patchPanel.setEndpointStatus("llama-3b-device", status: .available)
+        } else {
+            await patchPanel.setEndpointStatus("llama-3b-device", status: .unavailable)
+        }
+        // 1B model not currently bundled
         await patchPanel.setEndpointStatus("llama-1b-device", status: .unavailable)
     }
 

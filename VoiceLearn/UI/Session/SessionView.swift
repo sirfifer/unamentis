@@ -697,6 +697,10 @@ class SessionViewModel: ObservableObject {
                 return
             }
             llmService = OpenAILLMService(apiKey: apiKey)
+        case .selfHosted:
+            // Self-hosted LLM not yet implemented, fall back to mock
+            logger.warning("Self-hosted LLM not yet implemented, using MockLLMService")
+            llmService = MockLLMService()
         }
 
         do {

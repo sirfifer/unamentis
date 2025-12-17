@@ -83,6 +83,10 @@
 		F6FB88EE88B2200BFEDB700F /* AnthropicLLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 509B24E559CC29015119472E /* AnthropicLLMService.swift */; };
 		F95E852719059B9493C11973 /* GLMASRSTTServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9693B0FF6F177A8F54F08D6F /* GLMASRSTTServiceTests.swift */; };
 		FB933B4BB3E2F055E8146AC5 /* APIKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF8A71F6E29B1A60EB657AC /* APIKeyManager.swift */; };
+		LMAPIPROVINFO02 /* LMAPIProviderInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = LMAPIPROVINFO01 /* LMAPIProviderInfo.swift */; };
+		APIPROVDETAIL02 /* APIProviderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = APIPROVDETAIL01 /* APIProviderDetailView.swift */; };
+		SERVERSETTINGS02 /* ServerSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SERVERSETTINGS01 /* ServerSettingsView.swift */; };
+		SERVERCONFIG02 /* ServerConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = SERVERCONFIG01 /* ServerConfigManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +117,7 @@
 		066A28895F859A971E648506 /* TTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSService.swift; sourceTree = "<group>"; };
 		0AC3FC9E73C2D35145D9E98E /* PatchPanelServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchPanelServiceTests.swift; sourceTree = "<group>"; };
 		0CF8A71F6E29B1A60EB657AC /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
+		LMAPIPROVINFO01 /* LMAPIProviderInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LMAPIProviderInfo.swift; sourceTree = "<group>"; };
 		0ECDBD58C2B5FD015AEE0F44 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
 		130F7FE33D6B9434561D7E5F /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		1422944EA437B2FFC57CE4B0 /* VoiceLearn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VoiceLearn.entitlements; sourceTree = "<group>"; };
@@ -167,6 +172,9 @@
 		B7F302C76F1C862A325FB047 /* GLMASROnDeviceSTTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GLMASROnDeviceSTTService.swift; sourceTree = "<group>"; };
 		BCA550DB8790852526746794 /* OpenAIEmbeddingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIEmbeddingService.swift; sourceTree = "<group>"; };
 		C07F55967DD85A530CF98851 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		APIPROVDETAIL01 /* APIProviderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIProviderDetailView.swift; sourceTree = "<group>"; };
+		SERVERSETTINGS01 /* ServerSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSettingsView.swift; sourceTree = "<group>"; };
+		SERVERCONFIG01 /* ServerConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerConfigManager.swift; sourceTree = "<group>"; };
 		C2F47CEED72DFFD39384E43C /* DeepgramTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepgramTTSService.swift; sourceTree = "<group>"; };
 		CBAD08FD4974B8C9BCA8CF6C /* LLMEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMEndpoint.swift; sourceTree = "<group>"; };
 		CC219C1820A1E178A680D115 /* LLMEndpointTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMEndpointTests.swift; sourceTree = "<group>"; };
@@ -300,6 +308,8 @@
 			isa = PBXGroup;
 			children = (
 				C07F55967DD85A530CF98851 /* SettingsView.swift */,
+				APIPROVDETAIL01 /* APIProviderDetailView.swift */,
+				SERVERSETTINGS01 /* ServerSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -494,6 +504,8 @@
 			isa = PBXGroup;
 			children = (
 				0CF8A71F6E29B1A60EB657AC /* APIKeyManager.swift */,
+				LMAPIPROVINFO01 /* LMAPIProviderInfo.swift */,
+				SERVERCONFIG01 /* ServerConfigManager.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -685,6 +697,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB933B4BB3E2F055E8146AC5 /* APIKeyManager.swift in Sources */,
+				LMAPIPROVINFO02 /* LMAPIProviderInfo.swift in Sources */,
+				SERVERCONFIG02 /* ServerConfigManager.swift in Sources */,
+				APIPROVDETAIL02 /* APIProviderDetailView.swift in Sources */,
+				SERVERSETTINGS02 /* ServerSettingsView.swift in Sources */,
 				756EF19183A7B57FC6CE4BC7 /* AnalyticsView.swift in Sources */,
 				F6FB88EE88B2200BFEDB700F /* AnthropicLLMService.swift in Sources */,
 				53191B03F2D9641F52D38F57 /* AppleSpeechSTTService.swift in Sources */,

@@ -96,58 +96,84 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 | 7.1 | iOS Simulator MCP | completed | ~/.claude.json | ios-simulator-mcp installed |
 | 7.2 | Documentation update | completed | docs/*.md | New GLM-ASR and AI testing guides |
 
+### 8. Curriculum Format (VLCF) Specification
+
+| ID | Task | Status | File(s) | Notes |
+|----|------|--------|---------|-------|
+| 8.1 | Create VLCF JSON Schema | completed | curriculum/spec/vlcf-schema.json | Draft 2020-12, 1,847 lines |
+| 8.2 | Write VLCF Specification doc | completed | curriculum/spec/VLCF_SPECIFICATION.md | Human-readable spec |
+| 8.3 | Write Standards Traceability | completed | curriculum/spec/STANDARDS_TRACEABILITY.md | 152 fields, 10 standards |
+| 8.4 | Create minimal examples | completed | curriculum/examples/minimal/*.vlcf | 3 validation examples |
+| 8.5 | Create realistic examples | completed | curriculum/examples/realistic/*.vlcf | 3 full curricula |
+| 8.6 | Design import architecture | completed | curriculum/importers/IMPORTER_ARCHITECTURE.md | Plugin system spec |
+| 8.7 | Write CK-12 importer spec | completed | curriculum/importers/CK12_IMPORTER_SPEC.md | K-12 (8th grade) |
+| 8.8 | Write Fast.ai importer spec | completed | curriculum/importers/FASTAI_IMPORTER_SPEC.md | AI/ML collegiate |
+| 8.9 | Write AI enrichment pipeline | completed | curriculum/importers/AI_ENRICHMENT_PIPELINE.md | Sparse → rich transformation |
+| 8.10 | Create master curriculum README | completed | curriculum/README.md | Comprehensive overview |
+
 ---
 
 ## PART 2: Collaborative Tasks (User Participation Required)
 
-### 8. API Configuration
+### 9. API Configuration
 
 | ID | Task | Status | Depends On | Notes |
 |----|------|--------|------------|-------|
-| 8.1 | Get Deepgram API key | pending | User | STT/TTS provider |
-| 8.2 | Get ElevenLabs API key | pending | User | TTS provider |
-| 8.3 | Get Anthropic API key | pending | User | LLM provider (Claude) |
-| 8.4 | Get OpenAI API key | pending | User | LLM/Embeddings provider |
-| 8.5 | Get AssemblyAI API key | pending | User | STT provider |
-| 8.6 | Configure keys in app | pending | 8.1-8.5 | Use APIKeyManager |
-| 8.7 | Test provider connectivity | pending | 8.6 | Verify each API works |
+| 9.1 | Get Deepgram API key | pending | User | STT/TTS provider |
+| 9.2 | Get ElevenLabs API key | pending | User | TTS provider |
+| 9.3 | Get Anthropic API key | pending | User | LLM provider (Claude) |
+| 9.4 | Get OpenAI API key | pending | User | LLM/Embeddings provider |
+| 9.5 | Get AssemblyAI API key | pending | User | STT provider |
+| 9.6 | Configure keys in app | pending | 9.1-9.5 | Use APIKeyManager |
+| 9.7 | Test provider connectivity | pending | 9.6 | Verify each API works |
 
-### 9. On-Device Model Setup
-
-| ID | Task | Status | Depends On | Notes |
-|----|------|--------|------------|-------|
-| 9.1 | Download GLM-ASR models | pending | User | ~2.4GB from Hugging Face |
-| 9.2 | Place in models directory | pending | 9.1 | models/glm-asr-nano/ |
-| 9.3 | Add to Xcode target | pending | 9.2 | Copy Bundle Resources |
-| 9.4 | Test on-device inference | pending | 9.3 | Verify CoreML + llama.cpp |
-
-### 10. Device Testing
+### 10. On-Device Model Setup
 
 | ID | Task | Status | Depends On | Notes |
 |----|------|--------|------------|-------|
-| 10.1 | Test on physical iPhone | pending | Part 1, 8.x | iPhone 15 Pro+ / 16/17 Pro Max |
-| 10.2 | Verify microphone permissions | pending | 10.1 | Check Info.plist config |
-| 10.3 | Test audio session config | pending | 10.1 | AVAudioSession voice chat mode |
-| 10.4 | Test VAD on Neural Engine | pending | 10.1 | Silero model performance |
-| 10.5 | Profile latency | pending | 10.1-10.4 | Target: <500ms E2E |
-| 10.6 | 90-minute session test | pending | 10.5 | Stability & memory check |
+| 10.1 | Download GLM-ASR models | pending | User | ~2.4GB from Hugging Face |
+| 10.2 | Place in models directory | pending | 10.1 | models/glm-asr-nano/ |
+| 10.3 | Add to Xcode target | pending | 10.2 | Copy Bundle Resources |
+| 10.4 | Test on-device inference | pending | 10.3 | Verify CoreML + llama.cpp |
 
-### 11. Content Setup
+### 11. Device Testing
 
 | ID | Task | Status | Depends On | Notes |
 |----|------|--------|------------|-------|
-| 11.1 | Create test curriculum | pending | Part 1 | Sample topics for testing |
-| 11.2 | Test PDF import | pending | 11.1 | DocumentProcessor verification |
-| 11.3 | Test OpenStax API | pending | 8.x | Online resource integration |
-| 11.4 | Test Wikipedia API | pending | - | Online resource integration |
+| 11.1 | Test on physical iPhone | pending | Part 1, 9.x | iPhone 15 Pro+ / 16/17 Pro Max |
+| 11.2 | Verify microphone permissions | pending | 11.1 | Check Info.plist config |
+| 11.3 | Test audio session config | pending | 11.1 | AVAudioSession voice chat mode |
+| 11.4 | Test VAD on Neural Engine | pending | 11.1 | Silero model performance |
+| 11.5 | Profile latency | pending | 11.1-11.4 | Target: <500ms E2E |
+| 11.6 | 90-minute session test | pending | 11.5 | Stability & memory check |
 
-### 12. Final Polish
+### 12. Content Setup
 
 | ID | Task | Status | Depends On | Notes |
 |----|------|--------|------------|-------|
-| 12.1 | UI/UX refinements | pending | 10.x, 11.x | Based on testing feedback |
-| 12.2 | Performance optimization | pending | 10.5 | Based on profiling results |
-| 12.3 | Bug fixes | pending | 10.x, 11.x | Issues from testing |
+| 12.1 | Create test curriculum | pending | Part 1 | Sample topics for testing |
+| 12.2 | Test PDF import | pending | 12.1 | DocumentProcessor verification |
+| 12.3 | Test OpenStax API | pending | 9.x | Online resource integration |
+| 12.4 | Test Wikipedia API | pending | - | Online resource integration |
+
+### 13. VLCF Implementation (Future)
+
+| ID | Task | Status | Depends On | Notes |
+|----|------|--------|------------|-------|
+| 13.1 | Implement Python importer package | pending | 8.x spec | Entry points, CLI, API |
+| 13.2 | Build CK-12 importer | pending | 13.1 | K-12 EPUB import |
+| 13.3 | Build Fast.ai importer | pending | 13.1 | Jupyter notebook import |
+| 13.4 | Build AI enrichment pipeline | pending | 13.1 | Sparse → rich transformation |
+| 13.5 | Create web-based editor | pending | 13.1-13.4 | Human-in-the-loop review |
+| 13.6 | Integrate VLCF with iOS app | pending | 13.1 | Replace current curriculum format |
+
+### 14. Final Polish
+
+| ID | Task | Status | Depends On | Notes |
+|----|------|--------|------------|-------|
+| 14.1 | UI/UX refinements | pending | 11.x, 12.x | Based on testing feedback |
+| 14.2 | Performance optimization | pending | 11.5 | Based on profiling results |
+| 14.3 | Bug fixes | pending | 11.x, 12.x | Issues from testing |
 
 ---
 
@@ -167,6 +193,7 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 | 1.5 | Fix macOS API compatibility | Claude Code | 2025-12-16 | #if os(iOS) guards |
 | 6.1-6.5 | GLM-ASR implementation | Claude Code | 2025-12-16 | Server + on-device STT |
 | 7.1-7.2 | Infrastructure & docs | Claude Code | 2025-12-16 | MCP setup, documentation |
+| 8.1-8.10 | VLCF specification complete | Claude Code | 2025-12-17 | Schema, spec, examples, importers, AI pipeline |
 
 ---
 
@@ -204,6 +231,8 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 - [x] GLM-ASR on-device implementation
 - [x] iOS Simulator MCP installed
 - [x] Documentation updated
+- [x] **VLCF specification complete** (JSON Schema, human-readable spec, standards traceability)
+- [x] **Import system designed** (CK-12, Fast.ai, AI enrichment pipeline)
 - [ ] Full voice conversation works on device (requires API keys)
 - [ ] Sub-600ms E2E latency achieved (requires device testing)
 - [ ] 90-minute session completes without crash (requires device testing)
@@ -221,6 +250,18 @@ This document tracks all tasks for completing the VoiceLearn iOS project. Tasks 
 | AI_SIMULATOR_TESTING.md | AI-driven testing workflow |
 | (Updated) QUICKSTART.md | Current project state |
 | (Updated) SETUP.md | Model setup instructions |
+
+### Curriculum Format (VLCF) Documentation
+| Document | Purpose |
+|----------|---------|
+| [curriculum/README.md](../curriculum/README.md) | **Comprehensive VLCF overview** |
+| [curriculum/spec/VLCF_SPECIFICATION.md](../curriculum/spec/VLCF_SPECIFICATION.md) | Human-readable format spec |
+| [curriculum/spec/vlcf-schema.json](../curriculum/spec/vlcf-schema.json) | JSON Schema (Draft 2020-12) |
+| [curriculum/spec/STANDARDS_TRACEABILITY.md](../curriculum/spec/STANDARDS_TRACEABILITY.md) | Field-by-field standards mapping |
+| [curriculum/importers/IMPORTER_ARCHITECTURE.md](../curriculum/importers/IMPORTER_ARCHITECTURE.md) | Import system design |
+| [curriculum/importers/CK12_IMPORTER_SPEC.md](../curriculum/importers/CK12_IMPORTER_SPEC.md) | K-12 curriculum importer |
+| [curriculum/importers/FASTAI_IMPORTER_SPEC.md](../curriculum/importers/FASTAI_IMPORTER_SPEC.md) | AI/ML notebook importer |
+| [curriculum/importers/AI_ENRICHMENT_PIPELINE.md](../curriculum/importers/AI_ENRICHMENT_PIPELINE.md) | AI content enrichment spec |
 
 ---
 

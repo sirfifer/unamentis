@@ -248,6 +248,38 @@ xcrun simctl list devices
 3. **Read the TDD** - [VoiceLearn_TDD.md](VoiceLearn_TDD.md) has full architecture details
 4. **Set up models** - For on-device STT, see [GLM_ASR_ON_DEVICE_GUIDE.md](GLM_ASR_ON_DEVICE_GUIDE.md)
 5. **Configure APIs** - Add provider keys for cloud services
+6. **Explore curriculum format** - See [Curriculum Overview](../curriculum/README.md) for VLCF specification
+
+---
+
+## Curriculum System (VLCF)
+
+VoiceLearn uses the **VoiceLearn Curriculum Format (VLCF)** for structured educational content. This is a JSON-based format designed specifically for conversational AI tutoring.
+
+### Quick Overview
+
+- **Voice-native**: Every text field can have TTS-optimized variants
+- **Standards-based**: Built on IEEE LOM, SCORM, xAPI, QTI, and 6+ other standards
+- **Tutoring-first**: Stopping points, comprehension checks, alternative explanations
+- **AI-enrichable**: Designed for automated content enhancement
+
+### Curriculum Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Curriculum README](../curriculum/README.md) | **Comprehensive overview** |
+| [VLCF Specification](../curriculum/spec/VLCF_SPECIFICATION.md) | Format specification |
+| [JSON Schema](../curriculum/spec/vlcf-schema.json) | Schema for validation |
+| [Examples](../curriculum/examples/) | Minimal and realistic examples |
+
+### Import System
+
+VLCF includes importers for external content:
+- **CK-12**: K-12 FlexBooks (EPUB)
+- **Fast.ai**: Jupyter notebooks for AI/ML
+- **AI Enrichment**: Transform sparse content to rich VLCF
+
+See [Import Architecture](../curriculum/importers/IMPORTER_ARCHITECTURE.md) for details.
 
 ---
 

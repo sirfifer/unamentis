@@ -77,10 +77,19 @@ See [docs/TASK_STATUS.md](docs/TASK_STATUS.md) for detailed task tracking.
 
 ## Documentation
 
+### Getting Started
 - [Quick Start Guide](docs/QUICKSTART.md) - START HERE
 - [Setup Guide](docs/SETUP.md)
 - [Testing Guide](docs/TESTING.md)
 - [Debug & Testing UI](docs/DEBUG_TESTING_UI.md) - Built-in troubleshooting tools
+
+### Curriculum Format (VLCF)
+- [Curriculum Overview](curriculum/README.md) - **Comprehensive guide to VLCF**
+- [VLCF Specification](curriculum/spec/VLCF_SPECIFICATION.md) - Format specification
+- [Standards Traceability](curriculum/spec/STANDARDS_TRACEABILITY.md) - Standards mapping
+- [Import Architecture](curriculum/importers/IMPORTER_ARCHITECTURE.md) - Import system design
+
+### Project
 - [Contributing](docs/CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)

@@ -366,6 +366,49 @@ After restarting Claude Code, simulator tools become available. See [AI_SIMULATO
 
 ---
 
+## Curriculum Format Setup
+
+VoiceLearn uses the **VoiceLearn Curriculum Format (VLCF)** for educational content. The specification and tooling are in the `curriculum/` directory.
+
+### Curriculum Structure
+
+```
+curriculum/
+├── spec/                           # VLCF specification
+│   ├── vlcf-schema.json           # JSON Schema for validation
+│   ├── VLCF_SPECIFICATION.md      # Human-readable spec
+│   └── STANDARDS_TRACEABILITY.md  # Standards mapping
+├── examples/                       # Example curricula
+│   ├── minimal/                   # Schema validation examples
+│   └── realistic/                 # Full tutoring examples
+├── importers/                      # Import system specs
+│   ├── IMPORTER_ARCHITECTURE.md   # Plugin architecture
+│   ├── CK12_IMPORTER_SPEC.md     # K-12 importer
+│   ├── FASTAI_IMPORTER_SPEC.md   # AI/ML importer
+│   └── AI_ENRICHMENT_PIPELINE.md # AI enrichment spec
+└── README.md                       # Comprehensive overview
+```
+
+### Validating VLCF Files
+
+Use any JSON Schema validator with `curriculum/spec/vlcf-schema.json`:
+
+```bash
+# Using ajv-cli (npm install -g ajv-cli)
+ajv validate -s curriculum/spec/vlcf-schema.json -d your-curriculum.vlcf
+
+# Using jsonschema (pip install jsonschema)
+jsonschema -i your-curriculum.vlcf curriculum/spec/vlcf-schema.json
+```
+
+### Future: Import Tooling
+
+The import system (Python-based) will be implemented separately. See:
+- [IMPORTER_ARCHITECTURE.md](../curriculum/importers/IMPORTER_ARCHITECTURE.md)
+- [AI_ENRICHMENT_PIPELINE.md](../curriculum/importers/AI_ENRICHMENT_PIPELINE.md)
+
+---
+
 ## Next Steps
 
 - Read [TESTING.md](TESTING.md) for testing strategy
@@ -374,6 +417,7 @@ After restarting Claude Code, simulator tools become available. See [AI_SIMULATO
 - Read [AI_SIMULATOR_TESTING.md](AI_SIMULATOR_TESTING.md) for AI testing workflow
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) for workflow
 - Review [TASK_STATUS.md](TASK_STATUS.md) for current implementation status
+- **Explore curriculum format** - See [Curriculum Overview](../curriculum/README.md)
 
 ---
 

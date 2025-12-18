@@ -73,15 +73,6 @@ extension Topic {
 
 extension Topic: Identifiable { }
 
-// MARK: - Hashable Conformance (for NavigationLink)
-
-extension Topic {
-    public override var hash: Int {
-        return id?.hashValue ?? objectID.hashValue
-    }
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? Topic else { return false }
-        return self.id == other.id || self.objectID == other.objectID
-    }
-}
+// NOTE: Do NOT override hash/isEqual on NSManagedObject subclasses!
+// Core Data uses these internally for object tracking and faulting.
+// Overriding them causes: "Class 'Topic' has an illegal override of NSManagedObject -isEqual:"

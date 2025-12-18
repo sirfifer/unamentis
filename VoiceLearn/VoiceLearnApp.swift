@@ -31,13 +31,19 @@ struct VoiceLearnApp: App {
         let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "unknown"
         let buildDate = Self.getBuildDate()
         // Unique build ID - change this each time to verify new build is running
-        let buildID = "CURRICULUM_FIX_20251217_G"
+        let buildID = "CURRICULUM_FIX_20251218_I"
         print("=======================================================")
         print("VoiceLearn App Starting")
         print("Version: \(appVersion) (Build \(buildNumber))")
         print("Build Date: \(buildDate)")
         print("Build ID: \(buildID)")
         print("=======================================================")
+
+        // CRITICAL: Initialize Core Data store EARLY, before any views access it
+        // This prevents deadlock when views try to access PersistenceController.shared
+        // from the main thread during SwiftUI view lifecycle
+        _ = PersistenceController.shared
+        print("[Init] Core Data store initialized")
 
         // Configure remote logging server
         // For simulator: localhost works automatically

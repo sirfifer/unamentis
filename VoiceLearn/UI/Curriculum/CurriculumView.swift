@@ -375,7 +375,7 @@ struct TopicDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .fullScreenCover(isPresented: $showingSession) {
             NavigationStack {
-                SessionView()
+                SessionView(topic: topic)
                     .environmentObject(appState)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
@@ -389,7 +389,7 @@ struct TopicDetailView: View {
         #else
         .sheet(isPresented: $showingSession) {
             NavigationStack {
-                SessionView()
+                SessionView(topic: topic)
                     .environmentObject(appState)
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {

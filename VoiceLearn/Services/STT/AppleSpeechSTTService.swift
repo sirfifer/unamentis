@@ -98,7 +98,15 @@ public actor AppleSpeechSTTService: STTService {
 
         // Configure for streaming
         request.shouldReportPartialResults = true
-        request.requiresOnDeviceRecognition = true  // Force on-device
+
+        // On-device recognition is preferred but not required on simulator
+        // (Simulator doesn't support on-device speech recognition)
+        #if targetEnvironment(simulator)
+        request.requiresOnDeviceRecognition = false
+        logger.info("Running on simulator - using server-based speech recognition")
+        #else
+        request.requiresOnDeviceRecognition = true  // Force on-device on real devices
+        #endif
 
         #if os(iOS)
         if #available(iOS 16.0, *) {

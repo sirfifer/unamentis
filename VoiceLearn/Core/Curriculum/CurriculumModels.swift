@@ -6,6 +6,155 @@
 import Foundation
 import CoreData
 
+// MARK: - Content Depth
+
+/// Depth level for curriculum content, defining coverage expectations
+public enum ContentDepth: String, Codable, Sendable, CaseIterable {
+    case overview = "overview"              // Brief introduction, 2-5 minutes
+    case introductory = "introductory"      // Basic concepts, 5-15 minutes
+    case intermediate = "intermediate"      // Moderate detail, 15-30 minutes
+    case advanced = "advanced"              // In-depth coverage, 30-60 minutes
+    case graduate = "graduate"              // Comprehensive, 60+ minutes
+    case research = "research"              // Research-level depth, extended
+
+    /// Human-readable display name
+    public var displayName: String {
+        switch self {
+        case .overview: return "Overview"
+        case .introductory: return "Introductory"
+        case .intermediate: return "Intermediate"
+        case .advanced: return "Advanced"
+        case .graduate: return "Graduate Level"
+        case .research: return "Research Level"
+        }
+    }
+
+    /// Brief description of expectations at this level
+    public var description: String {
+        switch self {
+        case .overview:
+            return "Brief introduction covering key concepts only"
+        case .introductory:
+            return "Basic understanding, suitable for beginners"
+        case .intermediate:
+            return "Solid coverage with examples and applications"
+        case .advanced:
+            return "In-depth exploration with theoretical foundations"
+        case .graduate:
+            return "Comprehensive treatment with mathematical rigor"
+        case .research:
+            return "Research-level depth with current literature"
+        }
+    }
+
+    /// Expected lecture duration range in minutes
+    public var expectedDurationRange: ClosedRange<Int> {
+        switch self {
+        case .overview: return 2...5
+        case .introductory: return 5...15
+        case .intermediate: return 15...30
+        case .advanced: return 30...60
+        case .graduate: return 60...120
+        case .research: return 90...180
+        }
+    }
+
+    /// Whether to include mathematical derivations
+    public var includeMathDerivations: Bool {
+        switch self {
+        case .overview, .introductory: return false
+        case .intermediate: return false  // Just mention, don't derive
+        case .advanced, .graduate, .research: return true
+        }
+    }
+
+    /// How to present mathematical content for audio
+    public var mathPresentationStyle: String {
+        switch self {
+        case .overview:
+            return "Skip mathematical formulas entirely. Focus on intuition."
+        case .introductory:
+            return "Mention that formulas exist but describe their meaning in words."
+        case .intermediate:
+            return "Describe key equations verbally. Say 'x squared' not 'x^2'."
+        case .advanced:
+            return "Present equations verbally with full verbal notation. Derive important results step by step."
+        case .graduate:
+            return "Full mathematical rigor. Present all derivations verbally. Spell out each step clearly."
+        case .research:
+            return "Complete proofs and derivations. Reference key papers and theorems by name."
+        }
+    }
+
+    /// Instructions for AI regarding depth
+    public var aiInstructions: String {
+        switch self {
+        case .overview:
+            return """
+            Provide a brief overview only. Cover:
+            - What this topic is about in 1-2 sentences
+            - Why it matters
+            - Key takeaways (3-5 bullet points spoken as a list)
+            Keep it under 5 minutes. No technical details.
+            """
+        case .introductory:
+            return """
+            Provide an introductory explanation suitable for someone new to the topic:
+            - Start with what the topic is and why it's important
+            - Explain fundamental concepts with simple examples
+            - Use analogies to make abstract ideas concrete
+            - Avoid jargon or define it when first used
+            Keep it accessible. Target 5-15 minutes.
+            """
+        case .intermediate:
+            return """
+            Provide a solid intermediate-level explanation:
+            - Assume basic familiarity with the field
+            - Cover key concepts in reasonable depth
+            - Include practical examples and applications
+            - Explain how concepts connect to each other
+            - Mention relevant formulas by describing what they represent
+            Target 15-30 minutes.
+            """
+        case .advanced:
+            return """
+            Provide an advanced-level treatment:
+            - Assume solid foundational knowledge
+            - Explore theoretical underpinnings
+            - Present mathematical relationships verbally
+            - Discuss edge cases and limitations
+            - Connect to related advanced topics
+            - Include derivations of important results
+            Target 30-60 minutes.
+            """
+        case .graduate:
+            return """
+            Provide a graduate-level lecture:
+            - Assume strong mathematical and conceptual background
+            - Present with full mathematical rigor
+            - Derive all key results step by step, speaking each equation
+            - Discuss assumptions, theorems, and proofs
+            - Cover multiple perspectives and approaches
+            - Reference foundational papers and researchers
+            - Address subtleties and common misconceptions
+            Target 60+ minutes of comprehensive coverage.
+            """
+        case .research:
+            return """
+            Provide research-level depth:
+            - Assume expert-level background in the field
+            - Cover state-of-the-art developments
+            - Present complete proofs and derivations verbally
+            - Discuss open problems and current research directions
+            - Reference specific papers, authors, and dates
+            - Compare and contrast competing theories
+            - Address methodological considerations
+            Extended coverage, potentially multiple sessions.
+            """
+        }
+    }
+}
+
 // MARK: - Topic Status
 
 /// Status of a topic in the learning progression

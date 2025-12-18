@@ -14,7 +14,10 @@ import AppKit
 /// Main session view for voice conversations
 public struct SessionView: View {
     @EnvironmentObject private var appState: AppState
-    @StateObject private var viewModel = SessionViewModel()
+    @StateObject private var viewModel: SessionViewModel
+
+    /// The topic being studied (optional - for curriculum-based sessions)
+    let topic: Topic?
 
     #if os(iOS)
     private static let backgroundGradientColors: [Color] = [Color(.systemBackground), Color(.systemGray6)]
@@ -22,7 +25,11 @@ public struct SessionView: View {
     private static let backgroundGradientColors: [Color] = [Color(NSColor.windowBackgroundColor), Color(NSColor.controlBackgroundColor)]
     #endif
 
-    public init() { }
+    public init(topic: Topic? = nil) {
+        self.topic = topic
+        // Initialize viewModel with topic context
+        _viewModel = StateObject(wrappedValue: SessionViewModel(topic: topic))
+    }
     
     public var body: some View {
         NavigationStack {
@@ -586,8 +593,6 @@ class SessionSettingsModel: ObservableObject {
 
 // MARK: - Session View Model
 
-// MARK: - Session View Model
-
 @MainActor
 class SessionViewModel: ObservableObject {
     @Published var state: SessionState = .idle
@@ -606,6 +611,88 @@ class SessionViewModel: ObservableObject {
     private var sessionManager: SessionManager?
     private var subscribers = Set<AnyCancellable>()
 
+    /// Topic for curriculum-based sessions (optional)
+    let topic: Topic?
+
+    /// Whether this is a lecture mode session (AI speaks first)
+    var isLectureMode: Bool {
+        topic != nil
+    }
+
+    init(topic: Topic? = nil) {
+        self.topic = topic
+    }
+
+    /// Generate system prompt based on topic and depth level
+    func generateSystemPrompt() -> String {
+        guard let topic = topic else {
+            // Default conversational system prompt
+            return """
+            You are a helpful educational assistant in a voice conversation.
+            Keep responses concise and natural for spoken delivery.
+            Avoid visual references, code blocks, or complex formatting.
+            """
+        }
+
+        let topicTitle = topic.title ?? "the topic"
+        let depth = topic.depthLevel
+        let objectives = topic.objectives ?? []
+
+        var prompt = """
+        You are an expert lecturer delivering an audio-only educational lecture.
+
+        TOPIC: \(topicTitle)
+        DEPTH LEVEL: \(depth.displayName)
+
+        \(depth.aiInstructions)
+
+        AUDIO-FRIENDLY GUIDELINES:
+        - This is an audio-only format. The learner cannot see any visual content.
+        - Never reference diagrams, images, code blocks, or written equations.
+        - \(depth.mathPresentationStyle)
+        - Use natural spoken language, not written/academic style.
+        - Speak clearly and at a measured pace.
+        - Use verbal signposting: "First...", "Next...", "To summarize..."
+        - Pause briefly between major sections.
+        """
+
+        if !objectives.isEmpty {
+            prompt += "\n\nLEARNING OBJECTIVES:\n"
+            for (index, objective) in objectives.enumerated() {
+                prompt += "  \(index + 1). \(objective)\n"
+            }
+            prompt += "\nEnsure the lecture covers these objectives."
+        }
+
+        if let outline = topic.outline, !outline.isEmpty {
+            prompt += "\n\nTOPIC OUTLINE:\n\(outline)"
+        }
+
+        prompt += """
+
+
+        BEGIN THE LECTURE:
+        Start speaking now. Introduce the topic naturally and begin teaching.
+        The learner is listening and ready to learn.
+        """
+
+        return prompt
+    }
+
+    /// Generate the initial lecture opening for AI to speak first
+    func generateLectureOpening() -> String {
+        guard let topic = topic else { return "" }
+
+        let topicTitle = topic.title ?? "this topic"
+        let depth = topic.depthLevel
+
+        return """
+        Begin a \(depth.displayName.lowercased())-level lecture on \(topicTitle).
+        Start with a brief introduction, then proceed through the material systematically.
+        Expected duration: \(depth.expectedDurationRange.lowerBound)-\(depth.expectedDurationRange.upperBound) minutes.
+        """
+    }
+
     /// Debug test function to directly test on-device LLM without voice input
     func testOnDeviceLLM() async {
         logger.info("[DEBUG] Starting direct LLM test")
@@ -613,8 +700,19 @@ class SessionViewModel: ObservableObject {
 
         debugTestResult = "Testing LLM..."
 
-        // Use SelfHostedLLMService to connect to local Ollama server for testing
-        let llmService = SelfHostedLLMService.ollama(model: "llama3.2:3b")
+        // Use configured server IP or fall back to localhost
+        let selfHostedEnabled = UserDefaults.standard.bool(forKey: "selfHostedEnabled")
+        let serverIP = UserDefaults.standard.string(forKey: "primaryServerIP") ?? ""
+        let llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
+
+        let llmService: SelfHostedLLMService
+        if selfHostedEnabled && !serverIP.isEmpty {
+            logger.info("[DEBUG] Using self-hosted LLM at \(serverIP):11434")
+            llmService = SelfHostedLLMService.ollama(host: serverIP, model: llmModelSetting)
+        } else {
+            logger.warning("[DEBUG] No server IP configured - using localhost")
+            llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+        }
 
         let messages = [
             LLMMessage(role: .system, content: "You are a helpful assistant. Be brief."),
@@ -742,12 +840,25 @@ class SessionViewModel: ObservableObject {
 
         // Configure LLM based on settings
         logger.info("LLM provider setting: \(llmProviderSetting.rawValue)")
+
+        // Get self-hosted server IP from settings (used for localMLX and selfHosted providers)
+        let selfHostedEnabled = UserDefaults.standard.bool(forKey: "selfHostedEnabled")
+        let serverIP = UserDefaults.standard.string(forKey: "primaryServerIP") ?? ""
+
         switch llmProviderSetting {
         case .localMLX:
             // On-device LLM not currently available (API incompatible), fall back to self-hosted
             logger.info("localMLX selected - falling back to SelfHostedLLMService (Ollama)")
             let llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
-            llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+
+            // Use configured server IP if available, otherwise fall back to localhost (simulator only)
+            if selfHostedEnabled && !serverIP.isEmpty {
+                logger.info("Using self-hosted server at \(serverIP):11434")
+                llmService = SelfHostedLLMService.ollama(host: serverIP, model: llmModelSetting)
+            } else {
+                logger.warning("No server IP configured - using localhost (only works on simulator)")
+                llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+            }
         case .anthropic:
             guard let apiKey = await appState.apiKeys.getKey(.anthropic) else {
                 errorMessage = "Anthropic API key not configured. Please add it in Settings or switch to on-device mode."
@@ -763,11 +874,17 @@ class SessionViewModel: ObservableObject {
             }
             llmService = OpenAILLMService(apiKey: apiKey)
         case .selfHosted:
-            // Use SelfHostedLLMService to connect to local Ollama server
+            // Use SelfHostedLLMService to connect to Ollama server
             let llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
-            logger.info("Using SelfHostedLLMService with model: \(llmModelSetting)")
-            // For simulator, use localhost; for device, you'd configure the server IP
-            llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+
+            // Use configured server IP if available, otherwise fall back to localhost (simulator only)
+            if selfHostedEnabled && !serverIP.isEmpty {
+                logger.info("Using self-hosted LLM at \(serverIP):11434 with model: \(llmModelSetting)")
+                llmService = SelfHostedLLMService.ollama(host: serverIP, model: llmModelSetting)
+            } else {
+                logger.warning("No server IP configured - using localhost (only works on simulator)")
+                llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+            }
         }
 
         do {
@@ -778,12 +895,22 @@ class SessionViewModel: ObservableObject {
             // Bind State
             bindToSessionManager(manager)
 
+            // Generate system prompt and determine lecture mode
+            let systemPrompt = generateSystemPrompt()
+            let lectureMode = isLectureMode
+
+            if lectureMode {
+                logger.info("Starting lecture session for topic: \(topic?.title ?? "unknown")")
+            }
+
             // Start Session
             try await manager.startSession(
                 sttService: sttService,
                 ttsService: ttsService,
                 llmService: llmService,
-                vadService: vadService
+                vadService: vadService,
+                systemPrompt: systemPrompt,
+                lectureMode: lectureMode
             )
 
         } catch {

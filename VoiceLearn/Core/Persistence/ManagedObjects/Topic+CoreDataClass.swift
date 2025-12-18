@@ -19,10 +19,22 @@ public class Topic: NSManagedObject {
     @NSManaged public var objectives: [String]?
     @NSManaged public var orderIndex: Int32
     @NSManaged public var mastery: Float
+    @NSManaged public var depthLevelRaw: String?
     @NSManaged public var curriculum: Curriculum?
     @NSManaged public var documents: NSSet?
     @NSManaged public var progress: TopicProgress?
     @NSManaged public var sessions: NSSet?
+
+    /// Content depth level (defaults to intermediate if not set)
+    public var depthLevel: ContentDepth {
+        get {
+            guard let raw = depthLevelRaw else { return .intermediate }
+            return ContentDepth(rawValue: raw) ?? .intermediate
+        }
+        set {
+            depthLevelRaw = newValue.rawValue
+        }
+    }
 }
 
 // MARK: - Generated Accessors for Documents

@@ -168,39 +168,49 @@ public final class SessionManager: ObservableObject {
     // MARK: - Session Lifecycle
     
     /// Start a new session
+    /// - Parameters:
+    ///   - sttService: Speech-to-text service
+    ///   - ttsService: Text-to-speech service
+    ///   - llmService: Language model service
+    ///   - vadService: Voice activity detection service
+    ///   - systemPrompt: Optional override for system prompt (uses config default if nil)
+    ///   - lectureMode: If true, AI speaks first immediately after session starts
     public func startSession(
         sttService: any STTService,
         ttsService: any TTSService,
         llmService: any LLMService,
-        vadService: any VADService
+        vadService: any VADService,
+        systemPrompt: String? = nil,
+        lectureMode: Bool = false
     ) async throws {
         guard await state == .idle else {
             logger.warning("Cannot start session: not in idle state")
             return
         }
-        
-        logger.info("Starting session")
-        
+
+        logger.info("Starting session (lectureMode: \(lectureMode))")
+
         // Store services
         self.sttService = sttService
         self.ttsService = ttsService
         self.llmService = llmService
-        
+
         // Create and configure audio engine
         audioEngine = AudioEngine(
             config: config.audio,
             vadService: vadService,
             telemetry: telemetry
         )
-        
+
         try await audioEngine?.configure(config: config.audio)
-        
+
         // Configure TTS voice
         await ttsService.configure(config.voice)
-        
-        // Initialize conversation with system prompt
+
+        // Initialize conversation with system prompt (use override if provided)
+        let effectiveSystemPrompt = systemPrompt ?? config.systemPrompt
         conversationHistory = [
-            LLMMessage(role: .system, content: config.systemPrompt)
+            LLMMessage(role: .system, content: effectiveSystemPrompt)
         ]
         
         // Start telemetry session
@@ -214,16 +224,28 @@ public final class SessionManager: ObservableObject {
 
         // Start audio capture
         try await audioEngine?.start()
-        
+
         // Subscribe to audio stream for VAD events
         subscribeToAudioStream()
-        
-        // Transition to listening state
-        await setState(.userSpeaking)
-        
-        // Start STT streaming
-        try await startSTTStreaming()
-        
+
+        if lectureMode {
+            // Lecture mode: AI speaks first
+            logger.info("Lecture mode enabled - AI will begin speaking")
+
+            // Add a user message to trigger the lecture start
+            conversationHistory.append(LLMMessage(role: .user, content: "Please begin the lecture now."))
+
+            // Set timing for TTFT tracking
+            currentTurnStartTime = Date()
+
+            // Start LLM response immediately (generateAIResponse sets state to aiThinking)
+            await generateAIResponse()
+        } else {
+            // Normal mode: User speaks first
+            await setState(.userSpeaking)
+            try await startSTTStreaming()
+        }
+
         logger.info("Session started successfully")
     }
     
@@ -381,11 +403,18 @@ public final class SessionManager: ObservableObject {
         switch currentState {
         case .userSpeaking:
             // Send audio to STT
-            try? await sttService?.sendAudio(buffer)
+            do {
+                try await sttService?.sendAudio(buffer)
+            } catch {
+                logger.error("Failed to send audio to STT: \(error.localizedDescription)")
+            }
 
             // Track speech/silence for utterance detection
             if result.isSpeech {
                 // User is speaking - mark speech detected and reset silence timer
+                if !hasDetectedSpeech {
+                    logger.info("🎤 Speech started - VAD detected voice activity")
+                }
                 hasDetectedSpeech = true
                 silenceStartTime = nil
                 pendingUtteranceTask?.cancel()
@@ -401,12 +430,22 @@ public final class SessionManager: ObservableObject {
                         try? await Task.sleep(nanoseconds: UInt64(silenceThreshold * 1_000_000_000))
 
                         // Check if still silent and not cancelled
-                        guard !Task.isCancelled else { return }
-                        guard await self.state == .userSpeaking else { return }
-                        guard await !self.userTranscript.isEmpty else { return }
-
+                        guard !Task.isCancelled else {
+                            await self.logger.debug("Silence timer cancelled - user resumed speaking")
+                            return
+                        }
+                        let currentState = await self.state
+                        guard currentState == .userSpeaking else {
+                            await self.logger.debug("Silence timer: state changed to \(currentState.rawValue), not completing")
+                            return
+                        }
                         let transcript = await self.userTranscript
-                        await self.logger.info("Silence threshold reached, completing utterance: \(transcript.prefix(50))...")
+                        guard !transcript.isEmpty else {
+                            await self.logger.warning("🔇 Silence threshold reached but transcript is EMPTY - STT may not be working")
+                            return
+                        }
+
+                        await self.logger.info("🔇 Silence threshold reached, completing utterance: \(transcript.prefix(50))...")
                         await self.completeUtteranceFromSilence(transcript)
                     }
                 }
@@ -491,59 +530,99 @@ public final class SessionManager: ObservableObject {
     
     private func generateAIResponse() async {
         await setState(.aiThinking)
-        
-        guard let llmService = llmService else { return }
-        
+
+        guard let llmService = llmService else {
+            logger.error("LLM service not available")
+            await handleProcessingError("LLM service not configured")
+            return
+        }
+
         do {
+            logger.info("Calling LLM streamCompletion with \(conversationHistory.count) messages")
             let stream = try await llmService.streamCompletion(
                 messages: conversationHistory,
                 config: config.llm
             )
-            
+
             var fullResponse = ""
             var isFirstToken = true
-            
+
             llmStreamTask = Task {
                 for await token in stream {
                     if isFirstToken {
                         isFirstToken = false
+                        logger.info("Received first LLM token")
                         await self.telemetry.recordEvent(.llmFirstTokenReceived)
-                        
+
                         // Record TTFT
                         if let turnStart = self.currentTurnStartTime {
                             let ttft = Date().timeIntervalSince(turnStart)
                             await self.telemetry.recordLatency(.llmFirstToken, ttft)
                         }
-                        
+
                         // Start speaking while streaming
                         await self.setState(.aiSpeaking)
                     }
-                    
+
                     fullResponse += token.content
-                    
+
                     await MainActor.run {
                         self.aiResponse = fullResponse
                     }
-                    
+
                     // Stream text to TTS
                     // (In production, buffer sentences before TTS)
-                    
+
                     if token.isDone {
                         break
                     }
                 }
-                
+
+                // Check if we got any response
+                if fullResponse.isEmpty {
+                    logger.warning("LLM returned empty response")
+                    await self.handleProcessingError("No response from AI")
+                    return
+                }
+
+                logger.info("LLM response complete: \(fullResponse.prefix(50))...")
+
                 // Add AI response to history
                 self.conversationHistory.append(LLMMessage(role: .assistant, content: fullResponse))
-                
+
                 // Synthesize and play TTS
                 await self.synthesizeAndPlayResponse(fullResponse)
             }
-            
+
         } catch {
             logger.error("LLM generation failed: \(error.localizedDescription)")
-            await setState(.error)
+            await handleProcessingError("AI response failed: \(error.localizedDescription)")
         }
+    }
+
+    /// Handle processing errors with recovery back to listening state
+    private func handleProcessingError(_ message: String) async {
+        logger.error("❌ Processing error: \(message)")
+
+        // Brief error state for UI feedback
+        await setState(.error)
+
+        // Clear any partial response
+        await MainActor.run {
+            aiResponse = ""
+        }
+
+        // Wait briefly so user sees error state
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+
+        // Reset silence tracking
+        hasDetectedSpeech = false
+        silenceStartTime = nil
+
+        // Recover to listening state
+        await setState(.userSpeaking)
+
+        logger.info("Recovered to userSpeaking state after error")
     }
     
     // MARK: - TTS Handling

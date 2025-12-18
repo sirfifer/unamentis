@@ -85,6 +85,8 @@ targets:
           - audio
         BGTaskSchedulerPermittedIdentifiers:
           - com.voicelearn.session-sync
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     entitlements:
       path: VoiceLearn/VoiceLearn.entitlements
       properties:

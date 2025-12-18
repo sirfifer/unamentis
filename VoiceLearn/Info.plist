@@ -24,6 +24,11 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>VoiceLearn needs microphone access for voice-based educational conversations.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

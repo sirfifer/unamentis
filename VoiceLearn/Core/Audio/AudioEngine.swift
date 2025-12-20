@@ -286,7 +286,40 @@ public actor AudioEngine: ObservableObject {
         await telemetry.recordLatency(.audioProcessing, processingTime)
     }
     
-    /// Stop audio playback (for interruptions/barge-in)
+    /// Whether playback is currently paused (vs stopped)
+    public private(set) var isPaused = false
+
+    /// Pause audio playback (tentative barge-in - can resume)
+    /// Returns true if playback was paused, false if nothing was playing
+    public func pausePlayback() async -> Bool {
+        guard isPlaying && !isPaused else {
+            logger.debug("Pause requested but not playing or already paused")
+            return false
+        }
+
+        logger.debug("Pausing audio playback")
+        playerNode.pause()
+        isPaused = true
+        await telemetry.recordEvent(.ttsPlaybackPaused)
+        return true
+    }
+
+    /// Resume paused audio playback
+    /// Returns true if playback was resumed, false if not paused
+    public func resumePlayback() async -> Bool {
+        guard isPaused else {
+            logger.debug("Resume requested but not paused")
+            return false
+        }
+
+        logger.debug("Resuming audio playback")
+        playerNode.play()
+        isPaused = false
+        await telemetry.recordEvent(.ttsPlaybackResumed)
+        return true
+    }
+
+    /// Stop audio playback completely (full interruption - cannot resume)
     public func stopPlayback() async {
         logger.debug("Stopping audio playback")
 
@@ -297,6 +330,7 @@ public actor AudioEngine: ObservableObject {
         pendingBuffers.removeAll()
 
         isPlaying = false
+        isPaused = false
         playbackFormat = nil
 
         // Resume any waiting continuation so callers don't hang
@@ -339,9 +373,14 @@ public actor AudioEngine: ObservableObject {
             throw AudioEngineError.bufferConversionFailed
         }
 
-        // Handle first chunk - setup playback
-        if chunk.isFirst {
-            // Stop any existing playback
+        // Check if format has changed - only reconnect if truly different
+        let needsReconnect = playbackFormat == nil || !formatsAreCompatible(playbackFormat!, bufferFormat)
+
+        // Handle format change or first-time setup
+        if needsReconnect {
+            logger.debug("TTS format change/setup: reconnecting player node")
+
+            // Stop any existing playback only if we need to reconnect
             if isPlaying {
                 playerNode.stop()
                 pendingBuffers.removeAll()
@@ -350,16 +389,17 @@ public actor AudioEngine: ObservableObject {
                 playbackCompletionContinuation = nil
             }
 
-            // Reconnect player node with correct format if needed
-            if playbackFormat != bufferFormat {
-                engine.disconnectNodeOutput(playerNode)
-                engine.connect(playerNode, to: engine.mainMixerNode, format: bufferFormat)
-                playbackFormat = bufferFormat
-            }
+            // Reconnect player node with correct format
+            engine.disconnectNodeOutput(playerNode)
+            engine.connect(playerNode, to: engine.mainMixerNode, format: bufferFormat)
+            playbackFormat = bufferFormat
+        }
 
+        // Mark as playing if not already
+        if !isPlaying {
             isPlaying = true
 
-            // Record TTFB if available
+            // Record TTFB if available (only on first chunk of session)
             if let ttfb = chunk.timeToFirstByte {
                 await telemetry.recordLatency(.ttsTimeToFirstByte, ttfb)
             }
@@ -395,6 +435,13 @@ public actor AudioEngine: ObservableObject {
             }
             logger.debug("TTS audio playback finished")
         }
+    }
+
+    /// Check if two audio formats are compatible for playback continuity
+    private func formatsAreCompatible(_ format1: AVAudioFormat, _ format2: AVAudioFormat) -> Bool {
+        return format1.sampleRate == format2.sampleRate &&
+               format1.channelCount == format2.channelCount &&
+               format1.commonFormat == format2.commonFormat
     }
 
     /// Handle completion of a buffer playback

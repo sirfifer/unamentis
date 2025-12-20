@@ -41,59 +41,43 @@ public struct SessionView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
-                VStack(spacing: 24) {
+
+                VStack(spacing: 12) {
                     // Status indicator
                     SessionStatusView(state: viewModel.state)
-                        .padding(.top, 20)
-                    
-                    Spacer()
-                    
-                    // Transcript display
+                        .padding(.top, 12)
+
+                    // Transcript display - takes most of the space
                     TranscriptView(
                         conversationHistory: viewModel.conversationHistory,
                         userTranscript: viewModel.userTranscript,
                         aiResponse: viewModel.aiResponse
                     )
-                    .frame(maxHeight: 300)
-                    
-                    Spacer()
-                    
-                    // Audio level visualizer
-                    AudioLevelView(level: viewModel.audioLevel)
-                        .frame(height: 60)
-                    
-                    // Main control button
-                    SessionControlButton(
-                        isActive: viewModel.isSessionActive,
-                        isLoading: viewModel.isLoading,
-                        action: {
-                            await viewModel.toggleSession(appState: appState)
-                        }
-                    )
-                    .padding(.bottom, 20)
+                    .frame(maxHeight: .infinity)
 
-                    // Debug LLM Test Button (for testing without voice)
-                    #if DEBUG
-                    VStack(spacing: 8) {
-                        Button("Test LLM Directly") {
-                            Task {
-                                await viewModel.testOnDeviceLLM()
+                    // Bottom control area - record button and VU meter side by side
+                    HStack(alignment: .bottom, spacing: 16) {
+                        // Main control button - smaller when recording, positioned left
+                        SessionControlButton(
+                            isActive: viewModel.isSessionActive,
+                            isLoading: viewModel.isLoading,
+                            action: {
+                                await viewModel.toggleSession(appState: appState)
                             }
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.orange)
+                        )
 
-                        if !viewModel.debugTestResult.isEmpty {
-                            Text(viewModel.debugTestResult)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal)
-                                .lineLimit(3)
+                        // VU meter - only visible when recording
+                        if viewModel.isSessionActive {
+                            AudioLevelView(level: viewModel.audioLevel)
+                                .frame(height: 50)
+                                .frame(maxWidth: .infinity)
+                                .transition(.opacity.combined(with: .scale))
                         }
+
+                        Spacer(minLength: 0)
                     }
                     .padding(.bottom, 20)
-                    #endif
+                    .animation(.spring(response: 0.3), value: viewModel.isSessionActive)
                 }
                 .padding(.horizontal, 20)
             }
@@ -266,16 +250,17 @@ struct TranscriptView: View {
 struct TranscriptBubble: View {
     let text: String
     let isUser: Bool
-    
+
     var body: some View {
         HStack {
             if isUser { Spacer(minLength: 40) }
-            
+
             Text(text)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .font(.subheadline)  // Smaller font for better transcript density
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
                 .background {
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 14)
                         #if os(iOS)
                         .fill(isUser ? Color.blue : Color(.systemGray5))
                         #else
@@ -283,7 +268,7 @@ struct TranscriptBubble: View {
                         #endif
                 }
                 .foregroundStyle(isUser ? .white : .primary)
-            
+
             if !isUser { Spacer(minLength: 40) }
         }
     }
@@ -334,7 +319,17 @@ struct SessionControlButton: View {
     let isActive: Bool
     let isLoading: Bool
     let action: () async -> Void
-    
+
+    /// Button size: large (80pt) when inactive, smaller (50pt) when recording
+    private var buttonSize: CGFloat {
+        isActive ? 50 : 80
+    }
+
+    /// Icon size: scales with button
+    private var iconSize: CGFloat {
+        isActive ? 20 : 32
+    }
+
     var body: some View {
         Button {
             Task {
@@ -344,22 +339,21 @@ struct SessionControlButton: View {
             ZStack {
                 Circle()
                     .fill(isActive ? Color.red : Color.blue)
-                    .frame(width: 80, height: 80)
-                    .shadow(color: (isActive ? Color.red : Color.blue).opacity(0.4), radius: 10)
-                
+                    .frame(width: buttonSize, height: buttonSize)
+                    .shadow(color: (isActive ? Color.red : Color.blue).opacity(0.4), radius: isActive ? 6 : 10)
+
                 if isLoading {
                     ProgressView()
                         .tint(.white)
                 } else {
                     Image(systemName: isActive ? "stop.fill" : "mic.fill")
-                        .font(.system(size: 32))
+                        .font(.system(size: iconSize))
                         .foregroundStyle(.white)
                 }
             }
         }
         .disabled(isLoading)
-        .scaleEffect(isActive ? 1.1 : 1.0)
-        .animation(.spring(response: 0.3), value: isActive)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isActive)
     }
 }
 
@@ -1116,7 +1110,7 @@ class SessionViewModel: ObservableObject {
                 self.state = newState
 
                 // When transitioning from aiSpeaking to userSpeaking, the AI turn is complete
-                // Add the AI response to conversation history if we have one
+                // Add the AI response to conversation history (but DON'T clear - let it remain visible)
                 if oldState == .aiSpeaking && newState == .userSpeaking {
                     if !self.aiResponse.isEmpty && self.aiResponse != self.lastAiResponse {
                         self.conversationHistory.append(ConversationMessage(
@@ -1125,7 +1119,10 @@ class SessionViewModel: ObservableObject {
                             timestamp: Date()
                         ))
                         self.lastAiResponse = self.aiResponse
+                        // Only clear aiResponse after it's been added to history
+                        self.aiResponse = ""
                     }
+                    // DON'T clear userTranscript here - it should already be in history
                 }
 
                 // When transitioning from userSpeaking to processing/aiThinking, add user transcript
@@ -1137,6 +1134,8 @@ class SessionViewModel: ObservableObject {
                             timestamp: Date()
                         ))
                         self.lastUserTranscript = self.userTranscript
+                        // Only clear after adding to history
+                        self.userTranscript = ""
                     }
                 }
             }
@@ -1144,11 +1143,32 @@ class SessionViewModel: ObservableObject {
 
         manager.$userTranscript
             .receive(on: DispatchQueue.main)
-            .assign(to: &$userTranscript)
+            .sink { [weak self] newValue in
+                guard let self = self else { return }
+                // Only update userTranscript if it's non-empty or we're actively speaking
+                // This prevents empty STT results from clearing valid transcripts
+                if self.state == .userSpeaking && !newValue.isEmpty {
+                    self.userTranscript = newValue
+                } else if self.state == .idle && !newValue.isEmpty {
+                    self.userTranscript = newValue
+                }
+                // Ignore empty values - don't clear the transcript mid-utterance
+            }
+            .store(in: &subscribers)
 
         manager.$aiResponse
             .receive(on: DispatchQueue.main)
-            .assign(to: &$aiResponse)
+            .sink { [weak self] newValue in
+                guard let self = self else { return }
+                // Update AI response during AI-related states
+                // Only update with non-empty values to prevent clearing
+                if self.state == .aiThinking || self.state == .aiSpeaking || self.state == .processingUserUtterance {
+                    if !newValue.isEmpty {
+                        self.aiResponse = newValue
+                    }
+                }
+            }
+            .store(in: &subscribers)
 
         // Bind audio level for visualization
         manager.$audioLevel

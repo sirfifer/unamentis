@@ -637,9 +637,17 @@ public final class SessionManager: ObservableObject {
             }
 
         case .aiSpeaking:
-            // Check for interruption
+            // Check for interruption - use tentative pause approach
             if config.enableInterruptions && result.isSpeech && result.confidence > config.audio.bargeInThreshold {
-                await handleInterruption()
+                // First barge-in triggers tentative pause
+                await handleTentativeBargeIn()
+            }
+
+        case .interrupted:
+            // We're in tentative pause - if speech continues, confirm the barge-in
+            if result.isSpeech && result.confidence > config.audio.bargeInThreshold {
+                // Continued speech confirms the barge-in
+                await confirmBargeIn()
             }
 
         default:
@@ -898,6 +906,21 @@ public final class SessionManager: ObservableObject {
                 if !sentence.isEmpty {
                     ttsSentenceQueue.append(sentence)
                     logger.info("🔊 Queued sentence for TTS (\(ttsSentenceQueue.count) in queue): \"\(sentence.prefix(50))...\"")
+
+                    // Start prefetching this sentence immediately if not already being prefetched
+                    // This ensures prefetch starts as soon as sentences are queued, not just when dequeued
+                    if config.ttsPlayback.enablePrefetch && prefetchedAudioCache[sentence] == nil && prefetchTasks[sentence] == nil {
+                        let sentenceToFetch = sentence
+                        logger.info("🔊 Prefetch: Immediate prefetch for newly queued \"\(sentenceToFetch.prefix(30))...\"")
+                        prefetchTasks[sentenceToFetch] = Task { [weak self] in
+                            guard let self = self else { return nil }
+                            let chunk = await self.prefetchSentence(sentenceToFetch)
+                            if let chunk = chunk {
+                                self.prefetchedAudioCache[sentenceToFetch] = chunk
+                            }
+                            return chunk
+                        }
+                    }
                 }
 
                 // Remove the sentence from the buffer
@@ -1028,7 +1051,8 @@ public final class SessionManager: ObservableObject {
         guard config.ttsPlayback.enablePrefetch else { return }
 
         let maxPrefetch = config.ttsPlayback.prefetchQueueDepth
-        let sentencesToPrefetch = Array(ttsSentenceQueue.prefix(maxPrefetch + 1).dropFirst())  // Skip current, take next N
+        // Prefetch the next N sentences in the queue (the current one is already being played)
+        let sentencesToPrefetch = Array(ttsSentenceQueue.prefix(maxPrefetch))
 
         for sentence in sentencesToPrefetch {
             // Skip if already cached or being prefetched
@@ -1036,15 +1060,15 @@ public final class SessionManager: ObservableObject {
                 continue
             }
 
-            // Start prefetch task
-            logger.info("🔊 Prefetch: Queueing prefetch for \"\(sentence.prefix(30))...\"")
-            prefetchTasks[sentence] = Task {
-                let chunk = await prefetchSentence(sentence)
-                // Cache the result when done
+            // Start prefetch task - capture sentence for the closure
+            let sentenceToFetch = sentence
+            logger.info("🔊 Prefetch: Queueing prefetch for \"\(sentenceToFetch.prefix(30))...\"")
+            prefetchTasks[sentenceToFetch] = Task { [weak self] in
+                guard let self = self else { return nil }
+                let chunk = await self.prefetchSentence(sentenceToFetch)
+                // Cache the result when done - store directly in actor's cache
                 if let chunk = chunk {
-                    await MainActor.run {
-                        prefetchedAudioCache[sentence] = chunk
-                    }
+                    self.prefetchedAudioCache[sentenceToFetch] = chunk
                 }
                 return chunk
             }
@@ -1220,28 +1244,105 @@ public final class SessionManager: ObservableObject {
     }
     
     // MARK: - Interruption Handling
-    
-    private func handleInterruption() async {
-        logger.info("Handling user interruption")
-        
-        await setState(.interrupted)
+
+    /// Whether we're in a tentative barge-in pause (waiting to confirm real speech)
+    private var isTentativePause = false
+
+    /// Task for confirming barge-in after pause
+    private var bargeInConfirmationTask: Task<Void, Never>?
+
+    /// Handle initial barge-in detection - tentatively pause, wait for confirmation
+    private func handleTentativeBargeIn() async {
+        // Already in tentative pause or already interrupted - don't double-handle
+        guard !isTentativePause && state == .aiSpeaking else { return }
+
+        logger.info("Tentative barge-in detected - pausing playback")
+
+        // Pause playback immediately (not stop - can resume)
+        if let paused = await audioEngine?.pausePlayback(), paused {
+            isTentativePause = true
+            await setState(.interrupted)
+
+            // Cancel any existing confirmation task
+            bargeInConfirmationTask?.cancel()
+
+            // Start confirmation: wait to see if real speech follows
+            bargeInConfirmationTask = Task {
+                // Wait for speech confirmation (e.g., 500ms of continued speech)
+                // During this time, VAD will keep firing if there's real speech
+                try? await Task.sleep(nanoseconds: 600_000_000) // 600ms
+
+                // Check if still in tentative pause (not already confirmed or cancelled)
+                guard !Task.isCancelled && isTentativePause else { return }
+
+                // If we get here without continued speech, it was a false positive - resume
+                logger.info("Barge-in not confirmed - resuming playback")
+                await resumeFromTentativePause()
+            }
+        }
+    }
+
+    /// Resume playback after a false-positive barge-in
+    private func resumeFromTentativePause() async {
+        guard isTentativePause else { return }
+
+        logger.info("Resuming from tentative pause")
+        isTentativePause = false
+
+        // Resume audio playback
+        _ = await audioEngine?.resumePlayback()
+
+        // Return to aiSpeaking state
+        await setState(.aiSpeaking)
+    }
+
+    /// Confirm barge-in as real - fully stop and switch to user speaking
+    private func confirmBargeIn() async {
+        logger.info("Barge-in confirmed - fully interrupting")
+
+        // Cancel the confirmation timer
+        bargeInConfirmationTask?.cancel()
+        bargeInConfirmationTask = nil
+        isTentativePause = false
+
         await telemetry.recordEvent(.userInterrupted)
-        
-        // Cancel current TTS playback
+
+        // Now fully stop everything
         ttsStreamTask?.cancel()
         llmStreamTask?.cancel()
+        ttsQueueTask?.cancel()
         await audioEngine?.stopPlayback()
-        
+
+        // Clear TTS queue and prefetch cache
+        ttsSentenceQueue.removeAll()
+        clearPrefetchState()
+
         // Clear buffers if configured
         if config.audio.ttsClearOnInterrupt {
             try? await ttsService?.flush()
         }
-        
+
         // Return to listening
         await setState(.userSpeaking)
-        
+
+        // Reset silence tracking for new utterance
+        hasDetectedSpeech = false
+        silenceStartTime = nil
+
         await MainActor.run {
             aiResponse = ""
+        }
+    }
+
+    /// Legacy full interruption handler (called for confirmed speech during pause)
+    private func handleInterruption() async {
+        if isTentativePause {
+            // We're already paused tentatively - confirm the barge-in
+            await confirmBargeIn()
+        } else {
+            // Direct interruption without tentative pause
+            logger.info("Direct interruption (no tentative pause)")
+            await confirmBargeIn()
         }
     }
 }

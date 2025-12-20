@@ -46,6 +46,8 @@ public enum TelemetryEvent: Sendable {
     case ttsPlaybackStarted
     case ttsPlaybackCompleted
     case ttsPlaybackInterrupted
+    case ttsPlaybackPaused
+    case ttsPlaybackResumed
     
     // Curriculum events
     case topicStarted(topic: String)

@@ -1,15 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://voicelearn.io/schemas/vlcf/v1.0.0/curriculum.json",
-  "title": "VoiceLearn Curriculum Format (VLCF)",
+  "$id": "https://unamentis.io/schemas/umlcf/v1.0.0/curriculum.json",
+  "title": "Una Mentis Learning Curriculum Format (UMLCF)",
   "description": "A JSON schema for conversational AI tutoring curricula with standards traceability. Optimized for voice-first learning experiences.",
   "type": "object",
-  "required": ["vlcf", "id", "title", "version", "content"],
+  "required": ["formatIdentifier", "id", "title", "version", "content"],
   "properties": {
-    "vlcf": {
-      "description": "VLCF schema version identifier. Source: JSON Schema convention.",
+    "formatIdentifier": {
+      "description": "UMLCF schema format identifier. Source: JSON Schema convention.",
       "type": "string",
-      "const": "1.0.0"
+      "const": "umlcf"
+    },
+    "schemaVersion": {
+      "description": "UMLCF schema version. Source: Semantic Versioning.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
     },
     "id": {
       "description": "Globally unique curriculum identifier. Source: LOM General.Identifier, Dublin Core identifier.",
@@ -44,6 +50,10 @@
     "rights": {
       "description": "Rights and licensing information. Source: LOM Rights, Dublin Core Rights, Creative Commons.",
       "$ref": "#/$defs/rights"
+    },
+    "sourceProvenance": {
+      "description": "Content source and provenance tracking. Source: Dublin Core Source, PROV-O ontology.",
+      "$ref": "#/$defs/sourceProvenance"
     },
     "compliance": {
       "description": "Compliance and certification requirements. Source: Open Badges, xAPI, corporate training standards.",
@@ -463,6 +473,263 @@
         },
         "holder": {
           "description": "Rights holder. Source: Dublin Core rightsHolder.",
+          "type": "string"
+        }
+      }
+    },
+
+    "sourceProvenance": {
+      "description": "Content source and provenance tracking. Source: Dublin Core Source, PROV-O ontology, DataCite.",
+      "type": "object",
+      "properties": {
+        "originType": {
+          "description": "How this curriculum was created. Source: PROV-O activity types.",
+          "type": "string",
+          "enum": [
+            "original",
+            "imported",
+            "derived",
+            "translated",
+            "ai_generated",
+            "curated",
+            "transcribed",
+            "adapted"
+          ]
+        },
+        "primarySources": {
+          "description": "Primary source materials this curriculum is based on. Source: Dublin Core Source, DataCite relatedIdentifier.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceReference"
+          }
+        },
+        "importMetadata": {
+          "description": "Import details if curriculum was imported from external system.",
+          "type": "object",
+          "properties": {
+            "importedFrom": {
+              "description": "URL or identifier of import source.",
+              "type": "string",
+              "format": "uri"
+            },
+            "importDate": {
+              "description": "When the import occurred.",
+              "type": "string",
+              "format": "date-time"
+            },
+            "importVersion": {
+              "description": "Version of source at time of import.",
+              "type": "string"
+            },
+            "importTool": {
+              "description": "Tool or method used for import.",
+              "type": "string"
+            },
+            "originalFormat": {
+              "description": "Original format before conversion to UMLCF.",
+              "type": "string",
+              "examples": ["scorm", "xapi", "pdf", "video", "markdown", "html"]
+            },
+            "transformations": {
+              "description": "Transformations applied during import.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "aiGenerationMetadata": {
+          "description": "Details if content was AI-generated.",
+          "type": "object",
+          "properties": {
+            "model": {
+              "description": "AI model used for generation.",
+              "type": "string",
+              "examples": ["claude-opus-4-5", "gpt-4", "claude-sonnet-4"]
+            },
+            "generationDate": {
+              "description": "When content was generated.",
+              "type": "string",
+              "format": "date-time"
+            },
+            "prompt": {
+              "description": "Generation prompt or instructions.",
+              "type": "string"
+            },
+            "humanReviewed": {
+              "description": "Whether content was reviewed by humans.",
+              "type": "boolean"
+            },
+            "reviewedBy": {
+              "description": "Who reviewed the AI-generated content.",
+              "type": "string"
+            },
+            "reviewDate": {
+              "description": "When review occurred.",
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "derivationChain": {
+          "description": "Chain of derivation if curriculum is derived from others. Source: PROV-O wasDerivedFrom.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "$ref": "#/$defs/identifier"
+              },
+              "sourceUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "relationship": {
+                "type": "string",
+                "enum": ["derived_from", "adapted_from", "translated_from", "based_on", "inspired_by"]
+              },
+              "derivationDate": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "verificationStatus": {
+          "description": "Content verification status.",
+          "type": "object",
+          "properties": {
+            "factChecked": {
+              "type": "boolean"
+            },
+            "factCheckDate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "factChecker": {
+              "type": "string"
+            },
+            "academicReview": {
+              "type": "boolean"
+            },
+            "reviewerCredentials": {
+              "type": "string"
+            },
+            "lastVerified": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+
+    "sourceReference": {
+      "description": "Reference to a source material. Source: DataCite, Dublin Core.",
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "id": {
+          "description": "Identifier (DOI, ISBN, URL, etc.). Source: DataCite relatedIdentifier.",
+          "$ref": "#/$defs/identifier"
+        },
+        "title": {
+          "description": "Source title. Source: Dublin Core Title.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of source. Source: DataCite resourceTypeGeneral.",
+          "type": "string",
+          "enum": [
+            "book",
+            "journal_article",
+            "textbook",
+            "website",
+            "video",
+            "course",
+            "lecture_notes",
+            "research_paper",
+            "encyclopedia",
+            "primary_source",
+            "dataset",
+            "software",
+            "other"
+          ]
+        },
+        "url": {
+          "description": "URL to access source.",
+          "type": "string",
+          "format": "uri"
+        },
+        "authors": {
+          "description": "Source authors. Source: Dublin Core Creator.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "publisher": {
+          "description": "Publisher. Source: Dublin Core Publisher.",
+          "type": "string"
+        },
+        "publicationDate": {
+          "description": "Publication date. Source: Dublin Core Date.",
+          "type": "string"
+        },
+        "edition": {
+          "description": "Edition or version.",
+          "type": "string"
+        },
+        "pages": {
+          "description": "Relevant page range.",
+          "type": "string"
+        },
+        "chapters": {
+          "description": "Relevant chapters.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accessDate": {
+          "description": "When source was accessed (for web sources).",
+          "type": "string",
+          "format": "date-time"
+        },
+        "license": {
+          "description": "Source's license.",
+          "type": "string"
+        },
+        "citationText": {
+          "description": "Formatted citation text.",
+          "type": "string"
+        },
+        "relationshipToContent": {
+          "description": "How this source was used.",
+          "type": "string",
+          "enum": [
+            "primary_source",
+            "reference",
+            "inspiration",
+            "fact_check",
+            "supplementary",
+            "adapted_from",
+            "quoted"
+          ]
+        },
+        "sectionsUsed": {
+          "description": "Specific sections of the curriculum that use this source.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "description": "Additional notes about this source.",
           "type": "string"
         }
       }

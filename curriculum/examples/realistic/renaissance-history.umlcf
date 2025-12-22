@@ -29,19 +29,38 @@
   },
   "metadata": {
     "language": "en-US",
-    "keywords": ["Renaissance", "history", "art", "science", "Europe", "Italy", "Leonardo da Vinci", "Michelangelo", "Gutenberg", "Shakespeare"],
+    "keywords": [
+      "Renaissance",
+      "history",
+      "art",
+      "science",
+      "Europe",
+      "Italy",
+      "Leonardo da Vinci",
+      "Michelangelo",
+      "Gutenberg",
+      "Shakespeare"
+    ],
     "structure": "hierarchical",
     "aggregationLevel": 3
   },
   "educational": {
     "interactivityType": "mixed",
     "interactivityLevel": "high",
-    "learningResourceType": ["tutorial", "conversation", "self assessment"],
-    "intendedEndUserRole": ["learner"],
-    "context": ["school"],
+    "learningResourceType": [
+      "tutorial",
+      "conversation",
+      "self assessment"
+    ],
+    "intendedEndUserRole": [
+      "learner"
+    ],
+    "context": [
+      "school"
+    ],
     "typicalAgeRange": "12-14",
     "difficulty": "medium",
-    "typicalLearningTime": "PT4H",
+    "typicalLearningTime": "PT45M",
     "educationalAlignment": [
       {
         "alignmentType": "teaches",
@@ -101,7 +120,11 @@
         "spokenDefinition": "The Renaissance was an amazing time in European history, roughly from the 1300s to the 1600s, when art, science, and learning exploded after the darker medieval period. The word Renaissance literally means 'rebirth' in French, because it felt like civilization was being reborn.",
         "simpleDefinition": "A time in Europe when art, science, and learning became super important again after the Middle Ages. It means 'rebirth.'",
         "etymology": "From French 'renaissance' meaning 'rebirth', from Latin 'renasci' meaning 'to be born again'",
-        "relatedTerms": ["humanism", "medieval", "rebirth"]
+        "relatedTerms": [
+          "humanism",
+          "medieval",
+          "rebirth"
+        ]
       },
       {
         "id": "term-humanism",
@@ -110,7 +133,11 @@
         "definition": "A Renaissance philosophy that emphasized human potential, achievements, and the study of classical Greek and Roman texts.",
         "spokenDefinition": "Humanism was a big idea during the Renaissance. Instead of focusing only on religious topics, humanists said, 'Hey, humans are pretty amazing! Let's study what people in ancient Greece and Rome accomplished and see what we can learn.' They believed in human potential and individual achievement.",
         "simpleDefinition": "A way of thinking that says people are capable of great things and we should study what ancient Greeks and Romans did.",
-        "relatedTerms": ["Renaissance", "classical", "philosophy"]
+        "relatedTerms": [
+          "Renaissance",
+          "classical",
+          "philosophy"
+        ]
       },
       {
         "id": "term-patron",
@@ -119,7 +146,11 @@
         "definition": "A wealthy person who financially supports artists, writers, or other creative people.",
         "spokenDefinition": "A patron was a rich person who paid artists to create their works. During the Renaissance, wealthy families like the Medici in Florence were famous patrons. Without patrons, many great artists couldn't have afforded to spend their time painting or sculpting.",
         "simpleDefinition": "A rich person who pays artists to create art.",
-        "relatedTerms": ["Medici", "commission", "sponsorship"]
+        "relatedTerms": [
+          "Medici",
+          "commission",
+          "sponsorship"
+        ]
       },
       {
         "id": "term-perspective",
@@ -128,7 +159,11 @@
         "definition": "An artistic technique that creates the illusion of depth and three-dimensional space on a flat surface.",
         "spokenDefinition": "Perspective is a technique that makes flat paintings look like they have depth, like you could walk right into them. Renaissance artists figured out the math behind how things look smaller when they're far away, and they used it to create incredibly realistic scenes. Before this, medieval art looked pretty flat.",
         "simpleDefinition": "A way of drawing that makes flat pictures look 3D, with things getting smaller in the distance.",
-        "relatedTerms": ["depth", "vanishing point", "realism"]
+        "relatedTerms": [
+          "depth",
+          "vanishing point",
+          "realism"
+        ]
       },
       {
         "id": "term-printing-press",
@@ -137,7 +172,11 @@
         "definition": "A mechanical device invented by Johannes Gutenberg around 1440 that could produce multiple copies of text quickly.",
         "spokenDefinition": "The printing press was a machine that changed the world. Before Gutenberg invented it around 1440, every book had to be copied by hand, which was incredibly slow and expensive. The printing press could make many copies of a book quickly, which meant more people could afford books and learn to read.",
         "simpleDefinition": "A machine that could make many copies of a book quickly instead of writing each one by hand.",
-        "relatedTerms": ["Gutenberg", "books", "literacy"]
+        "relatedTerms": [
+          "Gutenberg",
+          "books",
+          "literacy"
+        ]
       },
       {
         "id": "term-reformation",
@@ -146,7 +185,11 @@
         "definition": "A 16th-century religious movement that led to the split of Western Christianity into Catholic and Protestant churches.",
         "spokenDefinition": "The Reformation was a religious revolution that happened during the Renaissance. People like Martin Luther criticized the Catholic Church and started new Protestant churches. This happened partly because the printing press helped spread new ideas quickly.",
         "simpleDefinition": "A time when people challenged the Catholic Church and created new Christian churches.",
-        "relatedTerms": ["Protestant", "Catholic", "Martin Luther"]
+        "relatedTerms": [
+          "Protestant",
+          "Catholic",
+          "Martin Luther"
+        ]
       },
       {
         "id": "term-classical",
@@ -155,7 +198,11 @@
         "definition": "Relating to ancient Greek and Roman civilization, art, and learning.",
         "spokenDefinition": "When historians say 'classical,' they mean ancient Greece and Rome. During the Renaissance, people became obsessed with studying classical texts, architecture, and art. They thought the ancients had figured out a lot of important things that had been forgotten during the Middle Ages.",
         "simpleDefinition": "Related to ancient Greece and Rome.",
-        "relatedTerms": ["Greek", "Roman", "ancient"]
+        "relatedTerms": [
+          "Greek",
+          "Roman",
+          "ancient"
+        ]
       },
       {
         "id": "term-fresco",
@@ -164,7 +211,11 @@
         "definition": "A painting technique where pigments are applied to wet plaster on a wall or ceiling.",
         "spokenDefinition": "A fresco is a type of painting done on wet plaster. The artist has to work fast before the plaster dries! Michelangelo painted the Sistine Chapel ceiling using this technique. It was incredibly difficult because he had to paint while lying on scaffolding, looking up.",
         "simpleDefinition": "A painting made on wet plaster on a wall or ceiling.",
-        "relatedTerms": ["Michelangelo", "Sistine Chapel", "painting"]
+        "relatedTerms": [
+          "Michelangelo",
+          "Sistine Chapel",
+          "painting"
+        ]
       },
       {
         "id": "term-city-state",
@@ -173,7 +224,11 @@
         "definition": "An independent city and its surrounding territory that functions as its own nation.",
         "spokenDefinition": "A city-state is a city that runs itself like its own country. During the Renaissance, Italy wasn't one unified country like it is today. Instead, it was made up of powerful city-states like Florence, Venice, and Milan. These city-states competed with each other, which actually helped art and culture flourish.",
         "simpleDefinition": "A city that acts like its own country, with its own government.",
-        "relatedTerms": ["Florence", "Venice", "Milan"]
+        "relatedTerms": [
+          "Florence",
+          "Venice",
+          "Milan"
+        ]
       },
       {
         "id": "term-scientific-method",
@@ -182,34 +237,48 @@
         "definition": "A systematic approach to learning about the world through observation, hypothesis, experimentation, and analysis.",
         "spokenDefinition": "The scientific method is a way of figuring out how things work. Instead of just accepting what old books said, Renaissance scientists like Galileo actually tested their ideas with experiments. They observed, made guesses about what might be true, tested those guesses, and then revised their ideas based on the results.",
         "simpleDefinition": "A step-by-step way of learning about the world through experiments and observations.",
-        "relatedTerms": ["Galileo", "experiment", "hypothesis"]
+        "relatedTerms": [
+          "Galileo",
+          "experiment",
+          "hypothesis"
+        ]
       }
     ]
   },
   "content": [
     {
-      "id": { "value": "course-renaissance" },
+      "id": {
+        "value": "course-renaissance"
+      },
       "title": "The Renaissance: Europe's Rebirth",
       "type": "curriculum",
       "description": "Journey through the Renaissance, exploring how art, science, and ideas transformed Europe and shaped the modern world.",
       "learningObjectives": [
         {
-          "id": { "value": "obj-define-renaissance" },
+          "id": {
+            "value": "obj-define-renaissance"
+          },
           "statement": "Explain what the Renaissance was and why it's called a 'rebirth'",
           "bloomsLevel": "understand"
         },
         {
-          "id": { "value": "obj-identify-changes" },
+          "id": {
+            "value": "obj-identify-changes"
+          },
           "statement": "Identify key changes in art, science, and society during the Renaissance",
           "bloomsLevel": "remember"
         },
         {
-          "id": { "value": "obj-analyze-impact" },
+          "id": {
+            "value": "obj-analyze-impact"
+          },
           "statement": "Analyze how Renaissance innovations like the printing press changed society",
           "bloomsLevel": "analyze"
         },
         {
-          "id": { "value": "obj-connect-today" },
+          "id": {
+            "value": "obj-connect-today"
+          },
           "statement": "Connect Renaissance ideas and values to the modern world",
           "bloomsLevel": "apply"
         }
@@ -223,7 +292,9 @@
       },
       "children": [
         {
-          "id": { "value": "topic-medieval-world" },
+          "id": {
+            "value": "topic-medieval-world"
+          },
           "title": "Before the Renaissance: The Medieval World",
           "type": "topic",
           "orderIndex": 0,
@@ -236,60 +307,196 @@
           "transcript": {
             "segments": [
               {
-                "id": "seg-medieval-intro",
+                "id": "seg-medieval-intro-1",
                 "type": "introduction",
-                "content": "To understand why the Renaissance was such a big deal, we need to know what came before. Imagine living in medieval Europe, say around 1200. Life was very different from today, and different from the Renaissance that would come later. Let's take a look.",
+                "content": "Welcome to our journey into history! Today, we're going to explore one of the most fascinating transformations in human history: the Renaissance. But before we can understand why the Renaissance was such a big deal, we need to understand what life was like before it began. We need to travel back to medieval Europe, a world very different from our own.",
                 "speakingNotes": {
                   "emotionalTone": "curious",
                   "pace": "normal"
                 }
               },
               {
-                "id": "seg-feudalism",
+                "id": "seg-medieval-setting",
                 "type": "explanation",
-                "content": "Medieval society was organized into a system called feudalism. At the top was the king, then nobles and knights, and at the bottom were peasants who worked the land. Most people never traveled more than a few miles from where they were born. There was no real chance to move up in society. If your parents were farmers, you'd be a farmer too.",
+                "content": "Imagine you're living in Europe around the year 1200. There are no cars, no phones, no computers, and no internet. Most people have never traveled more than a few miles from where they were born. There are no movies or television. Books are incredibly rare because every single one has to be copied by hand. Most people can't read anyway. Your entire world is your village, your local church, and maybe the nearest town.",
                 "speakingNotes": {
-                  "emphasis": ["feudalism", "no real chance"],
-                  "pace": "slow"
-                },
-                "stoppingPoint": {
-                  "type": "natural",
-                  "promptForContinue": true,
-                  "suggestedPrompt": "Does this system sound fair to you?"
+                  "pace": "slow",
+                  "emphasis": [
+                    "no cars",
+                    "can't read",
+                    "your entire world"
+                  ]
                 }
               },
               {
-                "id": "seg-church-power",
+                "id": "seg-feudalism-intro",
                 "type": "lecture",
-                "content": "The Catholic Church was incredibly powerful. It was the center of education, art, and daily life. Most artwork depicted religious scenes. Questioning the Church's teachings could get you in serious trouble. The focus was on the afterlife, on getting to heaven, rather than on making life better here on Earth.",
+                "content": "Medieval society was organized into a strict system we call feudalism. Think of it like a pyramid. At the very top was the king, who owned all the land in his kingdom. Below him were the nobles and lords, who were given large pieces of land in exchange for their loyalty and military service. Below them were knights, the armored warriors who fought for their lords. And at the bottom, making up about ninety percent of the population, were the peasants.",
                 "speakingNotes": {
-                  "emphasis": ["incredibly powerful", "afterlife"]
+                  "emphasis": [
+                    "pyramid",
+                    "ninety percent"
+                  ],
+                  "pace": "slow"
                 }
               },
               {
-                "id": "seg-limited-learning",
+                "id": "seg-peasant-life",
                 "type": "explanation",
-                "content": "Learning was limited. Books were hand-copied by monks and were incredibly expensive. Few people could read. Knowledge from ancient Greece and Rome had been largely forgotten or preserved only in monasteries. People thought the ancient Romans were almost like giants, superior beings whose achievements could never be matched.",
+                "content": "What was life like for peasants? Most were serfs, which meant they were legally bound to the land they worked. They couldn't leave without their lord's permission. They worked the fields from sunrise to sunset, growing crops. But much of what they grew didn't belong to them. They had to give a portion to their lord and another portion to the Church. What remained barely kept their families alive. If you were born a serf, you would almost certainly die a serf. Your children would be serfs. Your grandchildren would be serfs. There was essentially no way to improve your situation in life.",
+                "speakingNotes": {
+                  "emotionalTone": "serious",
+                  "emphasis": [
+                    "legally bound",
+                    "no way to improve"
+                  ]
+                },
                 "checkpoint": {
                   "type": "comprehension_check",
-                  "prompt": "Why do you think books were so expensive in medieval times?",
-                  "expectedResponsePatterns": ["copied by hand", "took a long time", "monks", "no printing"],
+                  "prompt": "In the feudal system, could a peasant's child become a noble through hard work or education?",
+                  "expectedResponsePatterns": [
+                    "no",
+                    "not really",
+                    "impossible",
+                    "couldn't"
+                  ],
                   "fallbackBehavior": "continue"
                 }
               },
               {
-                "id": "seg-black-death",
+                "id": "seg-church-intro",
                 "type": "lecture",
-                "content": "Then came the Black Death in the 1340s. This devastating plague killed about one-third of Europe's population. It was terrible, but it also shook up society. With fewer workers, peasants could demand better wages. People started questioning why God would let this happen. This crisis, strangely, helped set the stage for change.",
+                "content": "Now, there was one institution that touched everyone's life, from kings to peasants: the Catholic Church. The Church was extraordinarily powerful during the Middle Ages. Think about this: in a world where most people couldn't read, the Church controlled education. In a world without hospitals as we know them, the Church provided care for the sick. The Church told people what was right and wrong. It collected taxes from everyone. It owned vast amounts of land. In many ways, the Church was more powerful than any king.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "extraordinarily powerful",
+                    "more powerful than any king"
+                  ],
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-church-focus",
+                "type": "explanation",
+                "content": "The Church taught that life on Earth was a test, a temporary trial before the eternal afterlife. What mattered most wasn't becoming wealthy or famous in this life. What mattered was getting to heaven. This affected how people thought about everything. Art was almost entirely religious. Artists painted scenes from the Bible, portraits of saints, and images of heaven and hell. Questioning the Church's teachings was dangerous. People who disagreed with Church doctrine could be called heretics, and heretics could be tortured or even executed.",
                 "speakingNotes": {
                   "emotionalTone": "serious",
-                  "emphasis": ["one-third", "questioning"]
+                  "emphasis": [
+                    "eternal afterlife",
+                    "heaven",
+                    "heretics"
+                  ]
+                }
+              },
+              {
+                "id": "seg-medieval-learning",
+                "type": "lecture",
+                "content": "What about learning and knowledge? Remember, this was a time before printing presses. Every book had to be copied by hand by monks in monasteries. A single book might take months or even years to copy. Books were so valuable that they were sometimes chained to library shelves to prevent theft. Because of this, very few books existed. Most knowledge from ancient Greece and Rome had been lost to Western Europe. The great libraries of the ancient world had been destroyed. People knew that the Romans had built incredible structures, roads, and aqueducts, but much of the knowledge of how they did it had been forgotten.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "copied by hand",
+                    "months or even years",
+                    "lost",
+                    "forgotten"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-classical-admiration",
+                "type": "explanation",
+                "content": "People in medieval Europe looked back at ancient Rome with a mixture of wonder and sadness. They walked among Roman ruins. They saw the Colosseum, the aqueducts, the roads that still worked after a thousand years. But they believed they could never match those achievements. The Romans seemed almost like a race of giants, impossibly skilled and knowledgeable. Medieval people believed the world was in decline, getting worse and worse since the fall of Rome. The best times were in the past, not the future.",
+                "speakingNotes": {
+                  "emotionalTone": "curious",
+                  "emphasis": [
+                    "race of giants",
+                    "decline",
+                    "past, not the future"
+                  ]
+                },
+                "stoppingPoint": {
+                  "type": "natural",
+                  "promptForContinue": true,
+                  "suggestedPrompt": "How do you think this belief that the world was declining might have affected people's motivation to innovate or try new things?"
+                }
+              },
+              {
+                "id": "seg-black-death-intro",
+                "type": "lecture",
+                "content": "Now we come to one of the most terrible events in human history, an event that would, strangely, help set the stage for the Renaissance. In 1347, ships from the East arrived at the Italian port of Messina. The sailors were dying of a mysterious disease. Within days, the disease had spread to the town. Within weeks, it was spreading across Italy. Within a few years, it would kill between one third and one half of all people in Europe. This was the Black Death, the bubonic plague.",
+                "speakingNotes": {
+                  "emotionalTone": "serious",
+                  "emphasis": [
+                    "one third and one half",
+                    "Black Death"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-black-death-symptoms",
+                "type": "explanation",
+                "content": "The Black Death was horrifying. Victims developed swollen lymph nodes called buboes, which turned black. They developed fever and chills. Many died within days of showing symptoms. Entire families were wiped out. Villages were abandoned. In some cities, there weren't enough living people to bury the dead. Bodies piled up in the streets. People didn't understand what caused the disease. Some thought it was God's punishment. Others blamed foreigners or minority groups. Doctors wore strange masks filled with herbs, believing the plague was spread by bad smells.",
+                "speakingNotes": {
+                  "emotionalTone": "serious",
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-black-death-aftermath",
+                "type": "lecture",
+                "content": "The aftermath of the Black Death changed everything. With so many people dead, there were suddenly far fewer workers. This gave surviving peasants bargaining power they had never had before. If a lord treated them badly, they could leave and find work elsewhere because labor was in such short supply. Wages rose. Some serfs were able to buy their freedom. The rigid social order of feudalism began to crack.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "fewer workers",
+                    "bargaining power",
+                    "began to crack"
+                  ],
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-questioning-begins",
+                "type": "explanation",
+                "content": "The plague also caused people to question their assumptions about life and faith. If God was loving and all-powerful, why did he allow such suffering? Why did the plague kill good and bad people alike? Some people lost their faith. Others held on but began to think differently about their lives. If death could come so suddenly and randomly, perhaps it was worth enjoying life while you had it. Perhaps it was worth creating beautiful things, pursuing knowledge, and making a mark on the world before your time was up.",
+                "speakingNotes": {
+                  "emotionalTone": "serious",
+                  "emphasis": [
+                    "question",
+                    "enjoying life",
+                    "making a mark"
+                  ]
+                },
+                "checkpoint": {
+                  "type": "comprehension_check",
+                  "prompt": "How did the Black Death give peasants more power?",
+                  "expectedResponsePatterns": [
+                    "fewer workers",
+                    "labor shortage",
+                    "could leave",
+                    "bargaining power",
+                    "demand higher wages"
+                  ],
+                  "fallbackBehavior": "continue"
+                }
+              },
+              {
+                "id": "seg-setting-the-stage",
+                "type": "lecture",
+                "content": "The medieval world was also changing in other ways. Trade was increasing, especially in Italy. Cities were growing. A new class of wealthy merchants was emerging, people who had made their fortunes through trade rather than inheriting land. These merchants wanted education, art, and culture. They wanted to show off their success. And they were willing to pay for it.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "trade",
+                    "wealthy merchants",
+                    "pay for it"
+                  ],
+                  "pace": "normal"
                 }
               },
               {
                 "id": "seg-medieval-summary",
                 "type": "summary",
-                "content": "So medieval Europe was a world of rigid social classes, limited education, and a focus on religious salvation. But crises like the Black Death began to shake things up. The stage was set for something new. That something was the Renaissance.",
+                "content": "So let's summarize what we've learned about medieval Europe. It was a world of rigid social classes where most people had no hope of improving their lives. The Catholic Church dominated all aspects of life and focused people's attention on the afterlife. Learning was limited because books were rare and hand-copied. People believed the world was in decline from the glorious days of ancient Rome. Then the Black Death shattered this world, killing perhaps a third of Europe's population but also shaking up the old social order and causing people to question old assumptions. Trade was growing, cities were expanding, and a new merchant class was rising. All of these changes set the stage for something new, something we call the Renaissance.",
                 "speakingNotes": {
                   "pace": "slow",
                   "emotionalTone": "encouraging"
@@ -297,40 +504,170 @@
               }
             ],
             "voiceProfile": {
-              "tone": "enthusiastic",
+              "tone": "conversational",
               "pace": "moderate"
             }
           },
           "examples": [
             {
-              "id": "ex-medieval-book",
-              "type": "real_world",
-              "title": "The Cost of a Medieval Book",
-              "description": "How expensive books were before printing",
-              "content": "A single book might take a monk months to copy by hand. A Bible could cost as much as a house!",
-              "spokenContent": "Here's something wild: a single book in medieval times might take a monk months to copy out by hand. One letter at a time, one page at a time. A complete Bible could cost as much as a house! Only churches and very wealthy nobles could afford books. Imagine if you had to pay the price of a house just to read a book!",
-              "complexity": "simple"
+              "id": "ex-feudal-pyramid",
+              "type": "analogy",
+              "title": "The Feudal Pyramid",
+              "spokenContent": "Think of feudal society like a pyramid-shaped building. The king sits at the tiny top. Below him is a small floor of nobles. Below them, a larger floor of knights. And the huge base of the pyramid? That's the peasants, holding up everyone else on their shoulders. If you're born in the base, you can't take the stairs up to a higher floor. There are no stairs. You're stuck where you were born."
+            },
+            {
+              "id": "ex-book-production",
+              "type": "historical",
+              "title": "Making a Medieval Book",
+              "spokenContent": "Imagine you want a copy of a book in medieval times. First, you need a scribe, a monk who has spent years learning to write beautifully. He has to work in the monastery's scriptorium, copying letter by letter. He writes on parchment, which is made from animal skin because paper is rare in Europe. He makes his own ink from oak galls and iron. For a large book, he might work for an entire year or more. The finished book might cost as much as a house. Is it any wonder that most people never saw a book in their entire lives?"
+            },
+            {
+              "id": "ex-plague-doctor",
+              "type": "historical",
+              "title": "The Plague Doctor's Mask",
+              "spokenContent": "During the Black Death, some doctors wore strange bird-like masks with long beaks. These weren't just for show. The beak was stuffed with flowers, herbs, and spices. Doctors believed the plague was spread by bad smells, which they called miasma. They thought the pleasant-smelling herbs would protect them from the disease. Of course, this didn't work at all. The plague was actually spread by fleas on rats. But the haunting image of the plague doctor became a symbol of the Black Death."
             }
           ],
           "assessments": [
             {
-              "id": { "value": "q-feudalism" },
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-medieval-1"
+              },
               "type": "choice",
-              "prompt": "In the feudal system, who was at the bottom of the social structure?",
-              "spokenPrompt": "In the feudal system, who was at the bottom of the social structure?",
+              "prompt": "In the feudal system, who made up the largest portion of the population?",
+              "spokenPrompt": "In the feudal system, who made up the largest portion of the population?",
               "choices": [
-                { "id": "a", "text": "Knights", "correct": false },
-                { "id": "b", "text": "Nobles", "correct": false },
-                { "id": "c", "text": "Peasants", "correct": true, "feedback": "Correct! Peasants worked the land and had the least power and freedom." },
-                { "id": "d", "text": "The King", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Kings and nobles",
+                  "correct": false,
+                  "feedback": "Kings and nobles were at the top of society but made up only a tiny fraction of the population."
+                },
+                {
+                  "id": "b",
+                  "text": "Knights",
+                  "correct": false,
+                  "feedback": "Knights were an important military class but were relatively few in number."
+                },
+                {
+                  "id": "c",
+                  "text": "Peasants and serfs",
+                  "correct": true,
+                  "feedback": "Correct! Peasants and serfs made up about 90% of the medieval population."
+                },
+                {
+                  "id": "d",
+                  "text": "Merchants",
+                  "correct": false,
+                  "feedback": "The merchant class was small in the medieval period, though it would grow during the Renaissance."
+                }
               ],
-              "difficulty": 0.2,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "difficulty": 0.3
+            },
+            {
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-medieval-2"
+              },
+              "type": "choice",
+              "prompt": "Why were books so rare and expensive in medieval Europe?",
+              "spokenPrompt": "Why were books so rare and expensive in medieval Europe?",
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "The Church banned most books",
+                  "correct": false,
+                  "feedback": "While the Church did control which books were acceptable, they didn't ban books in general. Monasteries were actually centers of book production."
+                },
+                {
+                  "id": "b",
+                  "text": "Each book had to be copied by hand",
+                  "correct": true,
+                  "feedback": "Correct! Without printing presses, every book had to be copied letter by letter by hand, which could take months or years."
+                },
+                {
+                  "id": "c",
+                  "text": "There was no paper in Europe",
+                  "correct": false,
+                  "feedback": "While paper was less common, books were made on parchment from animal skins. The real issue was the time needed to copy each one."
+                },
+                {
+                  "id": "d",
+                  "text": "Only kings were allowed to own books",
+                  "correct": false,
+                  "feedback": "While books were expensive, there was no law restricting ownership to kings. Monasteries, nobles, and wealthy merchants also owned books."
+                }
+              ],
+              "difficulty": 0.4
+            },
+            {
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-medieval-3"
+              },
+              "type": "choice",
+              "prompt": "How did the Black Death affect the power of peasants?",
+              "spokenPrompt": "How did the Black Death unexpectedly give more power to peasants who survived?",
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "It made the Church weaker",
+                  "correct": false,
+                  "feedback": "While the plague did cause some people to question the Church, this wasn't the main way peasants gained power."
+                },
+                {
+                  "id": "b",
+                  "text": "It killed most of the nobles",
+                  "correct": false,
+                  "feedback": "The plague killed people from all social classes, not primarily nobles."
+                },
+                {
+                  "id": "c",
+                  "text": "The labor shortage gave workers bargaining power",
+                  "correct": true,
+                  "feedback": "Correct! With far fewer workers, surviving peasants could demand better wages and conditions. Lords had to compete for workers."
+                },
+                {
+                  "id": "d",
+                  "text": "It allowed peasants to become kings",
+                  "correct": false,
+                  "feedback": "The plague didn't change the fundamental structure of who could become royalty."
+                }
+              ],
+              "difficulty": 0.5
+            }
+          ],
+          "misconceptions": [
+            {
+              "id": "misc-dark-ages",
+              "misconception": "The medieval period was called the 'Dark Ages' because nothing good happened",
+              "triggerPhrases": [
+                "dark ages",
+                "nothing happened",
+                "no progress"
+              ],
+              "correction": "While the term 'Dark Ages' was once used, historians now prefer 'medieval period' because important developments did occur, including the preservation of classical texts in monasteries, agricultural innovations, and the building of cathedrals.",
+              "spokenCorrection": "Actually, the term 'Dark Ages' is outdated. Historians now prefer 'medieval period.' While it was different from ancient Rome, important things did happen: monks preserved ancient books, new farming techniques were developed, and incredible cathedrals were built.",
+              "severity": "moderate"
+            },
+            {
+              "id": "misc-plague-fleas",
+              "misconception": "People in the Middle Ages knew the plague came from fleas on rats",
+              "triggerPhrases": [
+                "knew about fleas",
+                "knew it was rats"
+              ],
+              "correction": "Medieval people did not understand that the plague was transmitted by fleas living on rats. They believed it was caused by bad air (miasma), God's punishment, or astrological events. The role of fleas wasn't discovered until the late 1800s.",
+              "spokenCorrection": "Actually, people in the Middle Ages had no idea that fleas on rats spread the plague. They blamed bad smells, God's punishment, or the positions of planets. The real cause wasn't discovered until about 500 years later, in the 1890s.",
+              "severity": "minor"
             }
           ]
         },
         {
-          "id": { "value": "topic-italy-beginning" },
+          "id": {
+            "value": "topic-italy-beginning"
+          },
           "title": "Italy: Where It All Began",
           "type": "topic",
           "orderIndex": 1,
@@ -349,106 +686,451 @@
           "transcript": {
             "segments": [
               {
-                "id": "seg-italy-intro",
+                "id": "seg-italy-intro-1",
                 "type": "introduction",
-                "content": "The Renaissance didn't happen everywhere at once. It started in Italy, specifically in wealthy trading cities like Florence, Venice, and Milan. Why Italy? Let's find out!",
+                "content": "Now that we understand the medieval world that came before, let's travel to the place where everything changed: Italy. The Renaissance didn't happen everywhere at once. It began in the Italian peninsula, particularly in wealthy cities like Florence, Venice, and Rome. But why Italy? Why not France, or England, or Germany? There are several fascinating reasons, and understanding them helps us understand what made the Renaissance possible.",
                 "speakingNotes": {
-                  "emotionalTone": "curious"
+                  "emotionalTone": "curious",
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-geography",
+                "type": "lecture",
+                "content": "Let's start with geography. Look at a map of Italy. It's a peninsula that sticks out into the Mediterranean Sea like a boot. This location made Italy the natural crossroads of Mediterranean trade. Ships from the East, bringing spices, silk, and luxury goods, sailed to Italian ports. Ships from the West came to buy these goods and take them home. Italian merchants became the middlemen of the medieval world, and middlemen can become very, very wealthy.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "crossroads",
+                    "middlemen",
+                    "very wealthy"
+                  ],
+                  "pace": "normal"
                 }
               },
               {
                 "id": "seg-city-states",
                 "type": "explanation",
-                "content": "Unlike most of Europe, Italy wasn't one unified country. It was made up of independent city-states, each with its own government and identity. Florence was a banking center, Venice controlled Mediterranean trade, and Milan was an industrial powerhouse. These cities competed fiercely with each other, not just in business, but also in art and culture. They wanted to show off!",
-                "glossaryRefs": ["term-city-state"],
+                "content": "Unlike France or England, Italy wasn't a unified country. Instead, it was divided into many independent city-states. Each city-state was like its own small country, with its own government, its own laws, and its own army. Florence, Venice, Milan, Naples, and the Papal States around Rome were the most powerful. These city-states competed fiercely with each other, not just militarily but culturally. If Florence built a beautiful cathedral, Venice wanted a more beautiful one. If Venice attracted talented artists, Florence wanted to attract even better ones.",
                 "speakingNotes": {
-                  "emphasis": ["competed fiercely", "show off"],
+                  "emphasis": [
+                    "independent city-states",
+                    "competed fiercely"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-venice-detail",
+                "type": "lecture",
+                "content": "Let's look at Venice as an example. Venice was built on more than one hundred islands in a lagoon. Because it was surrounded by water, it was nearly impossible to invade. This security allowed Venetians to focus on trade rather than constantly fighting wars. Venice became a republic, governed by wealthy merchant families rather than a hereditary king. Venetian ships controlled trade in the eastern Mediterranean. They traded with Constantinople and the Islamic world, bringing back not just goods but ideas. Venice became fabulously wealthy, and wealth meant power.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "one hundred islands",
+                    "fabulously wealthy"
+                  ],
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-florence-intro",
+                "type": "explanation",
+                "content": "But if Venice was rich, Florence would become the true heart of the Renaissance. Florence wasn't a port city; it sat inland on the Arno River. Its wealth came from banking and the wool trade. Florentine bankers lent money to popes and kings. They invented new financial techniques like bills of exchange and double-entry bookkeeping. The florin, the Florentine gold coin, became the standard currency of European trade. Florentine wool was considered the finest in Europe.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "banking",
+                    "florin",
+                    "finest in Europe"
+                  ],
+                  "pace": "normal"
+                },
+                "checkpoint": {
+                  "type": "comprehension_check",
+                  "prompt": "What were the two main sources of Florence's wealth?",
+                  "expectedResponsePatterns": [
+                    "banking",
+                    "wool",
+                    "trade",
+                    "lending money",
+                    "cloth"
+                  ],
+                  "fallbackBehavior": "continue"
+                }
+              },
+              {
+                "id": "seg-medici-intro",
+                "type": "lecture",
+                "content": "To understand the Renaissance in Florence, you need to know about one family: the Medici. The Medici started as wool traders, but by the 1400s, they had built the most powerful bank in Europe. They lent money to popes and kings. They didn't officially rule Florence, but through their wealth and connections, they controlled the city for most of the fifteenth century. The Medici understood something important: money could buy power, but art and culture could buy something even more valuable, lasting fame and prestige.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "Medici",
+                    "most powerful bank",
+                    "lasting fame"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-cosimo",
+                "type": "explanation",
+                "content": "Cosimo de' Medici, who lived from 1389 to 1464, was the first great Medici patron of the arts. A patron is someone who supports artists with money, allowing them to focus on their work. Cosimo built libraries, commissioned buildings, and supported artists and scholars. He collected ancient manuscripts and paid scholars to translate them from Greek into Latin. He founded the Platonic Academy, where intellectuals gathered to discuss philosophy. When Cosimo died, the grateful citizens of Florence gave him the title 'Father of his Country.'",
+                "speakingNotes": {
+                  "emphasis": [
+                    "patron",
+                    "Platonic Academy",
+                    "Father of his Country"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-lorenzo",
+                "type": "lecture",
+                "content": "Cosimo's grandson, Lorenzo de' Medici, became even more famous. Known as Lorenzo the Magnificent, he ruled Florence from 1469 to 1492. Lorenzo was himself a talented poet, but he's best remembered for supporting some of the greatest artists in history. A young sculptor named Michelangelo lived in the Medici palace and ate at their table. Lorenzo supported the painter Botticelli and countless others. He turned Florence into the artistic capital of the world.",
+                "speakingNotes": {
+                  "emotionalTone": "excited",
+                  "emphasis": [
+                    "Lorenzo the Magnificent",
+                    "Michelangelo",
+                    "artistic capital of the world"
+                  ],
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-patronage-system",
+                "type": "explanation",
+                "content": "The Medici weren't the only patrons. Wealthy families competed to support the best artists. The Church commissioned enormous projects. Pope Julius the Second hired Michelangelo to paint the ceiling of the Sistine Chapel and hired Raphael to paint rooms in the Vatican. Cities commissioned public art and buildings. This patronage system was crucial to the Renaissance. Artists need to eat. They need materials like paint and marble. Without wealthy patrons willing to pay for art, most artists couldn't have survived.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "patronage system",
+                    "crucial"
+                  ],
                   "pace": "normal"
                 },
                 "stoppingPoint": {
                   "type": "natural",
-                  "promptForContinue": true
+                  "promptForContinue": true,
+                  "suggestedPrompt": "Why do you think wealthy families competed to support artists? What did they get out of it?"
                 }
               },
               {
-                "id": "seg-trade-wealth",
+                "id": "seg-roman-ruins",
                 "type": "lecture",
-                "content": "Italian cities sat at the crossroads of trade between Europe and Asia. Merchants grew incredibly wealthy selling spices, silk, and other luxury goods. This wealth meant people had money to spend on beautiful buildings, art, and education. When you don't have to worry about where your next meal is coming from, you can think about finer things.",
+                "content": "Italy had another advantage that other countries lacked: Roman ruins were everywhere. The Colosseum still stood in Rome. Roman roads connected cities. Ancient aqueducts still brought water. Roman statues lay buried in fields, waiting to be dug up. Italians lived among the physical remains of ancient greatness. They could see Roman architecture, study Roman engineering, and imagine what the ancient world had been like. This connection to the classical past inspired them to try to match and even surpass ancient achievements.",
                 "speakingNotes": {
-                  "emphasis": ["crossroads of trade", "incredibly wealthy"]
+                  "emphasis": [
+                    "Roman ruins everywhere",
+                    "lived among",
+                    "match and even surpass"
+                  ],
+                  "pace": "slow"
                 }
               },
               {
-                "id": "seg-medici",
-                "type": "lecture",
-                "content": "The Medici family of Florence were the ultimate patrons. They were bankers who became fabulously rich and used their money to support artists, architects, and scholars. They supported Leonardo da Vinci, Michelangelo, and many others. Lorenzo de' Medici, called Lorenzo the Magnificent, basically created an environment where art and learning could flourish.",
-                "glossaryRefs": ["term-patron"],
+                "id": "seg-greek-scholars",
+                "type": "explanation",
+                "content": "The ruins were visible, but many ancient texts had been lost to Western Europe. Here's where a disaster elsewhere became Italy's gain. In 1453, the city of Constantinople fell to the Ottoman Turks. Constantinople had been the capital of the Byzantine Empire and a center of Greek learning. When the city fell, Greek scholars fled westward, many of them to Italy. They brought precious manuscripts, ancient Greek texts that hadn't been seen in Western Europe for centuries. Suddenly, Italians could read Plato, Aristotle, and other Greek philosophers in the original language.",
                 "speakingNotes": {
-                  "emotionalTone": "excited",
-                  "emphasis": ["Medici", "Lorenzo the Magnificent"]
+                  "emphasis": [
+                    "Constantinople fell",
+                    "Greek scholars fled",
+                    "original language"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-humanism-intro",
+                "type": "lecture",
+                "content": "These rediscovered texts sparked a new way of thinking called humanism. Humanists believed that studying ancient Greek and Roman literature, history, and philosophy could make you a better, more complete person. They didn't reject Christianity, but they believed there was value in studying secular, non-religious subjects too. They celebrated human achievement and human potential. The medieval focus on the afterlife gave way to an interest in making this life better, more beautiful, and more meaningful.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "humanism",
+                    "human achievement",
+                    "this life better"
+                  ],
+                  "pace": "slow"
+                }
+              },
+              {
+                "id": "seg-studia-humanitatis",
+                "type": "explanation",
+                "content": "Humanists developed a new educational program called the studia humanitatis, the study of humanity. It included grammar, rhetoric, history, poetry, and moral philosophy. These subjects weren't just theoretical; they were meant to produce well-rounded citizens who could speak persuasively, think clearly, and make good decisions. This educational approach spread through Italian universities and eventually throughout Europe. You might recognize some of these ideas in your own education today. When you study history, literature, and public speaking, you're following in the footsteps of Renaissance humanists.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "studia humanitatis",
+                    "well-rounded citizens"
+                  ],
+                  "emotionalTone": "encouraging"
                 },
                 "checkpoint": {
                   "type": "comprehension_check",
-                  "prompt": "Why were patrons like the Medici so important for the Renaissance?",
-                  "expectedResponsePatterns": ["paid", "supported", "money", "artists could work"],
-                  "fallbackBehavior": "simplify"
+                  "prompt": "How was humanist education different from medieval education's focus on the afterlife?",
+                  "expectedResponsePatterns": [
+                    "this life",
+                    "human achievement",
+                    "secular",
+                    "not just religious",
+                    "improve life now"
+                  ],
+                  "fallbackBehavior": "continue"
                 }
               },
               {
-                "id": "seg-classical-ruins",
+                "id": "seg-competition-culture",
+                "type": "lecture",
+                "content": "The competition between Italian city-states extended to art and architecture. When Florence finished its magnificent cathedral dome, designed by Filippo Brunelleschi, other cities wanted their own impressive buildings. When Milan hired Leonardo da Vinci, Florence wanted him back. This competition drove innovation. Artists and architects constantly tried to outdo each other and outdo the ancients. The result was an explosion of creativity unlike anything Europe had seen since ancient times.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "competition",
+                    "drove innovation",
+                    "explosion of creativity"
+                  ],
+                  "pace": "normal"
+                }
+              },
+              {
+                "id": "seg-workshop-system",
                 "type": "explanation",
-                "content": "Italy had another advantage: Roman ruins were everywhere. Italians could literally walk among ancient Roman buildings, statues, and artifacts. This made it easier to study and be inspired by classical civilization. In Florence, scholars began collecting and translating ancient Greek and Roman texts, rediscovering knowledge that had been lost for centuries.",
-                "glossaryRefs": ["term-classical"]
+                "content": "Artists didn't work alone. They ran workshops where they trained apprentices. A young person might start by grinding pigments and preparing canvases. As they learned, they might paint backgrounds or less important figures. The master would paint the main subjects and teach techniques to promising students. This workshop system ensured that skills were passed down and that there was always a new generation of trained artists ready to take on commissions. Some workshops became almost like brand names, known for a particular style or quality.",
+                "speakingNotes": {
+                  "emphasis": [
+                    "workshops",
+                    "apprentices",
+                    "passed down"
+                  ],
+                  "pace": "normal"
+                }
               },
               {
                 "id": "seg-italy-summary",
                 "type": "summary",
-                "content": "So Italy became the birthplace of the Renaissance because it had wealthy trading cities that competed for prestige, powerful patrons who funded the arts, and ancient Roman ruins that inspired a return to classical learning. All these factors combined to create something special.",
+                "content": "So why did the Renaissance begin in Italy? First, geography: Italy's location made it the center of Mediterranean trade, bringing wealth to its cities. Second, political structure: Italy's independent city-states competed with each other, and this competition extended to art and culture. Third, patronage: wealthy families like the Medici supported artists, allowing them to focus on their work. Fourth, the classical past: Roman ruins surrounded Italians, and Greek scholars brought ancient texts when Constantinople fell. Fifth, humanism: a new philosophy celebrated human achievement and potential. All of these factors combined to create the perfect conditions for an artistic and intellectual explosion. That explosion was the Renaissance, and it would transform not just Italy, but eventually all of Europe and the world.",
                 "speakingNotes": {
-                  "pace": "slow"
+                  "pace": "slow",
+                  "emotionalTone": "encouraging"
                 }
               }
-            ]
+            ],
+            "voiceProfile": {
+              "tone": "conversational",
+              "pace": "moderate"
+            }
           },
           "examples": [
             {
-              "id": "ex-florence-duomo",
-              "type": "real_world",
-              "title": "Florence's Famous Dome",
-              "description": "The Duomo as a symbol of Renaissance achievement",
-              "content": "The dome of Florence's cathedral was designed by Brunelleschi and remains the largest masonry dome ever built. It showed what humans could achieve.",
-              "spokenContent": "Look at the dome of Florence's cathedral, called the Duomo. When Filippo Brunelleschi designed it in the early 1400s, people thought it was impossible to build. The space was too wide for a traditional dome. But Brunelleschi invented new techniques, inspired by studying Roman ruins, and created the largest masonry dome ever built. To this day, no larger one has been constructed! It became a symbol of human achievement, the Renaissance spirit in stone.",
-              "complexity": "simple"
+              "id": "ex-medici-bank",
+              "type": "historical",
+              "title": "The Medici Banking Network",
+              "spokenContent": "The Medici Bank had branches in major cities across Europe: Rome, Venice, Bruges, London, and others. They invented many banking techniques we still use today. They lent huge sums to kings and popes. When England's King Edward the Fourth needed money to fight a war, he borrowed from the Medici. The bank's symbol, six balls on a shield, became one of the most recognized symbols in Europe. Some say the balls represent coins; others say they represent pills, since the family name might come from 'medico,' meaning doctor."
+            },
+            {
+              "id": "ex-brunelleschi-dome",
+              "type": "historical",
+              "title": "Brunelleschi's Impossible Dome",
+              "spokenContent": "In 1418, Florence had a problem. Their cathedral had been under construction for over a century, but nobody knew how to build the dome. The opening was too wide for traditional methods. Filippo Brunelleschi, a goldsmith and architect, proposed a radical solution: build the dome without scaffolding, using a double shell and a herringbone brick pattern. People thought it was impossible. The dome took 16 years to build and remains the largest masonry dome ever constructed. To this day, engineers study it to understand how Brunelleschi did it."
+            },
+            {
+              "id": "ex-michelangelo-youth",
+              "type": "historical",
+              "title": "Young Michelangelo in the Medici Palace",
+              "spokenContent": "When Michelangelo was about fourteen, Lorenzo de' Medici noticed his talent and invited him to live in the Medici palace. Michelangelo ate dinner with the family and studied the Medici art collection. He listened to poets and philosophers discuss ideas. He had access to ancient sculptures. This experience shaped him as an artist. Without the Medici's support, the world might never have seen the Sistine Chapel ceiling or the statue of David."
+            },
+            {
+              "id": "ex-fall-of-constantinople",
+              "type": "historical",
+              "title": "The Fall of Constantinople",
+              "spokenContent": "On May 29, 1453, the Ottoman Turks conquered Constantinople. This ancient city had guarded Greek and Roman knowledge for a thousand years. When the city fell, Greek scholars fled west, carrying precious manuscripts. Some of these texts hadn't been read in Western Europe for centuries. Suddenly, Italian humanists could read Plato's dialogues in the original Greek. This influx of classical knowledge helped fuel the Renaissance. From disaster came intellectual revival."
             }
           ],
           "misconceptions": [
             {
               "id": "misc-italy-country",
               "misconception": "Italy was a unified country during the Renaissance",
-              "triggerPhrases": ["country of Italy", "Italian nation", "Italy's government"],
-              "correction": "Italy wasn't unified until 1861! During the Renaissance, it was made up of independent city-states like Florence, Venice, Milan, and Rome. They competed with each other, which actually helped fuel cultural achievements.",
-              "spokenCorrection": "Actually, Italy wasn't one country back then. It didn't become unified until 1861, almost 400 years after the Renaissance began! During the Renaissance, Italy was a patchwork of independent city-states, each with its own government. Florence, Venice, Milan, Rome, and others all competed with each other. This competition was actually good for art and culture because each city wanted to outdo the others!",
+              "triggerPhrases": [
+                "country of Italy",
+                "Italian nation"
+              ],
+              "correction": "Italy wasn't unified until 1861. During the Renaissance, it was divided into independent city-states like Florence, Venice, and Milan, each with its own government.",
+              "spokenCorrection": "Actually, Italy wasn't a unified country during the Renaissance. It was split into many independent city-states, each like its own small country. Florence, Venice, Milan, and Rome were all separate states that often competed or fought with each other. Italy didn't become one nation until 1861.",
+              "severity": "moderate"
+            },
+            {
+              "id": "misc-medici-kings",
+              "misconception": "The Medici were kings of Florence",
+              "triggerPhrases": [
+                "Medici kings",
+                "King Medici",
+                "Medici royal family"
+              ],
+              "correction": "The Medici were bankers, not royalty. Florence was officially a republic. The Medici controlled Florence through wealth and political manipulation rather than inherited royal title.",
+              "spokenCorrection": "The Medici weren't kings. Florence was actually a republic, and the Medici were bankers. They controlled the city through their money and political connections, but they weren't royalty. Later Medici did become dukes, but that was after the main Renaissance period.",
+              "severity": "minor"
+            },
+            {
+              "id": "misc-humanism-atheism",
+              "misconception": "Renaissance humanism was anti-religious or atheist",
+              "triggerPhrases": [
+                "humanists rejected God",
+                "atheist humanism",
+                "anti-Church humanists"
+              ],
+              "correction": "Renaissance humanists were not anti-religious. Most were devout Christians. They simply believed that studying classical texts and human achievement was valuable alongside religious study.",
+              "spokenCorrection": "That's a common misunderstanding. Renaissance humanists weren't against religion. Most were practicing Christians. They just believed it was valuable to study ancient Greek and Roman texts along with religious works. They thought you could learn a lot about being a good person from classical philosophy and history.",
               "severity": "moderate"
             }
           ],
           "assessments": [
             {
-              "id": { "value": "q-medici" },
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-italy-1"
+              },
               "type": "choice",
-              "prompt": "What role did the Medici family play in the Renaissance?",
+              "prompt": "Why did Italy's geographic location help make it wealthy?",
+              "spokenPrompt": "Why did Italy's location on the Mediterranean Sea help Italian cities become wealthy?",
               "choices": [
-                { "id": "a", "text": "They were famous painters", "correct": false },
-                { "id": "b", "text": "They were wealthy patrons who supported artists", "correct": true },
-                { "id": "c", "text": "They were kings of Italy", "correct": false },
-                { "id": "d", "text": "They invented the printing press", "correct": false }
+                {
+                  "id": "a",
+                  "text": "It was protected from invasions",
+                  "correct": false,
+                  "feedback": "While Venice's lagoon provided some protection, Italy overall was invaded many times. Location helped trade more than defense."
+                },
+                {
+                  "id": "b",
+                  "text": "It was the crossroads of Mediterranean trade",
+                  "correct": true,
+                  "feedback": "Correct! Italian ports were the natural stopping points for trade between East and West, allowing Italian merchants to profit as middlemen."
+                },
+                {
+                  "id": "c",
+                  "text": "It had the best farmland in Europe",
+                  "correct": false,
+                  "feedback": "Italy's geography includes mountains and hills, not the best farmland. Its wealth came from trade, not agriculture."
+                },
+                {
+                  "id": "d",
+                  "text": "It had gold and silver mines",
+                  "correct": false,
+                  "feedback": "Italy didn't have significant precious metal mines. Its wealth came from trade and banking."
+                }
               ],
-              "difficulty": 0.3,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "difficulty": 0.3
+            },
+            {
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-italy-2"
+              },
+              "type": "choice",
+              "prompt": "What is a patron in the context of Renaissance art?",
+              "spokenPrompt": "In the Renaissance, what did it mean to be a patron of the arts?",
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "An art critic who judged artwork",
+                  "correct": false,
+                  "feedback": "Patrons didn't judge art; they paid for it to be created."
+                },
+                {
+                  "id": "b",
+                  "text": "Someone who financially supported artists",
+                  "correct": true,
+                  "feedback": "Correct! Patrons like the Medici family paid artists so they could focus on creating art instead of worrying about making a living."
+                },
+                {
+                  "id": "c",
+                  "text": "A teacher who trained young artists",
+                  "correct": false,
+                  "feedback": "Teachers in workshops were called masters, not patrons. Patrons were the wealthy supporters."
+                },
+                {
+                  "id": "d",
+                  "text": "A government official who regulated art",
+                  "correct": false,
+                  "feedback": "Patrons were private supporters, not government regulators."
+                }
+              ],
+              "difficulty": 0.3
+            },
+            {
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-italy-3"
+              },
+              "type": "choice",
+              "prompt": "What happened when Constantinople fell in 1453?",
+              "spokenPrompt": "What important consequence occurred when Constantinople fell to the Ottoman Turks in 1453?",
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "The Renaissance ended",
+                  "correct": false,
+                  "feedback": "Actually, the fall of Constantinople helped the Renaissance by bringing Greek scholars and texts to Italy."
+                },
+                {
+                  "id": "b",
+                  "text": "Greek scholars fled to Italy with ancient texts",
+                  "correct": true,
+                  "feedback": "Correct! Greek scholars escaped to Italy, bringing precious manuscripts that had been preserved in Constantinople for centuries."
+                },
+                {
+                  "id": "c",
+                  "text": "Italy was conquered by the Ottomans",
+                  "correct": false,
+                  "feedback": "The Ottomans did not conquer Italy after taking Constantinople."
+                },
+                {
+                  "id": "d",
+                  "text": "The Medici family lost power",
+                  "correct": false,
+                  "feedback": "The fall of Constantinople actually helped Florence by bringing new knowledge. The Medici remained powerful."
+                }
+              ],
+              "difficulty": 0.4
+            },
+            {
+              "id": {
+                "catalog": "umlcf",
+                "value": "assess-italy-4"
+              },
+              "type": "choice",
+              "prompt": "What was humanism in the Renaissance?",
+              "spokenPrompt": "What did the Renaissance philosophy of humanism emphasize?",
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Rejecting all religion and focusing only on science",
+                  "correct": false,
+                  "feedback": "Humanists didn't reject religion. They believed in studying secular subjects alongside religious ones."
+                },
+                {
+                  "id": "b",
+                  "text": "The study of classical texts and human achievement",
+                  "correct": true,
+                  "feedback": "Correct! Humanists valued studying ancient Greek and Roman works and celebrated human potential and achievement."
+                },
+                {
+                  "id": "c",
+                  "text": "Training artists in workshops",
+                  "correct": false,
+                  "feedback": "While workshops were important, humanism was a broader philosophy about education and human potential."
+                },
+                {
+                  "id": "d",
+                  "text": "Building bigger churches than the Middle Ages",
+                  "correct": false,
+                  "feedback": "Humanism wasn't about building churches. It was about a new approach to education and valuing human achievement."
+                }
+              ],
+              "difficulty": 0.5
             }
           ]
         },
         {
-          "id": { "value": "topic-renaissance-art" },
+          "id": {
+            "value": "topic-renaissance-art"
+          },
           "title": "Renaissance Art: A New Way of Seeing",
           "type": "topic",
           "orderIndex": 2,
@@ -478,9 +1160,15 @@
                 "id": "seg-perspective",
                 "type": "explanation",
                 "content": "The biggest breakthrough was linear perspective, developed by Filippo Brunelleschi. He figured out the mathematical rules for how things look smaller as they get farther away. When artists used perspective, their paintings suddenly had depth. You could see roads stretching into the distance, rooms you felt you could walk into. It was like magic!",
-                "glossaryRefs": ["term-perspective"],
+                "glossaryRefs": [
+                  "term-perspective"
+                ],
                 "speakingNotes": {
-                  "emphasis": ["mathematical rules", "depth", "magic"],
+                  "emphasis": [
+                    "mathematical rules",
+                    "depth",
+                    "magic"
+                  ],
                   "pace": "slow"
                 },
                 "stoppingPoint": {
@@ -493,9 +1181,14 @@
                 "id": "seg-humanism-art",
                 "type": "lecture",
                 "content": "Renaissance art embraced humanism. Instead of only painting religious figures as stiff, symbolic icons, artists showed humans as real, emotional beings. Bodies became anatomically correct. Artists like Leonardo da Vinci actually dissected human bodies to understand how muscles and bones worked. Faces showed genuine emotion. People in Renaissance paintings look like people!",
-                "glossaryRefs": ["term-humanism"],
+                "glossaryRefs": [
+                  "term-humanism"
+                ],
                 "speakingNotes": {
-                  "emphasis": ["real, emotional beings", "look like people"]
+                  "emphasis": [
+                    "real, emotional beings",
+                    "look like people"
+                  ]
                 }
               },
               {
@@ -504,7 +1197,10 @@
                 "content": "Leonardo da Vinci might be the most famous Renaissance artist. His painting of the Mona Lisa is probably the most famous painting in the world. What makes it special? Her mysterious smile seems to change depending on where you look. Leonardo invented a technique called sfumato, a smoky blending of colors that creates soft edges and lifelike skin. He was also an inventor, scientist, and engineer, the ultimate Renaissance man.",
                 "speakingNotes": {
                   "emotionalTone": "excited",
-                  "emphasis": ["most famous painting", "Renaissance man"]
+                  "emphasis": [
+                    "most famous painting",
+                    "Renaissance man"
+                  ]
                 },
                 "checkpoint": {
                   "type": "simple_confirmation",
@@ -516,10 +1212,15 @@
                 "id": "seg-michelangelo",
                 "type": "lecture",
                 "content": "Michelangelo was another genius, famous for his sculptures and paintings. His statue of David, carved from a single block of marble, shows the human body in perfect form. But his most famous work is the ceiling of the Sistine Chapel in Rome. Imagine painting while lying on your back on scaffolding, looking up, for four years. The result shows scenes from the Bible with incredible power and emotion.",
-                "glossaryRefs": ["term-fresco"],
+                "glossaryRefs": [
+                  "term-fresco"
+                ],
                 "speakingNotes": {
                   "pace": "slow",
-                  "emphasis": ["single block of marble", "four years"]
+                  "emphasis": [
+                    "single block of marble",
+                    "four years"
+                  ]
                 }
               },
               {
@@ -554,35 +1255,79 @@
           ],
           "assessments": [
             {
-              "id": { "value": "q-perspective" },
+              "id": {
+                "value": "q-perspective"
+              },
               "type": "choice",
               "prompt": "What artistic technique makes Renaissance paintings look like they have depth?",
               "choices": [
-                { "id": "a", "text": "Gold backgrounds", "correct": false, "feedback": "Gold backgrounds were common in medieval art, which looked flat" },
-                { "id": "b", "text": "Linear perspective", "correct": true, "feedback": "Yes! Perspective uses mathematical rules to show depth, with things getting smaller in the distance" },
-                { "id": "c", "text": "Bright colors", "correct": false },
-                { "id": "d", "text": "Large canvases", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Gold backgrounds",
+                  "correct": false,
+                  "feedback": "Gold backgrounds were common in medieval art, which looked flat"
+                },
+                {
+                  "id": "b",
+                  "text": "Linear perspective",
+                  "correct": true,
+                  "feedback": "Yes! Perspective uses mathematical rules to show depth, with things getting smaller in the distance"
+                },
+                {
+                  "id": "c",
+                  "text": "Bright colors",
+                  "correct": false
+                },
+                {
+                  "id": "d",
+                  "text": "Large canvases",
+                  "correct": false
+                }
               ],
               "difficulty": 0.3,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "objectivesAssessed": [
+                "obj-identify-changes"
+              ]
             },
             {
-              "id": { "value": "q-mona-lisa" },
+              "id": {
+                "value": "q-mona-lisa"
+              },
               "type": "choice",
               "prompt": "Who painted the Mona Lisa?",
               "choices": [
-                { "id": "a", "text": "Michelangelo", "correct": false },
-                { "id": "b", "text": "Raphael", "correct": false },
-                { "id": "c", "text": "Leonardo da Vinci", "correct": true },
-                { "id": "d", "text": "Botticelli", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Michelangelo",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Raphael",
+                  "correct": false
+                },
+                {
+                  "id": "c",
+                  "text": "Leonardo da Vinci",
+                  "correct": true
+                },
+                {
+                  "id": "d",
+                  "text": "Botticelli",
+                  "correct": false
+                }
               ],
               "difficulty": 0.2,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "objectivesAssessed": [
+                "obj-identify-changes"
+              ]
             }
           ]
         },
         {
-          "id": { "value": "topic-science-discovery" },
+          "id": {
+            "value": "topic-science-discovery"
+          },
           "title": "Science and Discovery",
           "type": "topic",
           "orderIndex": 3,
@@ -626,22 +1371,36 @@
                 "content": "Then came Nicolaus Copernicus, a Polish astronomer. In 1543, he proposed a revolutionary idea: the sun is at the center, and Earth and other planets revolve around it. This heliocentric model, 'helio' meaning sun, was shocking. It suggested that Earth wasn't special, that we weren't at the center of everything. Copernicus was so worried about the reaction that his book wasn't published until he was dying.",
                 "speakingNotes": {
                   "emotionalTone": "serious",
-                  "emphasis": ["revolutionary idea", "sun is at the center"]
+                  "emphasis": [
+                    "revolutionary idea",
+                    "sun is at the center"
+                  ]
                 }
               },
               {
                 "id": "seg-galileo",
                 "type": "lecture",
                 "content": "Galileo Galilei built on Copernicus's work about 70 years later. He built telescopes and pointed them at the sky. He saw moons orbiting Jupiter, proving that not everything revolves around Earth. He saw mountains on our moon, showing it wasn't a perfect sphere. The Church eventually put Galileo on trial and forced him to recant his views. But he reportedly muttered, 'And yet it moves,' meaning Earth still orbits the sun regardless of what the Church says.",
-                "glossaryRefs": ["term-scientific-method"],
+                "glossaryRefs": [
+                  "term-scientific-method"
+                ],
                 "speakingNotes": {
                   "emotionalTone": "excited",
-                  "emphasis": ["moons orbiting Jupiter", "And yet it moves"]
+                  "emphasis": [
+                    "moons orbiting Jupiter",
+                    "And yet it moves"
+                  ]
                 },
                 "checkpoint": {
                   "type": "comprehension_check",
                   "prompt": "Why was the idea that Earth moves around the sun so controversial?",
-                  "expectedResponsePatterns": ["Church", "center", "humans special", "against religion", "Ptolemy"],
+                  "expectedResponsePatterns": [
+                    "Church",
+                    "center",
+                    "humans special",
+                    "against religion",
+                    "Ptolemy"
+                  ],
                   "fallbackBehavior": "continue"
                 }
               },
@@ -649,9 +1408,15 @@
                 "id": "seg-scientific-method",
                 "type": "explanation",
                 "content": "What made Renaissance science different was the method. Instead of just reading old books, scientists observed the world, made hypotheses, and tested them with experiments. If the experiment disagreed with the hypothesis, they revised their thinking. This scientific method is still how science works today. It's about evidence, not just authority.",
-                "glossaryRefs": ["term-scientific-method"],
+                "glossaryRefs": [
+                  "term-scientific-method"
+                ],
                 "speakingNotes": {
-                  "emphasis": ["observed", "tested", "evidence"]
+                  "emphasis": [
+                    "observed",
+                    "tested",
+                    "evidence"
+                  ]
                 }
               },
               {
@@ -668,7 +1433,11 @@
             {
               "id": "misc-church-anti-science",
               "misconception": "The Church was always against science",
-              "triggerPhrases": ["Church hated science", "religion against knowledge", "Church opposed learning"],
+              "triggerPhrases": [
+                "Church hated science",
+                "religion against knowledge",
+                "Church opposed learning"
+              ],
               "correction": "The relationship was more complex. The Church actually preserved much ancient knowledge through the Middle Ages and supported many scholars. The conflict arose mainly when new ideas directly challenged Church teachings about Earth's place in the universe.",
               "spokenCorrection": "It's actually more complicated than that! The Church preserved a lot of ancient knowledge through the Middle Ages, and many scientists, including Copernicus, were actually religious. The conflict came specifically when new discoveries seemed to contradict what the Church taught about Earth being at the center of God's creation. In many other areas, the Church supported learning and education.",
               "severity": "moderate"
@@ -676,22 +1445,45 @@
           ],
           "assessments": [
             {
-              "id": { "value": "q-heliocentric" },
+              "id": {
+                "value": "q-heliocentric"
+              },
               "type": "choice",
               "prompt": "What does 'heliocentric' mean?",
               "choices": [
-                { "id": "a", "text": "Earth-centered", "correct": false },
-                { "id": "b", "text": "Sun-centered", "correct": true, "feedback": "Correct! 'Helio' comes from the Greek word for sun." },
-                { "id": "c", "text": "Moon-centered", "correct": false },
-                { "id": "d", "text": "Star-centered", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Earth-centered",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Sun-centered",
+                  "correct": true,
+                  "feedback": "Correct! 'Helio' comes from the Greek word for sun."
+                },
+                {
+                  "id": "c",
+                  "text": "Moon-centered",
+                  "correct": false
+                },
+                {
+                  "id": "d",
+                  "text": "Star-centered",
+                  "correct": false
+                }
               ],
               "difficulty": 0.25,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "objectivesAssessed": [
+                "obj-identify-changes"
+              ]
             }
           ]
         },
         {
-          "id": { "value": "topic-printing-press" },
+          "id": {
+            "value": "topic-printing-press"
+          },
           "title": "The Printing Press: Ideas Go Viral",
           "type": "topic",
           "orderIndex": 4,
@@ -730,10 +1522,15 @@
                 "id": "seg-gutenberg",
                 "type": "lecture",
                 "content": "Around 1440, in the German city of Mainz, Johannes Gutenberg invented movable type printing. He created individual metal letters that could be arranged to form any text, inked, and pressed onto paper. After printing, the letters could be rearranged for a new page. His first major work was the Gutenberg Bible around 1455. It was beautiful and, compared to hand-copying, fast!",
-                "glossaryRefs": ["term-printing-press"],
+                "glossaryRefs": [
+                  "term-printing-press"
+                ],
                 "speakingNotes": {
                   "pace": "slow",
-                  "emphasis": ["movable type", "rearranged"]
+                  "emphasis": [
+                    "movable type",
+                    "rearranged"
+                  ]
                 }
               },
               {
@@ -742,12 +1539,21 @@
                 "content": "The results were explosive. By 1500, there were printing presses in 270 cities across Europe. Millions of books had been printed. The price of books dropped dramatically. Suddenly, middle-class people could afford books! Ideas that once took decades to spread could now reach thousands of readers in months. The printing press was like the internet of its time.",
                 "speakingNotes": {
                   "emotionalTone": "excited",
-                  "emphasis": ["270 cities", "millions of books", "internet of its time"]
+                  "emphasis": [
+                    "270 cities",
+                    "millions of books",
+                    "internet of its time"
+                  ]
                 },
                 "checkpoint": {
                   "type": "comprehension_check",
                   "prompt": "Why do you think cheaper books led to more people learning to read?",
-                  "expectedResponsePatterns": ["afford", "more books", "available", "worth learning"],
+                  "expectedResponsePatterns": [
+                    "afford",
+                    "more books",
+                    "available",
+                    "worth learning"
+                  ],
                   "fallbackBehavior": "continue"
                 }
               },
@@ -755,9 +1561,13 @@
                 "id": "seg-literacy-reformation",
                 "type": "explanation",
                 "content": "The printing press had huge consequences. Literacy rates climbed as more people had reasons to learn to read. The Protestant Reformation, when Martin Luther challenged the Catholic Church, spread rapidly because his writings could be printed and distributed widely. Scientific discoveries spread faster too. The printing press didn't just spread ideas; it accelerated history itself.",
-                "glossaryRefs": ["term-reformation"],
+                "glossaryRefs": [
+                  "term-reformation"
+                ],
                 "speakingNotes": {
-                  "emphasis": ["accelerated history"]
+                  "emphasis": [
+                    "accelerated history"
+                  ]
                 }
               },
               {
@@ -784,31 +1594,63 @@
           ],
           "assessments": [
             {
-              "id": { "value": "q-gutenberg-invention" },
+              "id": {
+                "value": "q-gutenberg-invention"
+              },
               "type": "text_entry",
               "prompt": "What technology did Johannes Gutenberg invent around 1440?",
               "spokenPrompt": "What technology did Johannes Gutenberg invent around 1440?",
-              "correctResponse": ["printing press", "the printing press", "movable type", "movable type printing"],
+              "correctResponse": [
+                "printing press",
+                "the printing press",
+                "movable type",
+                "movable type printing"
+              ],
               "difficulty": 0.2,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "objectivesAssessed": [
+                "obj-identify-changes"
+              ]
             },
             {
-              "id": { "value": "q-press-impact" },
+              "id": {
+                "value": "q-press-impact"
+              },
               "type": "multiple_choice",
               "prompt": "What were the effects of the printing press? Select all that apply.",
               "choices": [
-                { "id": "a", "text": "Books became cheaper", "correct": true },
-                { "id": "b", "text": "More people learned to read", "correct": true },
-                { "id": "c", "text": "Ideas spread faster", "correct": true },
-                { "id": "d", "text": "Only nobles could own books", "correct": false, "feedback": "Actually, the opposite happened! Middle-class people could now afford books." }
+                {
+                  "id": "a",
+                  "text": "Books became cheaper",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "More people learned to read",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Ideas spread faster",
+                  "correct": true
+                },
+                {
+                  "id": "d",
+                  "text": "Only nobles could own books",
+                  "correct": false,
+                  "feedback": "Actually, the opposite happened! Middle-class people could now afford books."
+                }
               ],
               "difficulty": 0.35,
-              "objectivesAssessed": ["obj-analyze-impact"]
+              "objectivesAssessed": [
+                "obj-analyze-impact"
+              ]
             }
           ]
         },
         {
-          "id": { "value": "topic-northern-renaissance" },
+          "id": {
+            "value": "topic-northern-renaissance"
+          },
           "title": "Beyond Italy: The Northern Renaissance",
           "type": "topic",
           "orderIndex": 5,
@@ -851,7 +1693,11 @@
                 "type": "lecture",
                 "content": "Northern artists like Jan van Eyck in the Netherlands pioneered oil painting, which allowed for incredibly detailed and realistic images. They painted everyday scenes and regular people, not just religious subjects or nobles. Look at a Dutch painting from this era and you'll see wrinkles, textures, reflections, everything captured with amazing precision.",
                 "speakingNotes": {
-                  "emphasis": ["oil painting", "everyday scenes", "amazing precision"]
+                  "emphasis": [
+                    "oil painting",
+                    "everyday scenes",
+                    "amazing precision"
+                  ]
                 }
               },
               {
@@ -859,7 +1705,10 @@
                 "type": "lecture",
                 "content": "Erasmus of Rotterdam was the greatest scholar of the Northern Renaissance. He studied ancient Greek texts and published a new version of the New Testament in its original Greek. He criticized corruption in the Church but stayed within Catholicism. His writings influenced both Catholics and Protestants, and he became the first international celebrity of the print age.",
                 "speakingNotes": {
-                  "emphasis": ["Erasmus", "international celebrity"]
+                  "emphasis": [
+                    "Erasmus",
+                    "international celebrity"
+                  ]
                 }
               },
               {
@@ -868,7 +1717,10 @@
                 "content": "In England, the Renaissance blossomed in literature, especially theater. William Shakespeare wrote plays that are still performed today, over 400 years later. Hamlet, Romeo and Juliet, Macbeth... Shakespeare explored human nature with a depth and complexity that was new. He invented words we still use, like 'lonely,' 'generous,' and 'hurry.'",
                 "speakingNotes": {
                   "emotionalTone": "excited",
-                  "emphasis": ["still performed today", "invented words"]
+                  "emphasis": [
+                    "still performed today",
+                    "invented words"
+                  ]
                 },
                 "checkpoint": {
                   "type": "simple_confirmation",
@@ -899,22 +1751,44 @@
           ],
           "assessments": [
             {
-              "id": { "value": "q-shakespeare" },
+              "id": {
+                "value": "q-shakespeare"
+              },
               "type": "choice",
               "prompt": "In which country did William Shakespeare write his plays?",
               "choices": [
-                { "id": "a", "text": "Italy", "correct": false },
-                { "id": "b", "text": "France", "correct": false },
-                { "id": "c", "text": "England", "correct": true },
-                { "id": "d", "text": "Germany", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Italy",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "France",
+                  "correct": false
+                },
+                {
+                  "id": "c",
+                  "text": "England",
+                  "correct": true
+                },
+                {
+                  "id": "d",
+                  "text": "Germany",
+                  "correct": false
+                }
               ],
               "difficulty": 0.2,
-              "objectivesAssessed": ["obj-identify-changes"]
+              "objectivesAssessed": [
+                "obj-identify-changes"
+              ]
             }
           ]
         },
         {
-          "id": { "value": "topic-legacy-today" },
+          "id": {
+            "value": "topic-legacy-today"
+          },
           "title": "The Renaissance Legacy: Shaping Our World",
           "type": "topic",
           "orderIndex": 6,
@@ -954,7 +1828,10 @@
                 "type": "lecture",
                 "content": "Renaissance humanists believed in the power of education to improve people. They created schools that taught classical languages, history, art, and science. Our modern idea that everyone should have access to education, that learning makes better citizens, comes from this period. The liberal arts curriculum still used in many colleges today is a Renaissance invention.",
                 "speakingNotes": {
-                  "emphasis": ["power of education", "Renaissance invention"]
+                  "emphasis": [
+                    "power of education",
+                    "Renaissance invention"
+                  ]
                 }
               },
               {
@@ -963,12 +1840,21 @@
                 "content": "Before the Renaissance, your identity was defined by your social class and your role in the community. Renaissance humanism said that individuals matter, that each person has potential worth developing. This idea evolved into concepts of individual rights and freedoms that shape modern democracies. The Declaration of Independence's 'all men are created equal' has Renaissance roots.",
                 "speakingNotes": {
                   "emotionalTone": "serious",
-                  "emphasis": ["individuals matter", "Renaissance roots"]
+                  "emphasis": [
+                    "individuals matter",
+                    "Renaissance roots"
+                  ]
                 },
                 "checkpoint": {
                   "type": "comprehension_check",
                   "prompt": "How does the Renaissance idea of individual worth connect to modern democracy?",
-                  "expectedResponsePatterns": ["rights", "equality", "potential", "each person", "freedom"],
+                  "expectedResponsePatterns": [
+                    "rights",
+                    "equality",
+                    "potential",
+                    "each person",
+                    "freedom"
+                  ],
                   "fallbackBehavior": "simplify"
                 }
               },
@@ -985,7 +1871,10 @@
                 "type": "explanation",
                 "content": "Finally, consider the printing press. It was the 'internet' of its time, spreading information widely and democratizing knowledge. The digital revolution we're living through now is in many ways a continuation of what Gutenberg started. The Renaissance taught us that knowledge should be shared, that ideas can change the world.",
                 "speakingNotes": {
-                  "emphasis": ["democratizing knowledge", "ideas can change the world"]
+                  "emphasis": [
+                    "democratizing knowledge",
+                    "ideas can change the world"
+                  ]
                 }
               },
               {
@@ -1012,30 +1901,71 @@
           ],
           "assessments": [
             {
-              "id": { "value": "q-legacy" },
+              "id": {
+                "value": "q-legacy"
+              },
               "type": "multiple_choice",
               "prompt": "Which of these modern concepts have roots in the Renaissance? Select all that apply.",
               "choices": [
-                { "id": "a", "text": "The scientific method", "correct": true },
-                { "id": "b", "text": "Universal education", "correct": true },
-                { "id": "c", "text": "Individual rights", "correct": true },
-                { "id": "d", "text": "The feudal system", "correct": false, "feedback": "The feudal system came before the Renaissance and declined during it" }
+                {
+                  "id": "a",
+                  "text": "The scientific method",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Universal education",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Individual rights",
+                  "correct": true
+                },
+                {
+                  "id": "d",
+                  "text": "The feudal system",
+                  "correct": false,
+                  "feedback": "The feudal system came before the Renaissance and declined during it"
+                }
               ],
               "difficulty": 0.4,
-              "objectivesAssessed": ["obj-connect-today"]
+              "objectivesAssessed": [
+                "obj-connect-today"
+              ]
             },
             {
-              "id": { "value": "q-printing-internet" },
+              "id": {
+                "value": "q-printing-internet"
+              },
               "type": "choice",
               "prompt": "Why is the printing press sometimes compared to the internet?",
               "choices": [
-                { "id": "a", "text": "Both use electricity", "correct": false },
-                { "id": "b", "text": "Both spread information widely and made knowledge more accessible", "correct": true },
-                { "id": "c", "text": "Both were invented in Italy", "correct": false },
-                { "id": "d", "text": "Both are no longer used today", "correct": false }
+                {
+                  "id": "a",
+                  "text": "Both use electricity",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Both spread information widely and made knowledge more accessible",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Both were invented in Italy",
+                  "correct": false
+                },
+                {
+                  "id": "d",
+                  "text": "Both are no longer used today",
+                  "correct": false
+                }
               ],
               "difficulty": 0.35,
-              "objectivesAssessed": ["obj-analyze-impact"]
+              "objectivesAssessed": [
+                "obj-analyze-impact"
+              ]
             }
           ]
         }
@@ -1062,6 +1992,69 @@
         "Show side-by-side medieval vs Renaissance art for contrast",
         "Show map of Renaissance Italy and city-states"
       ]
+    }
+  },
+  "sourceProvenance": {
+    "originType": "ai_generated",
+    "primarySources": [
+      {
+        "title": "The Civilization of the Renaissance in Italy",
+        "type": "book",
+        "authors": [
+          "Jacob Burckhardt"
+        ],
+        "publisher": "Penguin Classics",
+        "publicationDate": "1860 (original), 1990 (reprint)",
+        "relationshipToContent": "primary_source",
+        "notes": "Foundational text on Italian Renaissance cultural history"
+      },
+      {
+        "title": "The Renaissance: A Short History",
+        "type": "book",
+        "authors": [
+          "Paul Johnson"
+        ],
+        "publisher": "Modern Library",
+        "publicationDate": "2000",
+        "relationshipToContent": "reference"
+      },
+      {
+        "title": "Renaissance",
+        "type": "encyclopedia",
+        "url": "https://www.britannica.com/event/Renaissance",
+        "publisher": "Encyclopaedia Britannica",
+        "accessDate": "2024-12-21",
+        "relationshipToContent": "fact_check"
+      },
+      {
+        "title": "The Black Death",
+        "type": "encyclopedia",
+        "url": "https://www.britannica.com/event/Black-Death",
+        "publisher": "Encyclopaedia Britannica",
+        "accessDate": "2024-12-21",
+        "relationshipToContent": "fact_check",
+        "sectionsUsed": [
+          "topic-medieval-world"
+        ]
+      },
+      {
+        "title": "Khan Academy: Renaissance Art",
+        "type": "course",
+        "url": "https://www.khanacademy.org/humanities/renaissance-reformation",
+        "publisher": "Khan Academy",
+        "license": "CC BY-NC-SA 3.0",
+        "relationshipToContent": "inspiration"
+      }
+    ],
+    "aiGenerationMetadata": {
+      "model": "claude-opus-4-5",
+      "generationDate": "2025-12-21T19:52:58.066325",
+      "prompt": "Create comprehensive middle-school level curriculum on the Renaissance with full transcripts",
+      "humanReviewed": false
+    },
+    "verificationStatus": {
+      "factChecked": false,
+      "academicReview": false
     }
   }
 }

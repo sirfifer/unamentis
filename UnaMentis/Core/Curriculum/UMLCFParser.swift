@@ -185,7 +185,28 @@ public struct UMLCFTimeEstimates: Codable, Sendable {
 public struct UMLCFTranscript: Codable, Sendable {
     public let segments: [UMLCFTranscriptSegment]?
     public let totalDuration: String?
+    public let pronunciationGuide: [String: UMLCFPronunciationEntry]?
     public let voiceProfile: UMLCFVoiceProfile?
+}
+
+/// Pronunciation guide entry with IPA and optional metadata
+/// Used by TTS services to correctly pronounce proper nouns, foreign terms, etc.
+/// TTS services should convert these to SSML <phoneme> tags when supported.
+public struct UMLCFPronunciationEntry: Codable, Sendable {
+    /// IPA (International Phonetic Alphabet) pronunciation
+    /// Example: "/ˈmɛdɪtʃi/" for "Medici"
+    public let ipa: String
+
+    /// Human-readable respelling for accessibility
+    /// Example: "MED-ih-chee"
+    public let respelling: String?
+
+    /// BCP 47 language code for the term's origin
+    /// Helps TTS with accent hints: "it" for Italian, "de" for German
+    public let language: String?
+
+    /// Optional notes about pronunciation context or variations
+    public let notes: String?
 }
 
 public struct UMLCFTranscriptSegment: Codable, Sendable {
@@ -487,6 +508,15 @@ public actor UMLCFParser {
 
         // Store raw transcript as JSON in embedding field for later use
         if let segments = transcript.segments {
+            // Convert pronunciation guide to TranscriptData format
+            let pronunciationEntries: [String: TranscriptData.PronunciationEntry]? = transcript.pronunciationGuide?.mapValues { entry in
+                TranscriptData.PronunciationEntry(
+                    ipa: entry.ipa,
+                    respelling: entry.respelling,
+                    language: entry.language
+                )
+            }
+
             let transcriptData = TranscriptData(
                 segments: segments.map { seg in
                     TranscriptData.Segment(
@@ -504,7 +534,8 @@ public actor UMLCFParser {
                         stoppingPointType: seg.stoppingPoint?.type
                     )
                 },
-                totalDuration: transcript.totalDuration
+                totalDuration: transcript.totalDuration,
+                pronunciationGuide: pronunciationEntries
             )
 
             if let jsonData = try? JSONEncoder().encode(transcriptData) {
@@ -539,6 +570,9 @@ public actor UMLCFParser {
 public struct TranscriptData: Codable, Sendable {
     public let segments: [Segment]
     public let totalDuration: String?
+    /// Pronunciation guide mapping term text to IPA pronunciation
+    /// TTS services use this to correctly pronounce proper nouns and foreign terms
+    public let pronunciationGuide: [String: PronunciationEntry]?
 
     public struct Segment: Codable, Sendable {
         public let id: String
@@ -553,6 +587,16 @@ public struct TranscriptData: Codable, Sendable {
         public let pace: String?
         public let emotionalTone: String?
         public let pauseAfter: String?
+    }
+
+    /// Pronunciation entry for TTS processing
+    public struct PronunciationEntry: Codable, Sendable {
+        /// IPA pronunciation (e.g., "/ˈmɛdɪtʃi/")
+        public let ipa: String
+        /// Human-readable respelling (e.g., "MED-ih-chee")
+        public let respelling: String?
+        /// Language of origin (BCP 47 code, e.g., "it" for Italian)
+        public let language: String?
     }
 }
 

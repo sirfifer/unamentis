@@ -684,6 +684,127 @@
             "intermediate": "PT35M"
           },
           "transcript": {
+            "pronunciationGuide": {
+              "Medici": {
+                "ipa": "/ˈmɛdɪtʃi/",
+                "respelling": "MED-ih-chee",
+                "language": "it",
+                "notes": "Italian banking family, not 'meh-DEE-chee'"
+              },
+              "Cosimo de' Medici": {
+                "ipa": "/ˈkɔːzɪmoʊ deɪ ˈmɛdɪtʃi/",
+                "respelling": "KAW-zee-moh day MED-ih-chee",
+                "language": "it"
+              },
+              "Lorenzo de' Medici": {
+                "ipa": "/loʊˈrɛntsoʊ deɪ ˈmɛdɪtʃi/",
+                "respelling": "loh-REN-tsoh day MED-ih-chee",
+                "language": "it"
+              },
+              "Florence": {
+                "ipa": "/ˈflɒrəns/",
+                "respelling": "FLOR-ence",
+                "language": "en",
+                "notes": "English name for Firenze"
+              },
+              "Venice": {
+                "ipa": "/ˈvɛnɪs/",
+                "respelling": "VEN-iss",
+                "language": "en",
+                "notes": "English name for Venezia"
+              },
+              "Milan": {
+                "ipa": "/mɪˈlæn/",
+                "respelling": "mih-LAN",
+                "language": "en",
+                "notes": "English name for Milano"
+              },
+              "Filippo Brunelleschi": {
+                "ipa": "/fɪˈliːpoʊ ˌbruːnɛˈlɛski/",
+                "respelling": "fih-LEE-poh broo-neh-LES-kee",
+                "language": "it"
+              },
+              "Leonardo da Vinci": {
+                "ipa": "/ˌleɪɔˈnɑːrdoʊ dɑː ˈvɪntʃi/",
+                "respelling": "lay-oh-NAR-doh dah VIN-chee",
+                "language": "it"
+              },
+              "Michelangelo": {
+                "ipa": "/ˌmaɪkəlˈændʒəloʊ/",
+                "respelling": "my-kul-AN-juh-loh",
+                "language": "it",
+                "notes": "Anglicized pronunciation commonly used"
+              },
+              "Constantinople": {
+                "ipa": "/ˌkɒnstæntɪˈnoʊpəl/",
+                "respelling": "kon-stan-tih-NOH-pul",
+                "language": "en"
+              },
+              "Byzantine": {
+                "ipa": "/ˈbɪzəntiːn/",
+                "respelling": "BIZ-un-teen",
+                "language": "en"
+              },
+              "Ottoman": {
+                "ipa": "/ˈɒtəmən/",
+                "respelling": "OT-uh-mun",
+                "language": "en"
+              },
+              "Plato": {
+                "ipa": "/ˈpleɪtoʊ/",
+                "respelling": "PLAY-toh",
+                "language": "en"
+              },
+              "Aristotle": {
+                "ipa": "/ˈærɪstɒtəl/",
+                "respelling": "AIR-ih-stot-ul",
+                "language": "en"
+              },
+              "florin": {
+                "ipa": "/ˈflɒrɪn/",
+                "respelling": "FLOR-in",
+                "language": "en",
+                "notes": "Florentine gold coin"
+              },
+              "studia humanitatis": {
+                "ipa": "/ˈstuːdiə hjuːˈmænɪtɑːtɪs/",
+                "respelling": "STOO-dee-uh hyoo-man-ih-TAH-tis",
+                "language": "la",
+                "notes": "Latin phrase meaning 'study of humanity'"
+              },
+              "Platonic Academy": {
+                "ipa": "/pləˈtɒnɪk əˈkædəmi/",
+                "respelling": "pluh-TON-ik uh-KAD-uh-mee",
+                "language": "en"
+              },
+              "Arno": {
+                "ipa": "/ˈɑːrnoʊ/",
+                "respelling": "AR-noh",
+                "language": "it",
+                "notes": "River running through Florence"
+              },
+              "Pope Julius": {
+                "ipa": "/poʊp ˈdʒuːliəs/",
+                "respelling": "pope JOO-lee-us",
+                "language": "en"
+              },
+              "Raphael": {
+                "ipa": "/ˈræfeɪəl/",
+                "respelling": "RAF-ay-ul",
+                "language": "en",
+                "notes": "Anglicized; Italian is Raffaello"
+              },
+              "Sistine Chapel": {
+                "ipa": "/ˈsɪstiːn ˈtʃæpəl/",
+                "respelling": "SIS-teen CHAP-ul",
+                "language": "en"
+              },
+              "Vatican": {
+                "ipa": "/ˈvætɪkən/",
+                "respelling": "VAT-ih-kun",
+                "language": "en"
+              }
+            },
             "segments": [
               {
                 "id": "seg-italy-intro-1",
@@ -1147,6 +1268,56 @@
             "intermediate": "PT40M"
           },
           "transcript": {
+            "pronunciationGuide": {
+              "Filippo Brunelleschi": {
+                "ipa": "/fɪˈliːpoʊ ˌbruːnɛˈlɛski/",
+                "respelling": "fih-LEE-poh broo-neh-LES-kee",
+                "language": "it"
+              },
+              "Leonardo da Vinci": {
+                "ipa": "/ˌleɪɔˈnɑːrdoʊ dɑː ˈvɪntʃi/",
+                "respelling": "lay-oh-NAR-doh dah VIN-chee",
+                "language": "it"
+              },
+              "Michelangelo": {
+                "ipa": "/ˌmaɪkəlˈændʒəloʊ/",
+                "respelling": "my-kul-AN-juh-loh",
+                "language": "it",
+                "notes": "Anglicized pronunciation commonly used"
+              },
+              "Mona Lisa": {
+                "ipa": "/ˈmoʊnə ˈliːzə/",
+                "respelling": "MOH-nuh LEE-zuh",
+                "language": "en",
+                "notes": "Anglicized; Italian is 'La Gioconda'"
+              },
+              "sfumato": {
+                "ipa": "/sfuːˈmɑːtoʊ/",
+                "respelling": "sfoo-MAH-toh",
+                "language": "it",
+                "notes": "Italian art technique meaning 'smoky'"
+              },
+              "Sistine Chapel": {
+                "ipa": "/ˈsɪstiːn ˈtʃæpəl/",
+                "respelling": "SIS-teen CHAP-ul",
+                "language": "en"
+              },
+              "David": {
+                "ipa": "/ˈdeɪvɪd/",
+                "respelling": "DAY-vid",
+                "language": "en"
+              },
+              "Botticelli": {
+                "ipa": "/ˌbɒtɪˈtʃɛli/",
+                "respelling": "bot-ih-CHEL-ee",
+                "language": "it"
+              },
+              "fresco": {
+                "ipa": "/ˈfrɛskoʊ/",
+                "respelling": "FRES-koh",
+                "language": "it"
+              }
+            },
             "segments": [
               {
                 "id": "seg-art-intro",
@@ -1344,6 +1515,41 @@
             "intermediate": "PT35M"
           },
           "transcript": {
+            "pronunciationGuide": {
+              "Nicolaus Copernicus": {
+                "ipa": "/ˌnɪkəˈleɪəs koʊˈpɜːrnɪkəs/",
+                "respelling": "nik-oh-LAY-us koh-PUR-nih-kus",
+                "language": "la",
+                "notes": "Latinized name; Polish is Mikołaj Kopernik"
+              },
+              "Copernicus": {
+                "ipa": "/koʊˈpɜːrnɪkəs/",
+                "respelling": "koh-PUR-nih-kus",
+                "language": "la"
+              },
+              "Galileo Galilei": {
+                "ipa": "/ˌɡælɪˈleɪoʊ ˌɡælɪˈleɪi/",
+                "respelling": "gal-ih-LAY-oh gal-ih-LAY-ee",
+                "language": "it"
+              },
+              "Galileo": {
+                "ipa": "/ˌɡælɪˈleɪoʊ/",
+                "respelling": "gal-ih-LAY-oh",
+                "language": "it"
+              },
+              "Ptolemy": {
+                "ipa": "/ˈtɒləmi/",
+                "respelling": "TOL-uh-mee",
+                "language": "en",
+                "notes": "Anglicized from Greek Ptolemaios"
+              },
+              "heliocentric": {
+                "ipa": "/ˌhiːliəˈsɛntrɪk/",
+                "respelling": "hee-lee-oh-SEN-trik",
+                "language": "en",
+                "notes": "From Greek 'helios' meaning sun"
+              }
+            },
             "segments": [
               {
                 "id": "seg-science-intro",
@@ -1500,6 +1706,35 @@
             "intermediate": "PT30M"
           },
           "transcript": {
+            "pronunciationGuide": {
+              "Johannes Gutenberg": {
+                "ipa": "/joʊˈhɑːnɪs ˈɡuːtənbɜːrɡ/",
+                "respelling": "yoh-HAH-nis GOO-ten-berg",
+                "language": "de"
+              },
+              "Gutenberg": {
+                "ipa": "/ˈɡuːtənbɜːrɡ/",
+                "respelling": "GOO-ten-berg",
+                "language": "de"
+              },
+              "Mainz": {
+                "ipa": "/maɪnts/",
+                "respelling": "MYNTS",
+                "language": "de",
+                "notes": "German city where printing press was invented"
+              },
+              "Martin Luther": {
+                "ipa": "/ˈmɑːrtɪn ˈluːθər/",
+                "respelling": "MAR-tin LOO-ther",
+                "language": "en",
+                "notes": "Anglicized; German is LOO-ter"
+              },
+              "Wittenberg": {
+                "ipa": "/ˈvɪtənbɜːrɡ/",
+                "respelling": "VIT-en-berg",
+                "language": "de"
+              }
+            },
             "segments": [
               {
                 "id": "seg-press-intro",
@@ -1667,6 +1902,55 @@
             "intermediate": "PT35M"
           },
           "transcript": {
+            "pronunciationGuide": {
+              "Jan van Eyck": {
+                "ipa": "/jɑːn vɑːn ˈaɪk/",
+                "respelling": "YAHN vahn IKE",
+                "language": "nl",
+                "notes": "Dutch painter"
+              },
+              "Erasmus": {
+                "ipa": "/ɪˈræzməs/",
+                "respelling": "ih-RAZ-mus",
+                "language": "la"
+              },
+              "Erasmus of Rotterdam": {
+                "ipa": "/ɪˈræzməs əv ˈrɒtərdæm/",
+                "respelling": "ih-RAZ-mus of ROT-er-dam",
+                "language": "en"
+              },
+              "Rotterdam": {
+                "ipa": "/ˈrɒtərdæm/",
+                "respelling": "ROT-er-dam",
+                "language": "nl"
+              },
+              "William Shakespeare": {
+                "ipa": "/ˈwɪljəm ˈʃeɪkspɪər/",
+                "respelling": "WIL-yum SHAKE-speer",
+                "language": "en"
+              },
+              "Shakespeare": {
+                "ipa": "/ˈʃeɪkspɪər/",
+                "respelling": "SHAKE-speer",
+                "language": "en"
+              },
+              "Hamlet": {
+                "ipa": "/ˈhæmlɪt/",
+                "respelling": "HAM-lit",
+                "language": "en"
+              },
+              "Macbeth": {
+                "ipa": "/məkˈbɛθ/",
+                "respelling": "muk-BETH",
+                "language": "en"
+              },
+              "Bruges": {
+                "ipa": "/bruːʒ/",
+                "respelling": "BROOZH",
+                "language": "fr",
+                "notes": "Belgian city; Flemish is Brugge"
+              }
+            },
             "segments": [
               {
                 "id": "seg-north-intro",

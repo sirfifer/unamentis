@@ -1213,6 +1213,49 @@
           "type": "string",
           "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?$"
         },
+        "pronunciationGuide": {
+          "description": "Pronunciation hints for terms in this transcript. Maps term text (as it appears in content) to IPA pronunciation. TTS services should use SSML <phoneme> tags with ipa alphabet. Source: VLCF native, W3C SSML phoneme.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["ipa"],
+            "properties": {
+              "ipa": {
+                "description": "IPA (International Phonetic Alphabet) pronunciation. Source: W3C SSML phoneme, IPA standard.",
+                "type": "string",
+                "examples": ["/ˈmɛdɪtʃi/", "/ˌleɪɔˈnɑːrdoʊ dɑː ˈvintʃi/", "/ˈbɒtɪˌtʃɛli/"]
+              },
+              "respelling": {
+                "description": "Alternative pronunciation respelling for accessibility (not IPA). Source: Dictionary respelling conventions.",
+                "type": "string",
+                "examples": ["MED-ih-chee", "lay-oh-NAR-doh dah VIN-chee"]
+              },
+              "language": {
+                "description": "Language of origin for this term (BCP 47). Helps TTS with accent. Source: SSML xml:lang.",
+                "type": "string",
+                "examples": ["it", "fr", "de", "la"]
+              },
+              "notes": {
+                "description": "Optional notes about pronunciation context or variations.",
+                "type": "string"
+              }
+            }
+          },
+          "examples": [
+            {
+              "Medici": {
+                "ipa": "/ˈmɛdɪtʃi/",
+                "respelling": "MED-ih-chee",
+                "language": "it"
+              },
+              "Leonardo da Vinci": {
+                "ipa": "/ˌleɪɔˈnɑːrdoʊ dɑː ˈvintʃi/",
+                "respelling": "lay-oh-NAR-doh dah VIN-chee",
+                "language": "it"
+              }
+            }
+          ]
+        },
         "voiceProfile": {
           "description": "Suggested TTS voice characteristics. Source: VLCF native.",
           "type": "object",

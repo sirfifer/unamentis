@@ -76,10 +76,15 @@ public actor AudioEngine: ObservableObject {
     
     // Audio stream for subscribers - nonisolated since PassthroughSubject is thread-safe
     nonisolated(unsafe) private let audioStreamSubject = PassthroughSubject<(AVAudioPCMBuffer, VADResult), Never>()
-    
+
     /// Stream of audio buffers with VAD results
     nonisolated public var audioStream: AnyPublisher<(AVAudioPCMBuffer, VADResult), Never> {
         audioStreamSubject.eraseToAnyPublisher()
+    }
+
+    /// Send audio buffer to subscribers (nonisolated to avoid actor boundary crossing)
+    nonisolated private func sendToAudioStream(_ buffer: AVAudioPCMBuffer, _ vadResult: VADResult) {
+        audioStreamSubject.send((buffer, vadResult))
     }
     
     // Thermal monitoring
@@ -268,9 +273,8 @@ public actor AudioEngine: ObservableObject {
         // Run VAD
         let vadResult = await vadService.processBuffer(buffer)
 
-        // Emit to subscribers - capture subject in sendable box to avoid actor isolation issues
-        let audioSubjectBox = UncheckedSendableBox(value: self.audioStreamSubject)
-        audioSubjectBox.value.send((buffer, vadResult))
+        // Emit to subscribers via nonisolated helper
+        sendToAudioStream(buffer, vadResult)
         
         // Update audio level if monitoring enabled
         if config.enableAudioLevelMonitoring {

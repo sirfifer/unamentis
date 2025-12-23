@@ -59,7 +59,8 @@ venv/
 __pycache__/
 
 # ML Models (too large for git)
-models/
+# Use explicit path to avoid matching Swift code directories like Routing/Models/
+/models/
 *.mlmodel
 *.mlpackage
 *.safetensors

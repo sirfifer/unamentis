@@ -1,4 +1,4 @@
-# VoiceLearn Curriculum Format (VLCF) Specification
+# Una Mentis Curriculum Format (UMLCF) Specification
 
 **Version:** 1.0.0
 **Status:** Draft
@@ -26,7 +26,7 @@
 
 ## Introduction
 
-The VoiceLearn Curriculum Format (VLCF) is a JSON-based specification for educational curriculum designed specifically for conversational AI tutoring. Unlike traditional LMS-oriented formats (SCORM, IMS Common Cartridge), VLCF is optimized for:
+The Una Mentis Curriculum Format (UMLCF) is a JSON-based specification for educational curriculum designed specifically for conversational AI tutoring. Unlike traditional LMS-oriented formats (SCORM, IMS Common Cartridge), UMLCF is optimized for:
 
 - **Voice-first learning experiences** - Every text field can have a `spokenText` variant
 - **Conversational AI tutoring** - Native support for transcripts, checkpoints, and branching
@@ -43,7 +43,7 @@ The VoiceLearn Curriculum Format (VLCF) is a JSON-based specification for educat
 
 ### Goals
 
-1. Serve as the **canonical internal format** for VoiceLearn
+1. Serve as the **canonical internal format** for Una Mentis
 2. Enable **import from** IMSCC, QTI, SCORM, and other standards
 3. Enable **export to** established interchange formats
 4. Maximize **reusability** of curriculum content
@@ -54,7 +54,7 @@ The VoiceLearn Curriculum Format (VLCF) is a JSON-based specification for educat
 
 ### Hub-and-Spoke Model
 
-VLCF is designed as the "hub" format:
+UMLCF is designed as the "hub" format:
 
 ```
                     ┌─────────────┐
@@ -62,7 +62,7 @@ VLCF is designed as the "hub" format:
                     └──────┬──────┘
                            │ import
 ┌─────────────┐     ┌──────▼──────┐     ┌─────────────┐
-│     QTI     │────►│    VLCF     │────►│   Export    │
+│     QTI     │────►│    UMLCF     │────►│   Export    │
 └─────────────┘     │   (hub)     │     │  (IMSCC)    │
                     └──────▲──────┘     └─────────────┘
                            │ import
@@ -76,7 +76,7 @@ VLCF is designed as the "hub" format:
 
 ### Tutoring-First Design
 
-Unlike LMS formats that focus on packaging and launching content, VLCF focuses on:
+Unlike LMS formats that focus on packaging and launching content, UMLCF focuses on:
 
 - **Dialogue flow** - How the AI tutor converses with learners
 - **Comprehension verification** - Checkpoints and assessments
@@ -85,7 +85,7 @@ Unlike LMS formats that focus on packaging and launching content, VLCF focuses o
 
 ### Standards Traceability
 
-Every VLCF field traces to one or more established standards:
+Every UMLCF field traces to one or more established standards:
 
 | Standard | What We Borrow |
 |----------|----------------|
@@ -189,7 +189,7 @@ Every VLCF field traces to one or more established standards:
 
 ### Identifier
 
-Used throughout VLCF for stable references:
+Used throughout UMLCF for stable references:
 
 ```json
 {
@@ -262,6 +262,7 @@ curriculum/
 | `glossaryTerms` | GlossaryTerm[] | Node-specific terms |
 | `misconceptions` | Misconception[] | Common errors |
 | `resources` | Resource[] | External references |
+| `media` | MediaCollection | Visual assets (images, diagrams, equations) |
 | `children` | ContentNode[] | Nested child nodes |
 | `tutoringConfig` | TutoringConfig | AI behavior settings |
 | `compliance` | NodeCompliance | Pass/fail requirements |
@@ -269,9 +270,140 @@ curriculum/
 
 ---
 
+## Media and Visual Assets
+
+UMLCF supports rich media content that can be displayed alongside or synchronized with audio content.
+
+### Media Collection
+
+Each content node can include a `media` object with two categories:
+
+```json
+{
+  "media": {
+    "embedded": [
+      {
+        "id": "img-1",
+        "type": "diagram",
+        "url": "https://cdn.example.com/images/architecture.png",
+        "localPath": "media/architecture.png",
+        "title": "System Architecture",
+        "alt": "Diagram showing the three-tier architecture with client, server, and database layers",
+        "caption": "Figure 1: High-level system architecture",
+        "mimeType": "image/png",
+        "dimensions": { "width": 1200, "height": 800 },
+        "segmentTiming": {
+          "startSegment": 2,
+          "endSegment": 5,
+          "displayMode": "persistent"
+        }
+      }
+    ],
+    "reference": [
+      {
+        "id": "ref-1",
+        "type": "slideDeck",
+        "url": "https://cdn.example.com/slides/overview.pdf",
+        "title": "Complete Overview Slides",
+        "description": "30-slide presentation with detailed diagrams",
+        "keywords": ["architecture", "deployment", "scaling"]
+      }
+    ]
+  }
+}
+```
+
+### Media Types
+
+| Type | Description | Use Case |
+|------|-------------|----------|
+| `image` | Static images (PNG, JPEG, WebP) | Photos, screenshots, illustrations |
+| `diagram` | Architectural/flow diagrams | System design, process flows |
+| `equation` | Mathematical formulas (LaTeX) | Formulas, derivations |
+| `chart` | Data visualizations | Graphs, statistics |
+| `slideImage` | Single slide from a deck | Key presentation slides |
+| `slideDeck` | Full presentation reference | Complete slide sets |
+
+### Embedded Media Fields
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | Yes | string | Unique identifier within the curriculum |
+| `type` | Yes | string | Media type (see table above) |
+| `url` | Yes | string | Remote URL for the asset |
+| `localPath` | No | string | Relative path for bundled assets |
+| `title` | No | string | Display title |
+| `alt` | Yes | string | Accessibility description |
+| `caption` | No | string | Caption text to display |
+| `mimeType` | No | string | MIME type (e.g., "image/png") |
+| `dimensions` | No | object | Width and height in pixels |
+| `segmentTiming` | No | object | When to display during playback |
+| `audioDescription` | No | string | Detailed verbal description for accessibility |
+
+### Segment Timing
+
+Controls when visuals appear during transcript playback:
+
+```json
+{
+  "segmentTiming": {
+    "startSegment": 2,
+    "endSegment": 5,
+    "displayMode": "persistent"
+  }
+}
+```
+
+**Display Modes:**
+- `persistent` - Visual remains on screen for the entire segment range
+- `highlight` - Visual appears prominently, then fades to thumbnail
+- `popup` - Visual appears as dismissible overlay
+- `inline` - Visual embedded directly in transcript text flow
+
+### Reference Media Fields
+
+Reference media are optional supplementary materials users can request:
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | Yes | string | Unique identifier |
+| `type` | Yes | string | Media type |
+| `url` | Yes | string | Remote URL |
+| `title` | Yes | string | Display title |
+| `description` | No | string | Description of content |
+| `keywords` | No | string[] | Search keywords for matching user requests |
+
+### Equation Format
+
+For mathematical content, use LaTeX notation:
+
+```json
+{
+  "id": "eq-1",
+  "type": "equation",
+  "latex": "\\sigma(x) = \\frac{1}{1 + e^{-x}}",
+  "alt": "Sigmoid function: sigma of x equals one over one plus e to the negative x",
+  "title": "Sigmoid Activation Function",
+  "segmentTiming": {
+    "startSegment": 3,
+    "endSegment": 3,
+    "displayMode": "highlight"
+  }
+}
+```
+
+### Accessibility Requirements
+
+All visual content MUST include:
+1. `alt` text describing the visual for screen readers
+2. Consider providing `audioDescription` for complex diagrams
+3. Equations should have verbal descriptions in `alt`
+
+---
+
 ## Tutoring Elements
 
-These elements are unique to VLCF, designed for conversational AI tutoring.
+These elements are unique to UMLCF, designed for conversational AI tutoring.
 
 ### Transcript
 
@@ -437,7 +569,7 @@ AI behavior settings:
 
 ## Assessments
 
-VLCF v1.0 supports basic assessment types:
+UMLCF v1.0 supports basic assessment types:
 
 ### Assessment Types
 
@@ -590,7 +722,7 @@ For corporate training and certification:
 
 ## Extensions
 
-VLCF uses namespaced extensions (inspired by xAPI) for custom data:
+UMLCF uses namespaced extensions (inspired by xAPI) for custom data:
 
 ```json
 {
@@ -620,7 +752,7 @@ VLCF uses namespaced extensions (inspired by xAPI) for custom data:
 
 ### JSON Schema
 
-VLCF uses JSON Schema Draft 2020-12 for validation. The schema is available at:
+UMLCF uses JSON Schema Draft 2020-12 for validation. The schema is available at:
 
 ```
 https://voicelearn.io/schemas/vlcf/v1.0.0/curriculum.json
@@ -679,12 +811,13 @@ Future versions may support:
 - Graphical/hotspot
 - Drag-and-drop
 
-### Embedded Media
+### Enhanced Media Features
 
-Currently URL-only; future versions may support:
-- Base64 embedded assets
-- MIME type declarations
-- Accessibility alternatives
+Future versions may support:
+- Base64 embedded assets for fully offline content
+- Video clips and animated diagrams
+- Interactive 3D models
+- Collaborative annotations on visuals
 
 ### Import/Export Adapters
 

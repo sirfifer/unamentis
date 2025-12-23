@@ -206,6 +206,86 @@ public enum DocumentType: String, Codable, Sendable, CaseIterable {
     }
 }
 
+// MARK: - Visual Asset Type
+
+/// Type of visual asset in curriculum content
+/// Aligned with IMS Content Packaging and HTML5 media types
+public enum VisualAssetType: String, Codable, Sendable, CaseIterable {
+    case image = "image"              // Static images (PNG, JPEG, WebP)
+    case diagram = "diagram"          // Architectural/flow diagrams (often SVG)
+    case equation = "equation"        // Mathematical formulas (LaTeX/MathML)
+    case chart = "chart"              // Data visualizations
+    case slideImage = "slideImage"    // Single slide from a presentation
+    case slideDeck = "slideDeck"      // Full presentation reference
+    case generated = "generated"      // AI-generated on-demand visual
+
+    /// Human-readable display name
+    public var displayName: String {
+        switch self {
+        case .image: return "Image"
+        case .diagram: return "Diagram"
+        case .equation: return "Equation"
+        case .chart: return "Chart"
+        case .slideImage: return "Slide"
+        case .slideDeck: return "Slide Deck"
+        case .generated: return "Generated"
+        }
+    }
+
+    /// SF Symbol icon for this type
+    public var iconName: String {
+        switch self {
+        case .image: return "photo"
+        case .diagram: return "flowchart"
+        case .equation: return "function"
+        case .chart: return "chart.bar"
+        case .slideImage: return "rectangle.on.rectangle"
+        case .slideDeck: return "doc.richtext"
+        case .generated: return "sparkles"
+        }
+    }
+
+    /// Supported MIME types for this visual type
+    public var supportedMimeTypes: [String] {
+        switch self {
+        case .image:
+            return ["image/png", "image/jpeg", "image/webp", "image/gif"]
+        case .diagram:
+            return ["image/svg+xml", "image/png", "image/webp"]
+        case .equation:
+            return ["text/latex", "application/mathml+xml", "image/png"]
+        case .chart:
+            return ["image/svg+xml", "image/png", "application/json"]
+        case .slideImage:
+            return ["image/png", "image/jpeg", "image/webp"]
+        case .slideDeck:
+            return ["application/pdf", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"]
+        case .generated:
+            return ["image/png", "image/webp"]
+        }
+    }
+}
+
+// MARK: - Visual Display Mode
+
+/// How a visual asset is displayed during curriculum playback
+public enum VisualDisplayMode: String, Codable, Sendable, CaseIterable {
+    case persistent = "persistent"    // Visual stays on screen for entire segment range
+    case highlight = "highlight"      // Visual appears prominently, then fades to thumbnail
+    case popup = "popup"              // Visual appears as dismissible overlay
+    case inline = "inline"            // Visual embedded in transcript text flow
+
+    /// Human-readable description
+    public var description: String {
+        switch self {
+        case .persistent: return "Stays visible throughout the segment"
+        case .highlight: return "Appears prominently, then becomes a thumbnail"
+        case .popup: return "Appears as an overlay that can be dismissed"
+        case .inline: return "Displayed inline with the transcript text"
+        }
+    }
+}
+
 // MARK: - Document Chunk
 
 /// A chunk of document text with embedding for semantic search
@@ -427,6 +507,31 @@ extension Topic {
     /// Get documents as typed set
     public var documentSet: Set<Document> {
         documents as? Set<Document> ?? []
+    }
+
+    /// Get visual assets as typed set
+    public var visualAssetSet: Set<VisualAsset> {
+        visualAssets as? Set<VisualAsset> ?? []
+    }
+
+    /// Get embedded visual assets (non-reference, shown during playback)
+    public var embeddedVisualAssets: [VisualAsset] {
+        visualAssetSet.filter { !$0.isReference }.sorted { $0.startSegment < $1.startSegment }
+    }
+
+    /// Get reference visual assets (user-requestable)
+    public var referenceVisualAssets: [VisualAsset] {
+        visualAssetSet.filter { $0.isReference }.sorted { ($0.title ?? "") < ($1.title ?? "") }
+    }
+
+    /// Get visual assets active for a specific segment index
+    public func visualAssetsForSegment(_ segmentIndex: Int) -> [VisualAsset] {
+        embeddedVisualAssets.filter { $0.isActiveForSegment(segmentIndex) }
+    }
+
+    /// Search reference assets matching a query (for barge-in requests)
+    public func findReferenceAssets(matching query: String) -> [VisualAsset] {
+        referenceVisualAssets.filter { $0.matchesQuery(query) }
     }
 }
 

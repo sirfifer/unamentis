@@ -162,8 +162,50 @@ public struct UMLCFContentNode: Codable, Sendable {
     public let assessments: [UMLCFAssessment]?
     public let glossaryTerms: [UMLCFGlossaryTerm]?
     public let misconceptions: [UMLCFMisconception]?
+    public let media: UMLCFMediaCollection?
     public let children: [UMLCFContentNode]?
     public let tutoringConfig: UMLCFTutoringConfig?
+}
+
+// MARK: - Media Types (following IMS Content Packaging and W3C standards)
+
+/// Collection of media assets for a content node
+public struct UMLCFMediaCollection: Codable, Sendable {
+    /// Embedded media shown during playback (synchronized with segments)
+    public let embedded: [UMLCFMediaAsset]?
+    /// Reference media available on user request
+    public let reference: [UMLCFMediaAsset]?
+}
+
+/// Individual media asset
+public struct UMLCFMediaAsset: Codable, Sendable {
+    public let id: String
+    public let type: String                          // image, diagram, equation, chart, slideImage, slideDeck
+    public let url: String?                          // Remote URL
+    public let localPath: String?                    // Bundled asset path
+    public let title: String?
+    public let alt: String?                          // Required for accessibility
+    public let caption: String?
+    public let mimeType: String?
+    public let dimensions: UMLCFDimensions?
+    public let segmentTiming: UMLCFSegmentTiming?    // When to display during playback
+    public let latex: String?                        // For equation type
+    public let audioDescription: String?             // Extended accessibility description
+    public let description: String?                  // For reference assets
+    public let keywords: [String]?                   // For search/matching
+}
+
+/// Dimensions for image assets
+public struct UMLCFDimensions: Codable, Sendable {
+    public let width: Int
+    public let height: Int
+}
+
+/// Timing configuration for synchronized display
+public struct UMLCFSegmentTiming: Codable, Sendable {
+    public let startSegment: Int
+    public let endSegment: Int
+    public let displayMode: String?  // persistent, highlight, popup, inline
 }
 
 public struct UMLCFLearningObjective: Codable, Sendable {
@@ -446,6 +488,15 @@ public actor UMLCFParser {
                 topic.addToDocuments(document)
             }
 
+            // Create VisualAsset entities for media if available
+            if let media = node.media {
+                createVisualAssets(
+                    from: media,
+                    for: topic,
+                    context: context
+                )
+            }
+
             // Link to curriculum
             curriculum.addToTopics(topic)
 
@@ -546,6 +597,91 @@ public actor UMLCFParser {
         return document
     }
 
+    /// Create VisualAsset entities from media collection
+    @MainActor
+    private func createVisualAssets(
+        from media: UMLCFMediaCollection,
+        for topic: Topic,
+        context: NSManagedObjectContext
+    ) {
+        // Create embedded visual assets
+        if let embeddedAssets = media.embedded {
+            for asset in embeddedAssets {
+                let visualAsset = createVisualAsset(
+                    from: asset,
+                    isReference: false,
+                    context: context
+                )
+                topic.addToVisualAssets(visualAsset)
+            }
+        }
+
+        // Create reference visual assets
+        if let referenceAssets = media.reference {
+            for asset in referenceAssets {
+                let visualAsset = createVisualAsset(
+                    from: asset,
+                    isReference: true,
+                    context: context
+                )
+                topic.addToVisualAssets(visualAsset)
+            }
+        }
+    }
+
+    /// Create a single VisualAsset entity from UMLCF media asset
+    @MainActor
+    private func createVisualAsset(
+        from asset: UMLCFMediaAsset,
+        isReference: Bool,
+        context: NSManagedObjectContext
+    ) -> VisualAsset {
+        let visualAsset = VisualAsset(context: context)
+        visualAsset.id = UUID()
+        visualAsset.assetId = asset.id
+        visualAsset.type = asset.type
+        visualAsset.title = asset.title
+        visualAsset.altText = asset.alt
+        visualAsset.caption = asset.caption
+        visualAsset.mimeType = asset.mimeType
+        visualAsset.latex = asset.latex
+        visualAsset.audioDescription = asset.audioDescription
+        visualAsset.isReference = isReference
+
+        // Set remote URL if provided
+        if let urlString = asset.url, let url = URL(string: urlString) {
+            visualAsset.remoteURL = url
+        }
+
+        // Set local path if provided
+        visualAsset.localPath = asset.localPath
+
+        // Set dimensions if provided
+        if let dimensions = asset.dimensions {
+            visualAsset.width = Int32(dimensions.width)
+            visualAsset.height = Int32(dimensions.height)
+        }
+
+        // Set segment timing for embedded assets
+        if let timing = asset.segmentTiming {
+            visualAsset.startSegment = Int32(timing.startSegment)
+            visualAsset.endSegment = Int32(timing.endSegment)
+            visualAsset.displayMode = timing.displayMode ?? "persistent"
+        } else {
+            // No timing means always visible (or reference asset)
+            visualAsset.startSegment = -1
+            visualAsset.endSegment = -1
+            visualAsset.displayMode = "persistent"
+        }
+
+        // Set keywords for reference assets
+        if let keywords = asset.keywords {
+            visualAsset.keywords = keywords as NSObject
+        }
+
+        return visualAsset
+    }
+
     // MARK: - Helpers
 
     nonisolated private func parseDate(_ dateString: String?) -> Date? {
@@ -610,38 +746,3 @@ extension Document {
     }
 }
 
-// MARK: - Backward Compatibility Type Aliases
-
-/// Type alias for backward compatibility with existing code
-public typealias VLCFDocument = UMLCFDocument
-public typealias VLCFParser = UMLCFParser
-public typealias VLCFIdentifier = UMLCFIdentifier
-public typealias VLCFVersionInfo = UMLCFVersionInfo
-public typealias VLCFLifecycle = UMLCFLifecycle
-public typealias VLCFContributor = UMLCFContributor
-public typealias VLCFMetadata = UMLCFMetadata
-public typealias VLCFEducationalContext = UMLCFEducationalContext
-public typealias VLCFAlignment = UMLCFAlignment
-public typealias VLCFStandard = UMLCFStandard
-public typealias VLCFTargetAudience = UMLCFTargetAudience
-public typealias VLCFAgeRange = UMLCFAgeRange
-public typealias VLCFPrerequisite = UMLCFPrerequisite
-public typealias VLCFContentNode = UMLCFContentNode
-public typealias VLCFLearningObjective = UMLCFLearningObjective
-public typealias VLCFTimeEstimates = UMLCFTimeEstimates
-public typealias VLCFTranscript = UMLCFTranscript
-public typealias VLCFTranscriptSegment = UMLCFTranscriptSegment
-public typealias VLCFSpeakingNotes = UMLCFSpeakingNotes
-public typealias VLCFCheckpoint = UMLCFCheckpoint
-public typealias VLCFExpectedResponse = UMLCFExpectedResponse
-public typealias VLCFStoppingPoint = UMLCFStoppingPoint
-public typealias VLCFAlternativeExplanation = UMLCFAlternativeExplanation
-public typealias VLCFVoiceProfile = UMLCFVoiceProfile
-public typealias VLCFExample = UMLCFExample
-public typealias VLCFAssessment = UMLCFAssessment
-public typealias VLCFAssessmentOption = UMLCFAssessmentOption
-public typealias VLCFFeedback = UMLCFFeedback
-public typealias VLCFMisconception = UMLCFMisconception
-public typealias VLCFTutoringConfig = UMLCFTutoringConfig
-public typealias VLCFGlossary = UMLCFGlossary
-public typealias VLCFGlossaryTerm = UMLCFGlossaryTerm

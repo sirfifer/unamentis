@@ -57,12 +57,23 @@ public struct SessionView: View {
                     SessionStatusView(state: viewModel.state)
                         .padding(.top, topic != nil ? 4 : 12)
 
-                    // Transcript display - takes most of the space
-                    TranscriptView(
-                        conversationHistory: viewModel.conversationHistory,
-                        userTranscript: viewModel.userTranscript,
-                        aiResponse: viewModel.aiResponse
-                    )
+                    // Transcript display with visual overlay - takes most of the space
+                    ZStack(alignment: .bottom) {
+                        TranscriptView(
+                            conversationHistory: viewModel.conversationHistory,
+                            userTranscript: viewModel.userTranscript,
+                            aiResponse: viewModel.aiResponse
+                        )
+
+                        // Visual asset overlay - shows synchronized visuals during curriculum playback
+                        if topic != nil && viewModel.isDirectStreamingMode {
+                            VisualAssetOverlay(
+                                currentSegment: viewModel.currentSegmentIndex,
+                                topic: topic,
+                                isExpanded: $viewModel.visualsExpanded
+                            )
+                        }
+                    }
                     .frame(maxHeight: .infinity)
 
                     // Bottom control area - different controls for curriculum vs regular mode
@@ -879,8 +890,8 @@ class SessionViewModel: ObservableObject {
     /// Full conversation history for display
     @Published var conversationHistory: [ConversationMessage] = []
 
-    /// VLCF transcript data for this topic (if available)
-    @Published var vlcfTranscript: TopicTranscriptResponse?
+    /// UMLCF transcript data for this topic (if available)
+    @Published var umlcfTranscript: TopicTranscriptResponse?
     @Published var currentSegmentIndex: Int = 0
 
     /// Track last known transcripts to detect changes
@@ -976,6 +987,9 @@ class SessionViewModel: ObservableObject {
     /// Whether playback is paused (for curriculum mode)
     @Published var isPaused: Bool = false
 
+    /// Whether the visual asset overlay is expanded
+    @Published var visualsExpanded: Bool = true
+
     /// Whether curriculum controls should be shown
     /// This is true when we have a topic AND the AI is speaking (curriculum playback mode)
     var showCurriculumControls: Bool {
@@ -1003,9 +1017,9 @@ class SessionViewModel: ObservableObject {
         topic != nil
     }
 
-    /// Whether we have VLCF transcript data to use
+    /// Whether we have UMLCF transcript data to use
     var hasTranscript: Bool {
-        vlcfTranscript?.segments.isEmpty == false
+        umlcfTranscript?.segments.isEmpty == false
     }
 
     init(topic: Topic? = nil) {
@@ -1026,7 +1040,7 @@ class SessionViewModel: ObservableObject {
         if let document = topic.documentSet.first(where: { $0.documentType == .transcript }),
            let transcriptData = document.decodedTranscript() {
             // Convert local TranscriptData to TopicTranscriptResponse format
-            vlcfTranscript = TopicTranscriptResponse(
+            umlcfTranscript = TopicTranscriptResponse(
                 topicId: topicId.uuidString,
                 topicTitle: topic.title,
                 segments: transcriptData.segments.map { segment in
@@ -1060,11 +1074,11 @@ class SessionViewModel: ObservableObject {
                 let host = serverIP.isEmpty ? "localhost" : serverIP
                 try await CurriculumService.shared.configure(host: host, port: 8766)
 
-                vlcfTranscript = try await CurriculumService.shared.fetchTopicTranscript(
+                umlcfTranscript = try await CurriculumService.shared.fetchTopicTranscript(
                     curriculumId: curriculumId.uuidString,
                     topicId: topicId.uuidString
                 )
-                logger.info("Fetched transcript from server: \(vlcfTranscript?.segments.count ?? 0) segments")
+                logger.info("Fetched transcript from server: \(umlcfTranscript?.segments.count ?? 0) segments")
             } catch {
                 logger.warning("Could not fetch transcript from server: \(error)")
                 // Not fatal - we'll fall back to AI-generated content
@@ -1087,8 +1101,8 @@ class SessionViewModel: ObservableObject {
         let depth = topic.depthLevel
         let objectives = topic.objectives ?? []
 
-        // If we have VLCF transcript data, use it as the primary source
-        if let transcript = vlcfTranscript, !transcript.segments.isEmpty {
+        // If we have UMLCF transcript data, use it as the primary source
+        if let transcript = umlcfTranscript, !transcript.segments.isEmpty {
             return generateTranscriptBasedPrompt(topic: topic, transcript: transcript)
         }
 
@@ -1134,7 +1148,7 @@ class SessionViewModel: ObservableObject {
         return prompt
     }
 
-    /// Generate system prompt that uses VLCF transcript content
+    /// Generate system prompt that uses UMLCF transcript content
     private func generateTranscriptBasedPrompt(topic: Topic, transcript: TopicTranscriptResponse) -> String {
         let topicTitle = topic.title ?? "the topic"
         let depth = topic.depthLevel
@@ -1194,7 +1208,7 @@ class SessionViewModel: ObservableObject {
 
     /// Get the current segment to deliver (for progressive transcript delivery)
     func getCurrentSegment() -> TranscriptSegmentInfo? {
-        guard let transcript = vlcfTranscript,
+        guard let transcript = umlcfTranscript,
               currentSegmentIndex < transcript.segments.count else {
             return nil
         }
@@ -1203,7 +1217,7 @@ class SessionViewModel: ObservableObject {
 
     /// Advance to the next transcript segment
     func advanceToNextSegment() -> Bool {
-        guard let transcript = vlcfTranscript else { return false }
+        guard let transcript = umlcfTranscript else { return false }
         if currentSegmentIndex < transcript.segments.count - 1 {
             currentSegmentIndex += 1
             return true
@@ -2088,6 +2102,12 @@ class SessionViewModel: ObservableObject {
 
     /// Handle user's barge-in question with LLM
     private func handleBargeInQuestion(question: String) async {
+        // First, check if this is a visual request
+        if VisualRequestDetector.isVisualRequest(question) {
+            await handleVisualRequest(question)
+            return
+        }
+
         guard let llmService = bargeInLLMService else {
             logger.error("No LLM service available for barge-in response")
             await resumeAfterBargeIn(userQuestion: question)
@@ -2190,6 +2210,82 @@ class SessionViewModel: ObservableObject {
         // 2. Say "continue" or similar -> resume lecture
         // 3. Ask another question -> handle with LLM
         // This will be detected by the VAD and handled accordingly
+    }
+
+    // MARK: - Visual Request Handling
+
+    /// Handle a visual request from the user during barge-in
+    private func handleVisualRequest(_ request: String) async {
+        logger.info("Handling visual request: \(request)")
+
+        guard let topic = topic else {
+            logger.warning("No topic available for visual request")
+            await speakBargeInResponse("I don't have any visuals available for this session.")
+            await waitForUserDecision()
+            return
+        }
+
+        // Extract what the user is looking for
+        let subject = VisualRequestDetector.extractVisualSubject(request)
+        logger.info("Visual request subject: \(subject ?? "none")")
+
+        // Search reference assets first
+        let matchingAssets: [VisualAsset]
+        if let subject = subject {
+            matchingAssets = topic.findReferenceAssets(matching: subject)
+        } else {
+            // Show all reference assets if no specific subject
+            matchingAssets = topic.referenceVisualAssets
+        }
+
+        // Also check embedded assets for the current segment
+        let currentEmbeddedAssets = topic.visualAssetsForSegment(currentSegmentIndex)
+
+        if !matchingAssets.isEmpty {
+            // Found matching reference assets - show them
+            logger.info("Found \(matchingAssets.count) matching reference assets")
+
+            // Expand the visuals overlay to show the results
+            visualsExpanded = true
+
+            // Speak confirmation
+            let assetNames = matchingAssets.compactMap { $0.title }.joined(separator: ", ")
+            let response = matchingAssets.count == 1
+                ? "Here's the \(matchingAssets.first?.title ?? "visual") you asked for."
+                : "I found \(matchingAssets.count) relevant visuals: \(assetNames)"
+
+            await speakBargeInResponse(response)
+
+            // Add the matching assets to conversation as a special visual message
+            conversationHistory.append(ConversationMessage(
+                text: "[Visual: \(assetNames)]",
+                isUser: false,
+                timestamp: Date()
+            ))
+
+            await waitForUserDecision()
+
+        } else if !currentEmbeddedAssets.isEmpty {
+            // Show current segment's embedded assets
+            logger.info("Showing \(currentEmbeddedAssets.count) embedded assets for current segment")
+
+            visualsExpanded = true
+
+            let assetNames = currentEmbeddedAssets.compactMap { $0.title }.joined(separator: ", ")
+            let response = "Here are the visuals for what we're currently discussing: \(assetNames)"
+
+            await speakBargeInResponse(response)
+            await waitForUserDecision()
+
+        } else {
+            // No matching visuals found
+            logger.info("No matching visuals found for request")
+
+            let response = "I don't have a specific visual for that. Would you like me to continue with the lecture, or can I help you with something else?"
+
+            await speakBargeInResponse(response)
+            await waitForUserDecision()
+        }
     }
 
     /// Resume lecture playback after handling barge-in

@@ -43,6 +43,29 @@
         <relationship name="documents" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Document" inverseName="topic" inverseEntity="Document"/>
         <relationship name="progress" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="TopicProgress" inverseName="topic" inverseEntity="TopicProgress"/>
         <relationship name="sessions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Session" inverseName="topic" inverseEntity="Session"/>
+        <relationship name="visualAssets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VisualAsset" inverseName="topic" inverseEntity="VisualAsset"/>
+    </entity>
+    <entity name="VisualAsset" representedClassName="VisualAsset" syncable="YES">
+        <attribute name="altText" optional="YES" attributeType="String"/>
+        <attribute name="assetId" attributeType="String"/>
+        <attribute name="audioDescription" optional="YES" attributeType="String"/>
+        <attribute name="cachedData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="caption" optional="YES" attributeType="String"/>
+        <attribute name="displayMode" optional="YES" attributeType="String" defaultValueString="persistent"/>
+        <attribute name="endSegment" optional="YES" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="height" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isReference" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="keywords" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[String]"/>
+        <attribute name="latex" optional="YES" attributeType="String"/>
+        <attribute name="localPath" optional="YES" attributeType="String"/>
+        <attribute name="mimeType" optional="YES" attributeType="String"/>
+        <attribute name="remoteURL" optional="YES" attributeType="URI"/>
+        <attribute name="startSegment" optional="YES" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="type" attributeType="String" defaultValueString="image"/>
+        <attribute name="width" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="topic" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Topic" inverseName="visualAssets" inverseEntity="Topic"/>
     </entity>
     <entity name="TopicProgress" representedClassName="TopicProgress" syncable="YES">
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>

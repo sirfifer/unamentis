@@ -21,10 +21,10 @@ final class AnalyticsViewModelTests: XCTestCase {
         telemetry = TelemetryEngine()
     }
     
-    override func tearDown() {
+    override func tearDown() async throws {
         viewModel = nil
         telemetry = nil
-        super.tearDown()
+        try await super.tearDown()
     }
     
     func testRefresh_updatesMetrics() async {

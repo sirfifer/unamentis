@@ -147,13 +147,14 @@ final class AudioEngineTests: XCTestCase {
         config.sampleRate = 48000
         config.channels = 1
         config.bitDepth = .float32
-        
+
         try await audioEngine.configure(config: config)
-        
-        let format = await audioEngine.format
-        XCTAssertNotNil(format)
-        XCTAssertEqual(format?.sampleRate, 48000)
-        XCTAssertEqual(format?.channelCount, 1)
+
+        // Test via config since AVAudioFormat is non-Sendable in Swift 6
+        let resultConfig = await audioEngine.config
+        XCTAssertEqual(resultConfig.sampleRate, 48000)
+        XCTAssertEqual(resultConfig.channels, 1)
+        XCTAssertEqual(resultConfig.bitDepth, .float32)
     }
     
     // MARK: - Thermal Management Tests

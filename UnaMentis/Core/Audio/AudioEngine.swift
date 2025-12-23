@@ -15,6 +15,20 @@ private struct UncheckedSendableBox<T>: @unchecked Sendable {
     let value: T
 }
 
+/// A Sendable holder for PassthroughSubject that can be safely shared across actor boundaries
+/// This class is created once and passed around, avoiding repeated actor boundary crossings
+private final class AudioStreamHolder: @unchecked Sendable {
+    let subject = PassthroughSubject<(AVAudioPCMBuffer, VADResult), Never>()
+
+    func send(_ buffer: AVAudioPCMBuffer, _ vadResult: VADResult) {
+        subject.send((buffer, vadResult))
+    }
+
+    var publisher: AnyPublisher<(AVAudioPCMBuffer, VADResult), Never> {
+        subject.eraseToAnyPublisher()
+    }
+}
+
 // MARK: - Audio Engine
 
 /// Manages all iOS audio I/O with voice optimization and on-device VAD
@@ -74,22 +88,12 @@ public actor AudioEngine: ObservableObject {
     /// Current thermal state
     @MainActor @Published public private(set) var currentThermalState: ProcessInfo.ThermalState = .nominal
     
-    // Audio stream for subscribers - nonisolated since PassthroughSubject is thread-safe
-    nonisolated(unsafe) private let audioStreamSubject = PassthroughSubject<(AVAudioPCMBuffer, VADResult), Never>()
+    // Audio stream holder - Sendable so it can be safely used across actor boundaries
+    private let audioStreamHolder = AudioStreamHolder()
 
     /// Stream of audio buffers with VAD results
     nonisolated public var audioStream: AnyPublisher<(AVAudioPCMBuffer, VADResult), Never> {
-        audioStreamSubject.eraseToAnyPublisher()
-    }
-
-    /// Send audio buffer to subscribers (nonisolated to avoid actor boundary crossing)
-    nonisolated private func sendToAudioStream(_ buffer: AVAudioPCMBuffer, _ vadResult: VADResult) {
-        audioStreamSubject.send((buffer, vadResult))
-    }
-
-    /// Get audio stream subject wrapped in sendable box (nonisolated for use in closures from async context)
-    nonisolated private var audioStreamSubjectBox: UncheckedSendableBox<PassthroughSubject<(AVAudioPCMBuffer, VADResult), Never>> {
-        UncheckedSendableBox(value: audioStreamSubject)
+        audioStreamHolder.publisher
     }
     
     // Thermal monitoring
@@ -196,8 +200,8 @@ public actor AudioEngine: ObservableObject {
         
         // Install new tap with @Sendable closure to avoid Swift 6 actor isolation crash
         // The closure runs on a real-time audio thread and must not reference the actor
-        // Wrap non-Sendable types in UncheckedSendableBox for use in @Sendable closure
-        let audioSubjectBox = audioStreamSubjectBox
+        // AudioStreamHolder is Sendable, others wrapped in UncheckedSendableBox
+        let streamHolder = audioStreamHolder
         let vadServiceBox = UncheckedSendableBox(value: self.vadService)
         let telemetryBox = UncheckedSendableBox(value: self.telemetry)
 
@@ -212,8 +216,8 @@ public actor AudioEngine: ObservableObject {
                 // Run VAD on the buffer
                 let vadResult = await vadServiceBox.value.processBuffer(buffer)
 
-                // Emit to subscribers via thread-safe subject
-                audioSubjectBox.value.send((buffer, vadResult))
+                // Emit to subscribers via thread-safe holder
+                streamHolder.send(buffer, vadResult)
 
                 // Record VAD events
                 if vadResult.isSpeech {
@@ -278,8 +282,8 @@ public actor AudioEngine: ObservableObject {
         // Run VAD
         let vadResult = await vadService.processBuffer(buffer)
 
-        // Emit to subscribers via nonisolated helper
-        sendToAudioStream(buffer, vadResult)
+        // Emit to subscribers via Sendable holder
+        audioStreamHolder.send(buffer, vadResult)
         
         // Update audio level if monitoring enabled
         if config.enableAudioLevelMonitoring {

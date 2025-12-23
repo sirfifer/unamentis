@@ -112,23 +112,26 @@ public actor AppleTTSService: TTSService {
     }
 
     public func flush() async throws {
+        let localSynthesizer = synthesizer
         await MainActor.run {
-            synthesizer.stopSpeaking(at: .immediate)
+            localSynthesizer.stopSpeaking(at: .immediate)
         }
     }
 
     /// Stop current speech
     public func stop() async {
+        let localSynthesizer = synthesizer
         await MainActor.run {
-            synthesizer.stopSpeaking(at: .immediate)
+            localSynthesizer.stopSpeaking(at: .immediate)
         }
     }
 
     /// Check if currently speaking
     public var isSpeaking: Bool {
         get async {
-            await MainActor.run {
-                synthesizer.isSpeaking
+            let localSynthesizer = synthesizer
+            return await MainActor.run {
+                localSynthesizer.isSpeaking
             }
         }
     }

@@ -20,7 +20,6 @@ final class CurriculumEngineTests: XCTestCase {
 
     @MainActor
     override func setUp() async throws {
-        try await super.setUp()
         persistenceController = PersistenceController(inMemory: true)
         context = persistenceController.container.viewContext
         mockEmbeddingService = MockEmbeddingService()
@@ -30,12 +29,12 @@ final class CurriculumEngineTests: XCTestCase {
         )
     }
 
+    @MainActor
     override func tearDown() async throws {
         curriculumEngine = nil
         context = nil
         persistenceController = nil
         mockEmbeddingService = nil
-        try await super.tearDown()
     }
 
     // MARK: - Curriculum Loading Tests

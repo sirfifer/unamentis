@@ -76,3 +76,6 @@ llama-xcframework.tar.gz
 # llama.cpp source clones (used for building, not tracked)
 llama.cpp/
 tools/llama.cpp/
+
+# Website (separate repo - see documentation/website/)
+documentation/website/

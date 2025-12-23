@@ -21,8 +21,6 @@ final class GLMASRIntegrationTests: XCTestCase {
     // MARK: - Setup / Teardown
 
     override func setUp() async throws {
-        try await super.setUp()
-
         // Check for server URL - skip if not available
         guard let urlString = ProcessInfo.processInfo.environment["GLM_ASR_SERVER_URL"],
               let url = URL(string: urlString) else {
@@ -55,7 +53,6 @@ final class GLMASRIntegrationTests: XCTestCase {
         service = nil
         telemetry = nil
         serverURL = nil
-        try await super.tearDown()
     }
 
     // MARK: - Connection Tests
@@ -209,14 +206,6 @@ final class GLMASRIntegrationTests: XCTestCase {
     // MARK: - Concurrent Sessions Tests
 
     func testConcurrentSessions_multipleServicesWork() async throws {
-        guard let format = AVAudioFormat(
-            standardFormatWithSampleRate: 16000,
-            channels: 1
-        ) else {
-            XCTFail("Failed to create audio format")
-            return
-        }
-
         // Create multiple service instances
         let services = (0..<3).map { _ in
             GLMASRSTTService(
@@ -233,12 +222,19 @@ final class GLMASRIntegrationTests: XCTestCase {
             )
         }
 
-        // Start all sessions concurrently
+        // Start all sessions concurrently - create format inside each task to avoid data races
         await withTaskGroup(of: Bool.self) { group in
             for service in services {
                 group.addTask {
                     do {
-                        _ = try await service.startStreaming(audioFormat: format)
+                        // Create format inside task to avoid sending non-Sendable type
+                        guard let taskFormat = AVAudioFormat(
+                            standardFormatWithSampleRate: 16000,
+                            channels: 1
+                        ) else {
+                            return false
+                        }
+                        _ = try await service.startStreaming(audioFormat: taskFormat)
                         return true
                     } catch {
                         return false
@@ -284,7 +280,6 @@ final class GLMASRIntegrationTests: XCTestCase {
         }
 
         var latencies: [TimeInterval] = []
-        let startTime = Date()
 
         // Send audio and collect results - create new buffers each time for Swift 6 sending
         for _ in 0..<20 {

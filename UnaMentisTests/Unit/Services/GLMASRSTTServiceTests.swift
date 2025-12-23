@@ -24,13 +24,11 @@ final class GLMASRSTTServiceTests: XCTestCase {
     // MARK: - Setup / Teardown
 
     override func setUp() async throws {
-        try await super.setUp()
         telemetry = TelemetryEngine()
     }
 
     override func tearDown() async throws {
         telemetry = nil
-        try await super.tearDown()
     }
 
     // MARK: - Initialization Tests

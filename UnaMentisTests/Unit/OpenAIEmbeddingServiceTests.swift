@@ -18,13 +18,11 @@ final class OpenAIEmbeddingServiceTests: XCTestCase {
     let apiKey = "test_openai_key"
     
     override func setUp() async throws {
-        try await super.setUp()
         service = OpenAIEmbeddingService(apiKey: apiKey)
     }
-    
+
     override func tearDown() async throws {
         service = nil
-        try await super.tearDown()
     }
     
     func testInitialization() async {

@@ -33,7 +33,7 @@
   },
   "2025-12-23": {
     "date": "2025-12-23",
-    "avg_battery_draw_w": 1.5271428571428571,
+    "avg_battery_draw_w": 1.33625,
     "max_battery_draw_w": 26.78,
     "min_battery_percent": 80.0,
     "battery_drain_percent": 0.0,
@@ -42,10 +42,10 @@
     "thermal_events_count": 0,
     "avg_cpu_temp_c": 0.0,
     "max_cpu_temp_c": 0.0,
-    "avg_cpu_percent": 192.1,
+    "avg_cpu_percent": 192.15,
     "max_cpu_percent": 458.3,
     "service_cpu_avg": {
-      "management": 4.757142857142858,
+      "management": 4.750000000000001,
       "ollama": 0.0,
       "vibevoice": 0.0,
       "nextjs": 0.0,
@@ -55,8 +55,8 @@
     "total_inferences": 0,
     "active_hours": 0,
     "idle_state_hours": {
-      "dormant": 6.090277777777778
+      "dormant": 7.079722222222222
     },
-    "hours_aggregated": 7
+    "hours_aggregated": 8
   }
 }

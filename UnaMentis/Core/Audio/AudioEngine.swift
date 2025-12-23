@@ -427,9 +427,12 @@ public actor AudioEngine: ObservableObject {
         // Schedule buffer for playback with completion callback
         // Using completionCallbackType: .dataPlayedBack ensures callback fires when audio
         // actually finishes playing, not just when buffer is consumed/scheduled
+        // Capture isLast before closure to avoid Swift 6 sending parameter issues
+        let isLastChunk = chunk.isLast
         playerNode.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
-            Task {
-                await self?.handleBufferCompletion(isLastChunk: chunk.isLast)
+            guard let self else { return }
+            Task { @MainActor in
+                await self.handleBufferCompletion(isLastChunk: isLastChunk)
             }
         }
 
@@ -512,8 +515,9 @@ public actor AudioEngine: ObservableObject {
         isPlaying = true
 
         playerNode.scheduleBuffer(buffer) { [weak self] in
-            Task {
-                await self?.handleBufferCompletion(isLastChunk: true)
+            guard let self else { return }
+            Task { @MainActor in
+                await self.handleBufferCompletion(isLastChunk: true)
             }
         }
 

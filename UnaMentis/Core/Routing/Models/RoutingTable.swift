@@ -121,7 +121,7 @@ extension RoutingTable {
                 name: "Thermal Throttle",
                 isEnabled: true,
                 priority: 100,
-                conditions: [.thermalState(.atLeast_serious)],
+                conditions: [.thermalState(.atLeastSerious)],
                 conditionLogic: .all,
                 targetEndpointId: "gpt-4o-mini",
                 applyToTaskTypes: [

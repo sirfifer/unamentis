@@ -65,17 +65,17 @@ final class RoutingConditionTests: XCTestCase {
     }
 
     func testThermalStateConditionAtLeastFair() {
-        XCTAssertFalse(ThermalStateCondition.atLeast_fair.matches(.nominal))
-        XCTAssertTrue(ThermalStateCondition.atLeast_fair.matches(.fair))
-        XCTAssertTrue(ThermalStateCondition.atLeast_fair.matches(.serious))
-        XCTAssertTrue(ThermalStateCondition.atLeast_fair.matches(.critical))
+        XCTAssertFalse(ThermalStateCondition.atLeastFair.matches(.nominal))
+        XCTAssertTrue(ThermalStateCondition.atLeastFair.matches(.fair))
+        XCTAssertTrue(ThermalStateCondition.atLeastFair.matches(.serious))
+        XCTAssertTrue(ThermalStateCondition.atLeastFair.matches(.critical))
     }
 
     func testThermalStateConditionAtLeastSerious() {
-        XCTAssertFalse(ThermalStateCondition.atLeast_serious.matches(.nominal))
-        XCTAssertFalse(ThermalStateCondition.atLeast_serious.matches(.fair))
-        XCTAssertTrue(ThermalStateCondition.atLeast_serious.matches(.serious))
-        XCTAssertTrue(ThermalStateCondition.atLeast_serious.matches(.critical))
+        XCTAssertFalse(ThermalStateCondition.atLeastSerious.matches(.nominal))
+        XCTAssertFalse(ThermalStateCondition.atLeastSerious.matches(.fair))
+        XCTAssertTrue(ThermalStateCondition.atLeastSerious.matches(.serious))
+        XCTAssertTrue(ThermalStateCondition.atLeastSerious.matches(.critical))
     }
 
     // MARK: - Memory Pressure Condition Tests
@@ -87,9 +87,9 @@ final class RoutingConditionTests: XCTestCase {
     }
 
     func testMemoryPressureConditionAtLeastWarning() {
-        XCTAssertFalse(MemoryPressureCondition.atLeast_warning.matches(.normal))
-        XCTAssertTrue(MemoryPressureCondition.atLeast_warning.matches(.warning))
-        XCTAssertTrue(MemoryPressureCondition.atLeast_warning.matches(.critical))
+        XCTAssertFalse(MemoryPressureCondition.atLeastWarning.matches(.normal))
+        XCTAssertTrue(MemoryPressureCondition.atLeastWarning.matches(.warning))
+        XCTAssertTrue(MemoryPressureCondition.atLeastWarning.matches(.critical))
     }
 
     // MARK: - Network Type Condition Tests
@@ -141,7 +141,7 @@ final class RoutingConditionTests: XCTestCase {
     // MARK: - Routing Condition Evaluation Tests
 
     func testRoutingConditionThermalState() {
-        let condition = RoutingCondition.thermalState(.atLeast_serious)
+        let condition = RoutingCondition.thermalState(.atLeastSerious)
 
         let nominalContext = RoutingContext(thermalState: .nominal)
         let seriousContext = RoutingContext(thermalState: .serious)
@@ -151,7 +151,7 @@ final class RoutingConditionTests: XCTestCase {
     }
 
     func testRoutingConditionMemoryPressure() {
-        let condition = RoutingCondition.memoryPressure(.atLeast_warning)
+        let condition = RoutingCondition.memoryPressure(.atLeastWarning)
 
         let normalContext = RoutingContext(memoryPressure: .normal)
         let warningContext = RoutingContext(memoryPressure: .warning)
@@ -223,7 +223,7 @@ final class RoutingConditionTests: XCTestCase {
 
     func testRoutingConditionCodable() throws {
         let conditions: [RoutingCondition] = [
-            .thermalState(.atLeast_serious),
+            .thermalState(.atLeastSerious),
             .memoryPressure(.warning),
             .batteryLevel(ComparisonCondition(comparison: .lessThan, value: 0.2)),
             .networkType(.wifi)

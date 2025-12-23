@@ -185,7 +185,7 @@ final class AutoRoutingRuleTests: XCTestCase {
             name: "Test Rule",
             isEnabled: true,
             priority: 100,
-            conditions: [.thermalState(.atLeast_serious)],
+            conditions: [.thermalState(.atLeastSerious)],
             conditionLogic: .all,
             targetEndpointId: "gpt-4o-mini",
             applyToTaskTypes: [.acknowledgment, .fillerResponse]
@@ -237,7 +237,7 @@ final class AutoRoutingRuleTests: XCTestCase {
             isEnabled: true,
             priority: 100,
             conditions: [
-                .thermalState(.atLeast_serious),
+                .thermalState(.atLeastSerious),
                 .batteryLevel(ComparisonCondition(comparison: .lessThan, value: 0.2))
             ],
             conditionLogic: .all,
@@ -265,7 +265,7 @@ final class AutoRoutingRuleTests: XCTestCase {
             isEnabled: true,
             priority: 100,
             conditions: [
-                .thermalState(.atLeast_serious),
+                .thermalState(.atLeastSerious),
                 .batteryLevel(ComparisonCondition(comparison: .lessThan, value: 0.2))
             ],
             conditionLogic: .any,
@@ -308,7 +308,7 @@ final class AutoRoutingRuleTests: XCTestCase {
             name: "Test Rule",
             isEnabled: true,
             priority: 50,
-            conditions: [.thermalState(.atLeast_fair)],
+            conditions: [.thermalState(.atLeastFair)],
             conditionLogic: .all,
             targetEndpointId: "gpt-4o-mini",
             applyToTaskTypes: [.acknowledgment]

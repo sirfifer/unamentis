@@ -155,7 +155,7 @@ final class GLMASRSTTServiceTests: XCTestCase {
             telemetry: telemetry
         )
 
-        guard let format = AVAudioFormat(
+        guard let format1 = AVAudioFormat(
             standardFormatWithSampleRate: 16000,
             channels: 1
         ) else {
@@ -166,7 +166,7 @@ final class GLMASRSTTServiceTests: XCTestCase {
         // Set up streaming state (mock internal state)
         // First attempt may fail due to connection, that's expected
         do {
-            _ = try await service.startStreaming(audioFormat: format)
+            _ = try await service.startStreaming(audioFormat: format1)
         } catch {
             // Ignore connection errors for this test
         }
@@ -175,8 +175,16 @@ final class GLMASRSTTServiceTests: XCTestCase {
         // This tests the internal guard
         let isStreaming = await service.isStreaming
         if isStreaming {
+            // Create new format for second attempt to avoid data race
+            guard let format2 = AVAudioFormat(
+                standardFormatWithSampleRate: 16000,
+                channels: 1
+            ) else {
+                XCTFail("Failed to create audio format")
+                return
+            }
             do {
-                _ = try await service.startStreaming(audioFormat: format)
+                _ = try await service.startStreaming(audioFormat: format2)
                 XCTFail("Should throw when already streaming")
             } catch STTError.alreadyStreaming {
                 // Expected

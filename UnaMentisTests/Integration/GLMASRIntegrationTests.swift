@@ -155,19 +155,15 @@ final class GLMASRIntegrationTests: XCTestCase {
         isStreaming = await service.isStreaming
         XCTAssertTrue(isStreaming)
 
-        // Send some audio - create new buffers each time for Swift 6 sending requirements
-        guard let audioFormat = AVAudioFormat(
-            commonFormat: .pcmFormatFloat32,
-            sampleRate: 16000,
-            channels: 1,
-            interleaved: false
-        ) else {
-            XCTFail("Failed to create audio format")
-            return
-        }
-
+        // Send some audio - create new format and buffer each time for Swift 6 sending requirements
         for _ in 0..<10 {
-            guard let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: 1600) else {
+            guard let audioFormat = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 16000,
+                channels: 1,
+                interleaved: false
+            ),
+            let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: 1600) else {
                 XCTFail("Failed to create audio buffer")
                 return
             }
@@ -269,21 +265,17 @@ final class GLMASRIntegrationTests: XCTestCase {
 
         let resultStream = try await service.startStreaming(audioFormat: format)
 
-        guard let audioFormat = AVAudioFormat(
-            commonFormat: .pcmFormatFloat32,
-            sampleRate: 16000,
-            channels: 1,
-            interleaved: false
-        ) else {
-            XCTFail("Failed to create audio format")
-            return
-        }
-
         var latencies: [TimeInterval] = []
 
-        // Send audio and collect results - create new buffers each time for Swift 6 sending
+        // Send audio and collect results - create new format and buffer each time for Swift 6 sending
         for _ in 0..<20 {
-            guard let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: 1600) else {
+            guard let audioFormat = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 16000,
+                channels: 1,
+                interleaved: false
+            ),
+            let buffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: 1600) else {
                 XCTFail("Failed to create audio buffer")
                 return
             }
@@ -315,7 +307,7 @@ final class GLMASRIntegrationTests: XCTestCase {
     // MARK: - Error Recovery Tests
 
     func testErrorRecovery_afterDisconnect_reconnects() async throws {
-        guard let format = AVAudioFormat(
+        guard let format1 = AVAudioFormat(
             standardFormatWithSampleRate: 16000,
             channels: 1
         ) else {
@@ -324,11 +316,20 @@ final class GLMASRIntegrationTests: XCTestCase {
         }
 
         // Start first session
-        _ = try await service.startStreaming(audioFormat: format)
+        _ = try await service.startStreaming(audioFormat: format1)
         await service.cancelStreaming()
 
+        // Create new format for second session to avoid data race
+        guard let format2 = AVAudioFormat(
+            standardFormatWithSampleRate: 16000,
+            channels: 1
+        ) else {
+            XCTFail("Failed to create audio format")
+            return
+        }
+
         // Start second session (tests reconnection)
-        _ = try await service.startStreaming(audioFormat: format)
+        _ = try await service.startStreaming(audioFormat: format2)
 
         let isStreaming = await service.isStreaming
         XCTAssertTrue(isStreaming, "Should reconnect successfully")

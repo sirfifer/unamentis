@@ -35,6 +35,10 @@ const state = {
         warnings: 0
     },
 
+    // Import job tracking
+    importJobs: [],
+    importJobsPollingInterval: null,
+
     charts: {},
     updateInterval: null
 };
@@ -173,7 +177,21 @@ async function fetchAPI(endpoint, options = {}) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            // Try to extract error message from response body
+            let errorMessage = `HTTP ${response.status}`;
+            try {
+                const errorBody = await response.json();
+                if (errorBody.error) {
+                    errorMessage = errorBody.error;
+                } else if (errorBody.message) {
+                    errorMessage = errorBody.message;
+                }
+            } catch (parseErr) {
+                // Response wasn't JSON, use status text
+                errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
+            console.error(`API error (${options.method || 'GET'} ${endpoint}):`, errorMessage);
+            throw new Error(errorMessage);
         }
 
         return await response.json();
@@ -1210,6 +1228,10 @@ function initTabs() {
                     break;
                 case 'curriculum':
                     refreshCurricula();
+                    fetchArchivedCurricula();
+                    break;
+                case 'sources':
+                    initSourcesTab();
                     break;
             }
         });
@@ -1534,7 +1556,7 @@ function renderCurricula(curricula) {
     };
 
     const html = curricula.map(curriculum => `
-        <div class="card cursor-pointer hover:border-accent-primary/50 transition-all" onclick="selectCurriculum('${curriculum.id}')">
+        <div class="card cursor-pointer hover:border-accent-primary/50 transition-all group" onclick="selectCurriculum('${curriculum.id}')">
             <div class="p-4">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
@@ -1548,7 +1570,23 @@ function renderCurricula(curricula) {
                             <div class="text-xs text-dark-400">v${curriculum.version}</div>
                         </div>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-xs font-medium ${getDifficultyStyles(curriculum.difficulty)}">${curriculum.difficulty || 'Unknown'}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded text-xs font-medium ${getDifficultyStyles(curriculum.difficulty)}">${curriculum.difficulty || 'Unknown'}</span>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="showArchiveConfirm('${curriculum.id}', '${escapeHtml(curriculum.title).replace(/'/g, "\\'")}', event)"
+                                    class="p-1.5 text-dark-400 hover:text-accent-warning hover:bg-dark-700 rounded transition-colors" title="Archive">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                </svg>
+                            </button>
+                            <button onclick="showDeleteConfirm('${curriculum.id}', '${escapeHtml(curriculum.title).replace(/'/g, "\\'")}', event)"
+                                    class="p-1.5 text-dark-400 hover:text-accent-danger hover:bg-dark-700 rounded transition-colors" title="Delete">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <p class="text-sm text-dark-300 mb-3 line-clamp-2">${escapeHtml(curriculum.description)}</p>
@@ -1562,7 +1600,7 @@ function renderCurricula(curricula) {
                     ` : ''}
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 text-xs">
+                <div class="grid grid-cols-4 gap-2 text-xs">
                     <div class="text-center p-2 rounded bg-dark-800/30">
                         <div class="font-semibold text-dark-200">${curriculum.topic_count}</div>
                         <div class="text-dark-500">Topics</div>
@@ -1574,6 +1612,10 @@ function renderCurricula(curricula) {
                     <div class="text-center p-2 rounded bg-dark-800/30">
                         <div class="font-semibold text-dark-200">${curriculum.age_range || 'All'}</div>
                         <div class="text-dark-500">Ages</div>
+                    </div>
+                    <div class="text-center p-2 rounded ${curriculum.has_visual_assets ? 'bg-accent-info/10' : 'bg-dark-800/30'}">
+                        <div class="font-semibold ${curriculum.has_visual_assets ? 'text-accent-info' : 'text-dark-200'}">${curriculum.visual_asset_count || 0}</div>
+                        <div class="text-dark-500">Assets</div>
                     </div>
                 </div>
             </div>
@@ -1704,6 +1746,14 @@ function showCurriculumDetail(curriculum) {
                 <div class="text-right text-xs">
                     <div class="text-dark-300">${formatDurationPT(topic.duration)}</div>
                     ${topic.has_transcript ? `<div class="text-accent-success">${topic.segment_count || 0} segments</div>` : '<div class="text-dark-500">No transcript</div>'}
+                    ${(topic.embedded_asset_count || 0) + (topic.reference_asset_count || 0) > 0 ?
+                        `<div class="text-accent-info flex items-center gap-1 justify-end mt-0.5">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            ${(topic.embedded_asset_count || 0) + (topic.reference_asset_count || 0)} assets
+                        </div>` : ''
+                    }
                 </div>
                 <svg class="w-5 h-5 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -1731,10 +1781,16 @@ async function viewTopicTranscript(curriculumId, topicId) {
         const data = await fetchAPI(`/curricula/${curriculumId}/topics/${topicId}/transcript`);
 
         // Extract segments from the transcript object
-        const segments = data.transcript?.segments || [];
+        const segments = data.transcript?.segments || data.segments || [];
         const examples = data.examples || [];
         const assessments = data.assessments || [];
         const misconceptions = data.misconceptions || [];
+
+        // Extract visual assets
+        const media = data.media || {};
+        const embeddedAssets = media.embedded || [];
+        const referenceAssets = media.reference || [];
+        const totalAssets = embeddedAssets.length + referenceAssets.length;
 
         // Show transcript in a modal
         const modal = document.createElement('div');
@@ -1745,7 +1801,7 @@ async function viewTopicTranscript(curriculumId, topicId) {
                 <div class="flex items-center justify-between px-4 py-3 border-b border-dark-700/50 bg-dark-850">
                     <div>
                         <h3 class="font-semibold text-dark-100">${escapeHtml(data.topic_title || 'Transcript')}</h3>
-                        <div class="text-xs text-dark-500 mt-0.5">${segments.length} segments${examples.length ? `, ${examples.length} examples` : ''}${assessments.length ? `, ${assessments.length} assessments` : ''}</div>
+                        <div class="text-xs text-dark-500 mt-0.5">${segments.length} segments${examples.length ? `, ${examples.length} examples` : ''}${assessments.length ? `, ${assessments.length} assessments` : ''}${totalAssets > 0 ? `, ${totalAssets} visual assets` : ''}</div>
                     </div>
                     <button onclick="this.closest('.fixed').remove()" class="text-dark-400 hover:text-dark-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1876,6 +1932,38 @@ async function viewTopicTranscript(curriculumId, topicId) {
                             </div>
                         </div>
                     ` : ''}
+
+                    <!-- Visual Assets -->
+                    ${totalAssets > 0 ? `
+                        <div>
+                            <h4 class="text-sm font-medium text-dark-300 mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Visual Assets (${totalAssets})
+                            </h4>
+
+                            <!-- Embedded Assets -->
+                            ${embeddedAssets.length > 0 ? `
+                                <div class="mb-4">
+                                    <h5 class="text-xs font-medium text-dark-400 mb-2 uppercase tracking-wide">Embedded (${embeddedAssets.length})</h5>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        ${embeddedAssets.map(asset => renderAssetCard(asset)).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- Reference Assets -->
+                            ${referenceAssets.length > 0 ? `
+                                <div>
+                                    <h5 class="text-xs font-medium text-dark-400 mb-2 uppercase tracking-wide">Reference (${referenceAssets.length})</h5>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                                        ${referenceAssets.map(asset => renderAssetCard(asset)).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1884,6 +1972,57 @@ async function viewTopicTranscript(curriculumId, topicId) {
         console.error('Failed to load topic transcript:', e);
         alert('Failed to load transcript: ' + e.message);
     }
+}
+
+function renderAssetCard(asset) {
+    const hasLocalPath = !!asset.localPath;
+    // localPath is relative to project root (e.g., "curriculum/assets/renaissance/topic1/img1.jpg")
+    const assetUrl = asset.localPath ? `/assets/${asset.localPath}` : asset.url;
+    const isImage = asset.type === 'image' || asset.type === 'diagram' || asset.type === 'slideImage';
+
+    return `
+        <div class="rounded-lg border ${hasLocalPath ? 'border-accent-success/30 bg-accent-success/5' : 'border-dark-600 bg-dark-800/30'} p-2 text-xs">
+            ${isImage && assetUrl ? `
+                <div class="aspect-video rounded bg-dark-700 mb-2 overflow-hidden flex items-center justify-center">
+                    <img src="${escapeHtml(assetUrl)}"
+                         alt="${escapeHtml(asset.alt || asset.title || 'Asset')}"
+                         class="max-w-full max-h-full object-contain"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="hidden items-center justify-center w-full h-full text-dark-500 flex-col gap-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>Load failed</span>
+                    </div>
+                </div>
+            ` : `
+                <div class="aspect-video rounded bg-dark-700 mb-2 flex items-center justify-center text-dark-400">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            `}
+            <div class="font-medium text-dark-200 truncate" title="${escapeHtml(asset.title || asset.alt || 'Untitled')}">${escapeHtml(asset.title || asset.alt || 'Untitled')}</div>
+            <div class="flex items-center gap-1 mt-1">
+                <span class="px-1.5 py-0.5 rounded bg-dark-700/50 text-dark-400">${asset.type || 'image'}</span>
+                ${hasLocalPath ? `
+                    <span class="px-1.5 py-0.5 rounded bg-accent-success/20 text-accent-success flex items-center gap-0.5">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        cached
+                    </span>
+                ` : asset.url ? `
+                    <span class="px-1.5 py-0.5 rounded bg-accent-warning/20 text-accent-warning">remote</span>
+                ` : `
+                    <span class="px-1.5 py-0.5 rounded bg-dark-600 text-dark-500">no source</span>
+                `}
+            </div>
+            ${asset.segmentTiming ? `
+                <div class="text-dark-500 mt-1">Segments ${asset.segmentTiming.startSegment + 1}-${asset.segmentTiming.endSegment + 1}</div>
+            ` : ''}
+        </div>
+    `;
 }
 
 function getSegmentTypeBadge(type) {
@@ -1959,6 +2098,302 @@ async function init() {
     }, 5000);
 
     console.log('UnaMentis Management Console ready');
+
+    // Start import jobs polling
+    startImportJobsPolling();
+}
+
+// =============================================================================
+// Import Jobs Tracking
+// =============================================================================
+
+/**
+ * Start polling for import job status updates
+ */
+function startImportJobsPolling() {
+    // Initial fetch
+    refreshImportJobs();
+
+    // Poll every 2 seconds for active jobs
+    state.importJobsPollingInterval = setInterval(() => {
+        if (state.importJobs.some(job => ['queued', 'downloading', 'validating', 'extracting', 'enriching', 'generating'].includes(job.status))) {
+            refreshImportJobs();
+        }
+    }, 2000);
+}
+
+/**
+ * Fetch current import jobs from the server
+ */
+async function refreshImportJobs() {
+    try {
+        const response = await fetchAPI('/import/jobs');
+        if (response.success) {
+            state.importJobs = response.jobs || [];
+            updateImportProgressIndicator();
+        }
+    } catch (e) {
+        console.error('Failed to fetch import jobs:', e);
+    }
+}
+
+/**
+ * Update the import progress indicator in the header
+ */
+function updateImportProgressIndicator() {
+    const container = document.getElementById('import-progress-indicator');
+    if (!container) return;
+
+    const activeJobs = state.importJobs.filter(job =>
+        ['queued', 'downloading', 'validating', 'extracting', 'enriching', 'generating'].includes(job.status)
+    );
+    const completedJobs = state.importJobs.filter(job => job.status === 'complete');
+    const failedJobs = state.importJobs.filter(job => job.status === 'failed');
+
+    if (activeJobs.length === 0 && completedJobs.length === 0 && failedJobs.length === 0) {
+        container.classList.add('hidden');
+        return;
+    }
+
+    container.classList.remove('hidden');
+
+    // Calculate overall progress for active jobs
+    let overallProgress = 0;
+    if (activeJobs.length > 0) {
+        overallProgress = activeJobs.reduce((sum, job) => sum + (job.overallProgress || 0), 0) / activeJobs.length;
+    }
+
+    // Build status text
+    let statusText = '';
+    let statusClass = 'text-accent-info';
+    let pulseClass = '';
+
+    if (activeJobs.length > 0) {
+        statusText = `${activeJobs.length} importing`;
+        pulseClass = 'animate-pulse';
+        statusClass = 'text-accent-warning';
+    } else if (failedJobs.length > 0) {
+        statusText = `${failedJobs.length} failed`;
+        statusClass = 'text-accent-error';
+    } else if (completedJobs.length > 0) {
+        statusText = `${completedJobs.length} complete`;
+        statusClass = 'text-accent-success';
+    }
+
+    container.innerHTML = `
+        <button onclick="showImportJobsPanel()" class="flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-dark-800/50 border border-dark-700/50 hover:border-accent-primary/50 transition-all cursor-pointer ${pulseClass}">
+            <div class="relative">
+                <svg class="w-4 h-4 ${statusClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                ${activeJobs.length > 0 ? `
+                    <div class="absolute -top-1 -right-1 w-2 h-2 bg-accent-warning rounded-full animate-ping"></div>
+                    <div class="absolute -top-1 -right-1 w-2 h-2 bg-accent-warning rounded-full"></div>
+                ` : ''}
+            </div>
+            <span class="text-xs sm:text-sm ${statusClass}">${statusText}</span>
+            ${activeJobs.length > 0 ? `
+                <div class="w-16 h-1.5 bg-dark-700 rounded-full overflow-hidden hidden sm:block">
+                    <div class="h-full bg-accent-warning rounded-full transition-all duration-300" style="width: ${overallProgress}%"></div>
+                </div>
+            ` : ''}
+        </button>
+    `;
+}
+
+/**
+ * Show the import jobs panel/modal
+ */
+function showImportJobsPanel() {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('import-jobs-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'import-jobs-modal';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm';
+        document.body.appendChild(modal);
+    }
+
+    modal.classList.remove('hidden');
+    renderImportJobsPanel();
+}
+
+/**
+ * Hide the import jobs panel
+ */
+function hideImportJobsPanel() {
+    const modal = document.getElementById('import-jobs-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+/**
+ * Render the import jobs panel content
+ */
+function renderImportJobsPanel() {
+    const modal = document.getElementById('import-jobs-modal');
+    if (!modal) return;
+
+    const activeJobs = state.importJobs.filter(job =>
+        ['queued', 'downloading', 'validating', 'extracting', 'enriching', 'generating'].includes(job.status)
+    );
+    const completedJobs = state.importJobs.filter(job => job.status === 'complete');
+    const failedJobs = state.importJobs.filter(job => job.status === 'failed');
+
+    modal.innerHTML = `
+        <div class="bg-dark-800 rounded-xl border border-dark-700 shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-dark-700">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <h2 class="text-lg font-semibold text-dark-100">Import Jobs</h2>
+                </div>
+                <button onclick="hideImportJobsPanel()" class="p-2 rounded-lg hover:bg-dark-700 transition-colors">
+                    <svg class="w-5 h-5 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                ${state.importJobs.length === 0 ? `
+                    <div class="text-center py-12 text-dark-500">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <p>No import jobs</p>
+                        <p class="text-sm mt-2">Go to Source Browser to import curricula</p>
+                    </div>
+                ` : `
+                    <!-- Active Jobs -->
+                    ${activeJobs.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-dark-400 uppercase tracking-wider mb-3">Active (${activeJobs.length})</h3>
+                            <div class="space-y-3">
+                                ${activeJobs.map(job => renderImportJobCard(job)).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Completed Jobs -->
+                    ${completedJobs.length > 0 ? `
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-dark-400 uppercase tracking-wider mb-3">Completed (${completedJobs.length})</h3>
+                            <div class="space-y-3">
+                                ${completedJobs.map(job => renderImportJobCard(job)).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Failed Jobs -->
+                    ${failedJobs.length > 0 ? `
+                        <div>
+                            <h3 class="text-sm font-medium text-dark-400 uppercase tracking-wider mb-3">Failed (${failedJobs.length})</h3>
+                            <div class="space-y-3">
+                                ${failedJobs.map(job => renderImportJobCard(job)).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                `}
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-dark-700 flex justify-between items-center">
+                <button onclick="refreshImportJobs()" class="text-sm text-dark-400 hover:text-dark-200 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+                <button onclick="hideImportJobsPanel()" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    `;
+
+    // Close on backdrop click
+    modal.onclick = hideImportJobsPanel;
+}
+
+/**
+ * Render a single import job card
+ */
+function renderImportJobCard(job) {
+    const statusColors = {
+        queued: 'text-dark-400',
+        downloading: 'text-accent-warning',
+        validating: 'text-accent-info',
+        extracting: 'text-accent-info',
+        enriching: 'text-accent-primary',
+        generating: 'text-accent-primary',
+        complete: 'text-accent-success',
+        failed: 'text-accent-error',
+        cancelled: 'text-dark-500'
+    };
+
+    const statusIcons = {
+        queued: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        downloading: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>',
+        validating: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        extracting: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>',
+        enriching: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>',
+        generating: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path>',
+        complete: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>',
+        failed: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        cancelled: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'
+    };
+
+    const isActive = ['queued', 'downloading', 'validating', 'extracting', 'enriching', 'generating'].includes(job.status);
+    const progress = job.overallProgress || 0;
+
+    return `
+        <div class="bg-dark-900/50 rounded-lg border border-dark-700/50 p-4">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <div class="w-10 h-10 rounded-lg bg-dark-700/50 flex items-center justify-center flex-shrink-0 ${isActive ? 'animate-pulse' : ''}">
+                        <svg class="w-5 h-5 ${statusColors[job.status] || 'text-dark-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${statusIcons[job.status] || statusIcons.queued}
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-dark-200 truncate">${escapeHtml(job.config?.courseId || job.id)}</div>
+                        <div class="text-sm text-dark-500 truncate">${escapeHtml(job.currentActivity || job.currentStage || job.status)}</div>
+                        ${job.config?.selectedLectures?.length ? `
+                            <div class="text-xs text-dark-500 mt-1">${job.config.selectedLectures.length} lecture(s) selected</div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <div class="text-sm font-medium ${statusColors[job.status] || 'text-dark-400'} capitalize">${job.status}</div>
+                    ${isActive ? `<div class="text-xs text-dark-500">${Math.round(progress)}%</div>` : ''}
+                </div>
+            </div>
+            ${isActive ? `
+                <div class="mt-3">
+                    <div class="w-full h-2 bg-dark-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+            ` : ''}
+            ${job.error ? `
+                <div class="mt-3 p-2 bg-accent-error/10 border border-accent-error/30 rounded text-sm text-accent-error">
+                    ${escapeHtml(job.error)}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Track a new import job by ID
+ */
+function trackImportJob(jobId) {
+    // Immediately refresh to pick up the new job
+    refreshImportJobs();
+    showToast('Import started! Check progress in the header.', 'info');
 }
 
 // =============================================================================
@@ -2074,34 +2509,695 @@ function showImportLoading(message) {
     console.log(message);
 }
 
-// Source Browser Functions
-function showSourceBrowser() {
-    document.getElementById('source-browser-modal').classList.remove('hidden');
+// ============================================================================
+// Source Browser Functions (Full Page Tab)
+// ============================================================================
+
+// State for sources
+let mitOCWCourses = [];
+let mitOCWSubjects = [];
+let mitFilteredCourses = [];
+let currentSourceId = null;
+
+// Pagination state for MIT courses
+let mitCurrentPage = 1;
+let mitPageSize = 20;
+let mitTotalPages = 1;
+
+// Show source cards (initial view)
+function showSourceCards() {
+    document.getElementById('source-cards').classList.remove('hidden');
+    document.getElementById('source-content-area').classList.add('hidden');
+    currentSourceId = null;
 }
 
-function hideSourceBrowser() {
-    document.getElementById('source-browser-modal').classList.add('hidden');
-    document.getElementById('source-results').innerHTML = `
-        <div class="text-center text-dark-500 py-12">
-            <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <p class="text-lg font-medium">Search for curricula</p>
-            <p class="text-sm mt-1">Use the search above to find curricula from external sources</p>
+// Select a source and show its content
+function selectSource(sourceId) {
+    currentSourceId = sourceId;
+
+    // Hide source cards, show content area
+    document.getElementById('source-cards').classList.add('hidden');
+    document.getElementById('source-content-area').classList.remove('hidden');
+
+    // Hide all source views
+    document.querySelectorAll('.source-view').forEach(v => v.classList.add('hidden'));
+
+    // Show selected source view
+    const sourceView = document.getElementById(`source-view-${sourceId}`);
+    if (sourceView) {
+        sourceView.classList.remove('hidden');
+    }
+
+    // Update header info
+    const headerInfo = document.getElementById('source-header-info');
+    const sourceNames = {
+        'mit_ocw': 'MIT OpenCourseWare',
+        'github': 'GitHub',
+        'custom': 'Custom URL'
+    };
+    headerInfo.innerHTML = `<span class="text-lg font-semibold">${sourceNames[sourceId] || sourceId}</span>`;
+
+    // Load data for the source
+    if (sourceId === 'mit_ocw') {
+        loadMITCourses();
+    }
+}
+
+// Initialize sources tab when it becomes active
+function initSourcesTab() {
+    showSourceCards();
+}
+
+// ============================================================================
+// MIT OpenCourseWare Functions
+// ============================================================================
+
+async function loadMITCourses() {
+    // Show loading state
+    document.getElementById('mit-courses-loading').classList.remove('hidden');
+    document.getElementById('mit-courses-empty').classList.add('hidden');
+    document.getElementById('mit-courses-list').classList.add('hidden');
+
+    try {
+        const response = await fetchAPI('/import/sources/mit_ocw/courses');
+        mitOCWCourses = response.courses || [];
+
+        // Extract unique subjects for filter dropdown
+        const subjects = new Set();
+        mitOCWCourses.forEach(course => {
+            if (course.department) subjects.add(course.department);
+        });
+        mitOCWSubjects = Array.from(subjects).sort();
+
+        // Populate subject dropdown
+        const subjectSelect = document.getElementById('mit-subject-filter');
+        if (subjectSelect) {
+            subjectSelect.innerHTML = '<option value="">All Subjects</option>' +
+                mitOCWSubjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        }
+
+        // Initialize filtered courses and display
+        mitFilteredCourses = mitOCWCourses;
+        mitCurrentPage = 1;
+        renderMITCoursesPage();
+    } catch (e) {
+        console.error('Failed to load MIT OCW courses:', e);
+        document.getElementById('mit-courses-loading').classList.add('hidden');
+        document.getElementById('mit-courses-list').innerHTML = `
+            <div class="text-center text-dark-500 py-12">
+                <svg class="w-16 h-16 mx-auto mb-4 text-accent-danger opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-lg font-medium text-accent-danger">Failed to load MIT OCW courses</p>
+                <p class="text-sm mt-1">${escapeHtml(e.message)}</p>
+                <button class="btn-secondary mt-4" onclick="loadMITCourses()">Try Again</button>
+            </div>
+        `;
+        document.getElementById('mit-courses-list').classList.remove('hidden');
+    }
+}
+
+function filterMITCourses() {
+    const search = document.getElementById('mit-search-input').value.toLowerCase().trim();
+    const subject = document.getElementById('mit-subject-filter').value;
+    const level = document.getElementById('mit-level-filter').value;
+
+    let filtered = mitOCWCourses;
+
+    // Filter by search term
+    if (search) {
+        filtered = filtered.filter(course =>
+            course.title.toLowerCase().includes(search) ||
+            course.description?.toLowerCase().includes(search) ||
+            course.instructors?.some(i => i.toLowerCase().includes(search)) ||
+            course.keywords?.some(k => k.toLowerCase().includes(search))
+        );
+    }
+
+    // Filter by subject
+    if (subject) {
+        filtered = filtered.filter(course => course.department === subject);
+    }
+
+    // Filter by level
+    if (level) {
+        filtered = filtered.filter(course => course.level?.toLowerCase().includes(level));
+    }
+
+    // Store filtered results and reset to page 1
+    mitFilteredCourses = filtered;
+    mitCurrentPage = 1;
+    renderMITCoursesPage();
+}
+
+function renderMITCoursesList(courses) {
+    document.getElementById('mit-courses-loading').classList.add('hidden');
+
+    if (!courses || courses.length === 0) {
+        document.getElementById('mit-courses-empty').classList.remove('hidden');
+        document.getElementById('mit-courses-list').classList.add('hidden');
+        return;
+    }
+
+    document.getElementById('mit-courses-empty').classList.add('hidden');
+    const container = document.getElementById('mit-courses-list');
+
+    container.innerHTML = `
+        <div class="mb-4 text-sm text-dark-400">${courses.length} course${courses.length !== 1 ? 's' : ''} available</div>
+        <div class="space-y-3">
+            ${courses.map(course => `
+                <div class="p-4 rounded-lg bg-dark-800/30 border border-dark-700/50 hover:border-accent-primary/50 transition-all cursor-pointer" onclick="viewMITCourseDetail('${escapeHtml(course.id)}')">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h4 class="font-medium text-dark-200 truncate">${escapeHtml(course.title)}</h4>
+                                ${course.level ? `<span class="px-2 py-0.5 text-xs rounded ${course.level.toLowerCase().includes('graduate') ? 'bg-accent-secondary/20 text-accent-secondary' : 'bg-accent-info/20 text-accent-info'}">${escapeHtml(course.level)}</span>` : ''}
+                            </div>
+                            <div class="text-sm text-dark-400 mb-2">
+                                ${course.department ? `<span class="mr-3">${escapeHtml(course.department)}</span>` : ''}
+                                ${course.semester ? `<span class="text-dark-500">${escapeHtml(course.semester)}</span>` : ''}
+                            </div>
+                            ${course.instructors?.length ? `<div class="text-xs text-dark-500 mb-2">Instructors: ${course.instructors.map(i => escapeHtml(i)).join(', ')}</div>` : ''}
+                            ${course.description ? `<p class="text-sm text-dark-400 line-clamp-2 mb-2">${escapeHtml(course.description)}</p>` : ''}
+                            <div class="flex flex-wrap gap-2">
+                                ${(course.features || []).filter(f => f.available).map(f => `
+                                    <span class="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-dark-700/50 text-dark-400">
+                                        ${getFeatureIcon(f.type)}
+                                        ${escapeHtml(f.type)}${f.count ? ` (${f.count})` : ''}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
         </div>
     `;
+
+    container.classList.remove('hidden');
 }
 
-function switchSource(source) {
-    // Update source buttons
-    document.querySelectorAll('.source-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.source === source);
-    });
-    // Show/hide source content
-    document.querySelectorAll('.source-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-    document.getElementById(`source-${source}`).classList.remove('hidden');
+function getFeatureIcon(type) {
+    const icons = {
+        'video_lectures': '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>',
+        'lecture_notes': '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>',
+        'assignments': '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>',
+        'exams': '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        'transcripts': '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>'
+    };
+    return icons[type] || '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
+}
+
+// ============================================================================
+// MIT OCW Pagination Functions
+// ============================================================================
+
+function renderMITCoursesPage() {
+    const total = mitFilteredCourses.length;
+
+    if (total === 0) {
+        document.getElementById('mit-courses-loading').classList.add('hidden');
+        document.getElementById('mit-courses-empty').classList.remove('hidden');
+        document.getElementById('mit-courses-list').classList.add('hidden');
+        document.getElementById('mit-courses-pagination').classList.add('hidden');
+        return;
+    }
+
+    // Calculate pagination
+    mitTotalPages = Math.ceil(total / mitPageSize);
+    if (mitCurrentPage > mitTotalPages) {
+        mitCurrentPage = mitTotalPages;
+    }
+
+    const start = (mitCurrentPage - 1) * mitPageSize;
+    const end = Math.min(start + mitPageSize, total);
+    const pageItems = mitFilteredCourses.slice(start, end);
+
+    // Render the page of courses
+    renderMITCoursesList(pageItems);
+
+    // Update pagination controls
+    updateMITPagination(start + 1, end, total);
+}
+
+function updateMITPagination(start, end, total) {
+    // Update info text
+    document.getElementById('mit-page-start').textContent = start;
+    document.getElementById('mit-page-end').textContent = end;
+    document.getElementById('mit-total-count').textContent = total;
+    document.getElementById('mit-current-page').textContent = mitCurrentPage;
+    document.getElementById('mit-total-pages').textContent = mitTotalPages;
+
+    // Update button states
+    const prevBtn = document.getElementById('mit-prev-page');
+    const nextBtn = document.getElementById('mit-next-page');
+
+    prevBtn.disabled = mitCurrentPage <= 1;
+    nextBtn.disabled = mitCurrentPage >= mitTotalPages;
+
+    // Show pagination if there are courses
+    document.getElementById('mit-courses-pagination').classList.remove('hidden');
+}
+
+function mitPrevPage() {
+    if (mitCurrentPage > 1) {
+        mitCurrentPage--;
+        renderMITCoursesPage();
+        scrollToMITCoursesTop();
+    }
+}
+
+function mitNextPage() {
+    if (mitCurrentPage < mitTotalPages) {
+        mitCurrentPage++;
+        renderMITCoursesPage();
+        scrollToMITCoursesTop();
+    }
+}
+
+function changeMITPageSize() {
+    const select = document.getElementById('mit-page-size');
+    mitPageSize = parseInt(select.value, 10);
+    mitCurrentPage = 1;
+    renderMITCoursesPage();
+}
+
+function scrollToMITCoursesTop() {
+    const container = document.getElementById('mit-courses-container');
+    if (container) {
+        container.scrollTop = 0;
+    }
+}
+
+async function viewMITCourseDetail(courseId) {
+    try {
+        showToast('Loading course details...', 'info');
+        const response = await fetchAPI(`/import/sources/mit_ocw/courses/${courseId}`);
+        const course = response.course;
+
+        // Hide pagination when viewing course details
+        document.getElementById('mit-courses-pagination').classList.add('hidden');
+
+        // Display course detail in the courses list area
+        const container = document.getElementById('mit-courses-list');
+        container.innerHTML = `
+            <div class="mb-4">
+                <button class="btn-secondary text-sm" onclick="renderMITCoursesPage()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Courses
+                </button>
+            </div>
+            <div class="rounded-lg bg-dark-800/50 border border-dark-700/50 overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-dark-700/50 bg-dark-800/30">
+                    <h3 class="font-semibold text-dark-100">${escapeHtml(course.title)}</h3>
+                    <span class="px-2 py-0.5 text-xs rounded ${course.level?.toLowerCase().includes('graduate') ? 'bg-accent-secondary/20 text-accent-secondary' : 'bg-accent-info/20 text-accent-info'}">${escapeHtml(course.level || 'N/A')}</span>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-dark-400 mb-1">Department</h4>
+                            <p class="text-dark-200">${escapeHtml(course.department || 'N/A')}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-dark-400 mb-1">Semester</h4>
+                            <p class="text-dark-200">${escapeHtml(course.semester || 'N/A')}</p>
+                        </div>
+                    </div>
+
+                    ${course.instructors?.length ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-dark-400 mb-1">Instructors</h4>
+                        <p class="text-dark-200">${course.instructors.map(i => escapeHtml(i)).join(', ')}</p>
+                    </div>
+                    ` : ''}
+
+                    <div>
+                        <h4 class="text-sm font-medium text-dark-400 mb-1">Description</h4>
+                        <p class="text-dark-200">${escapeHtml(course.description || 'No description available')}</p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-medium text-dark-400 mb-2">Available Content</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${(course.features || []).map(f => `
+                                <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${f.available ? 'bg-accent-success/10 text-accent-success border border-accent-success/20' : 'bg-dark-800/50 text-dark-500 border border-dark-700/50'}">
+                                    ${getFeatureIcon(f.type)}
+                                    ${escapeHtml(f.type.replace('_', ' '))}
+                                    ${f.count ? `<span class="text-xs opacity-75">(${f.count})</span>` : ''}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    ${course.keywords?.length ? `
+                    <div>
+                        <h4 class="text-sm font-medium text-dark-400 mb-2">Keywords</h4>
+                        <div class="flex flex-wrap gap-1">
+                            ${course.keywords.map(k => `<span class="px-2 py-0.5 text-xs rounded-full bg-dark-700/50 text-dark-400">${escapeHtml(k)}</span>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="border-t border-dark-700/50 pt-4">
+                        <h4 class="text-sm font-medium text-dark-400 mb-2">License</h4>
+                        <div class="flex items-center gap-2 text-sm">
+                            <span class="px-2 py-1 rounded bg-accent-info/10 text-accent-info border border-accent-info/20">${escapeHtml(course.license?.name || 'CC-BY-NC-SA 4.0')}</span>
+                            ${course.license?.holder ? `<span class="text-dark-400">by ${escapeHtml(course.license.holder.name)}</span>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Lecture Selection -->
+                    ${course.lectures?.length ? `
+                    <div class="border-t border-dark-700/50 pt-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-dark-400">Select Lectures to Import</h4>
+                            <div class="flex items-center gap-2">
+                                <span id="lecture-selection-count" class="text-xs text-dark-500">0 of ${course.lectures.length} selected</span>
+                                <button class="text-xs text-accent-primary hover:text-accent-primary/80" onclick="selectAllLectures(true)">Select All</button>
+                                <span class="text-dark-600">|</span>
+                                <button class="text-xs text-dark-400 hover:text-dark-300" onclick="selectAllLectures(false)">Clear</button>
+                            </div>
+                        </div>
+                        <div class="max-h-64 overflow-y-auto rounded-lg border border-dark-700/50 bg-dark-900/50">
+                            <div class="divide-y divide-dark-700/30">
+                                ${course.lectures.map((lec, idx) => `
+                                    <label class="flex items-center gap-3 px-3 py-2 hover:bg-dark-800/50 cursor-pointer transition-colors">
+                                        <input type="checkbox" class="lecture-checkbox rounded border-dark-600 bg-dark-800 text-accent-primary focus:ring-accent-primary"
+                                               data-lecture-id="${escapeHtml(lec.id)}"
+                                               data-lecture-num="${lec.number}"
+                                               onchange="updateLectureSelectionCount()">
+                                        <span class="flex-1 flex items-center gap-2">
+                                            <span class="text-xs text-dark-500 w-6">${lec.number}.</span>
+                                            <span class="text-sm text-dark-200">${escapeHtml(lec.title)}</span>
+                                        </span>
+                                        <span class="flex items-center gap-1 text-dark-500">
+                                            ${lec.hasVideo ? '<span title="Video available" class="text-accent-info">🎥</span>' : ''}
+                                            ${lec.hasTranscript ? '<span title="Transcript available" class="text-accent-success">📝</span>' : ''}
+                                            ${lec.hasNotes ? '<span title="Notes available" class="text-accent-warning">📄</span>' : ''}
+                                        </span>
+                                        ${lec.videoUrl ? `<a href="${escapeHtml(lec.videoUrl)}" target="_blank" rel="noopener" class="text-xs text-accent-primary hover:underline" onclick="event.stopPropagation()">Watch</a>` : ''}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <p class="text-xs text-dark-500 mt-2">💡 Tip: Start with 1-2 lectures to evaluate the content before importing the full course.</p>
+                    </div>
+                    ` : ''}
+
+                    <div class="border-t border-dark-700/50 pt-4">
+                        <h4 class="text-sm font-medium text-dark-400 mb-2">AI Enrichment Options</h4>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="import-opt-objectives" checked class="rounded border-dark-600 bg-dark-800 text-accent-primary focus:ring-accent-primary">
+                                <span class="text-sm text-dark-300">Generate learning objectives</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="import-opt-checkpoints" checked class="rounded border-dark-600 bg-dark-800 text-accent-primary focus:ring-accent-primary">
+                                <span class="text-sm text-dark-300">Generate knowledge checkpoints</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="import-opt-spoken" class="rounded border-dark-600 bg-dark-800 text-accent-primary focus:ring-accent-primary">
+                                <span class="text-sm text-dark-300">Generate spoken text from notes</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button class="btn-primary flex-1" onclick="importMITCourse('${escapeHtml(course.id)}')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Import Selected
+                        </button>
+                        <a href="${course.downloadUrl || 'https://ocw.mit.edu'}" target="_blank" rel="noopener" class="btn-secondary">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                            View on OCW
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        showToast('Failed to load course details: ' + e.message, 'error');
+    }
+}
+
+// Lecture selection helpers
+function selectAllLectures(checked) {
+    const checkboxes = document.querySelectorAll('.lecture-checkbox');
+    checkboxes.forEach(cb => cb.checked = checked);
+    updateLectureSelectionCount();
+}
+
+function updateLectureSelectionCount() {
+    const checkboxes = document.querySelectorAll('.lecture-checkbox');
+    const checked = document.querySelectorAll('.lecture-checkbox:checked');
+    const countEl = document.getElementById('lecture-selection-count');
+    if (countEl) {
+        countEl.textContent = `${checked.length} of ${checkboxes.length} selected`;
+    }
+}
+
+function getSelectedLectures() {
+    const checked = document.querySelectorAll('.lecture-checkbox:checked');
+    return Array.from(checked).map(cb => ({
+        id: cb.dataset.lectureId,
+        number: parseInt(cb.dataset.lectureNum)
+    }));
+}
+
+async function importMITCourse(courseId) {
+    // Get selected lectures
+    const selectedLectures = getSelectedLectures();
+
+    if (selectedLectures.length === 0) {
+        showToast('Please select at least one lecture to import', 'warning');
+        return;
+    }
+
+    const options = {
+        generate_objectives: document.getElementById('import-opt-objectives')?.checked ?? true,
+        generate_checkpoints: document.getElementById('import-opt-checkpoints')?.checked ?? true,
+        generate_spoken_text: document.getElementById('import-opt-spoken')?.checked ?? false
+    };
+
+    try {
+        showToast(`Starting import of ${selectedLectures.length} lecture(s)...`, 'info');
+        const response = await fetchAPI('/import/jobs', {
+            method: 'POST',
+            body: JSON.stringify({
+                sourceId: 'mit_ocw',
+                courseId: courseId,
+                outputName: courseId,  // Default to course ID
+                selectedLectures: selectedLectures.map(l => l.id),
+                includeTranscripts: true,
+                includeLectureNotes: true,
+                includeAssignments: true,
+                includeExams: true,
+                includeVideos: false,
+                generateObjectives: options.generate_objectives,
+                createCheckpoints: options.generate_checkpoints,
+                generateSpokenText: options.generate_spoken_text,
+                buildKnowledgeGraph: true,
+                generatePracticeProblems: false
+            })
+        });
+
+        // Track the new import job and update UI
+        trackImportJob(response.jobId);
+
+        // Go back to course list and refresh curricula
+        renderMITCoursesPage();
+        await refreshCurricula();
+    } catch (e) {
+        showToast('Failed to import course: ' + e.message, 'error');
+    }
+}
+
+// ============================================================================
+// GitHub Source Functions
+// ============================================================================
+
+async function searchGitHubRepos() {
+    const query = document.getElementById('github-search-input').value.trim();
+    if (!query) return;
+
+    const container = document.getElementById('github-results-container');
+    container.innerHTML = `
+        <div class="flex items-center justify-center py-12">
+            <svg class="w-8 h-8 text-accent-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span class="ml-3 text-dark-400">Searching GitHub...</span>
+        </div>
+    `;
+
+    try {
+        const searchQuery = encodeURIComponent(`${query} extension:umlcf OR extension:json umlcf`);
+        const response = await fetch(`https://api.github.com/search/code?q=${searchQuery}&per_page=20`, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+
+        if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error('GitHub API rate limit exceeded. Please try again later.');
+            }
+            throw new Error('GitHub API error');
+        }
+
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+            container.innerHTML = `
+                <div class="mb-4 text-sm text-dark-400">Found ${data.total_count} results</div>
+                <div class="space-y-3">
+                    ${data.items.map(item => `
+                        <div class="flex items-center justify-between p-4 rounded-lg bg-dark-800/30 border border-dark-700/50 hover:border-accent-primary/50 transition-all">
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                <div class="w-10 h-10 rounded-lg bg-dark-700/50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-dark-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-dark-200 truncate">${escapeHtml(item.name)}</div>
+                                    <div class="text-xs text-dark-400 truncate">${escapeHtml(item.repository.full_name)}</div>
+                                    <div class="text-xs text-dark-500 truncate">${escapeHtml(item.path)}</div>
+                                </div>
+                            </div>
+                            <button class="btn-primary text-sm flex-shrink-0" onclick="importFromGitHubRepo('${escapeHtml(item.repository.full_name)}', '${escapeHtml(item.path)}')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Import
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-12 text-dark-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">No curricula found</p>
+                    <p class="text-sm mt-1">Try different search terms</p>
+                </div>
+            `;
+        }
+    } catch (e) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-dark-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-accent-danger opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-lg font-medium text-accent-danger">Search failed</p>
+                <p class="text-sm mt-1">${escapeHtml(e.message)}</p>
+            </div>
+        `;
+    }
+}
+
+async function importFromGitHubRepo(repo, path) {
+    try {
+        const rawUrl = `https://raw.githubusercontent.com/${repo}/main/${path}`;
+        showToast('Importing from GitHub...', 'info');
+
+        const response = await fetchAPI('/curricula/import', {
+            method: 'POST',
+            body: JSON.stringify({ url: rawUrl })
+        });
+
+        showToast(`Curriculum "${response.title}" imported successfully!`, 'success');
+        await refreshCurricula();
+    } catch (e) {
+        showToast('Failed to import: ' + e.message, 'error');
+    }
+}
+
+// ============================================================================
+// Custom URL Source Functions
+// ============================================================================
+
+async function browseCustomURL() {
+    const url = document.getElementById('custom-url-input').value.trim();
+    if (!url) return;
+
+    const container = document.getElementById('custom-results-container');
+    container.innerHTML = `
+        <div class="flex items-center justify-center py-12">
+            <svg class="w-8 h-8 text-accent-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span class="ml-3 text-dark-400">Fetching URL...</span>
+        </div>
+    `;
+
+    try {
+        // Check if it's a direct UMLCF file
+        if (url.endsWith('.umlcf') || url.endsWith('.json')) {
+            container.innerHTML = `
+                <div class="p-4 rounded-lg bg-dark-800/30 border border-dark-700/50">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-dark-200">Direct curriculum file detected</p>
+                            <p class="text-sm text-dark-400 mt-1">${escapeHtml(url)}</p>
+                        </div>
+                        <button class="btn-primary" onclick="importFromCustomURL('${escapeHtml(url)}')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Import
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-12 text-dark-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    <p class="text-lg font-medium">Enter a .umlcf or .json URL</p>
+                    <p class="text-sm mt-1">Direct links to curriculum files work best</p>
+                </div>
+            `;
+        }
+    } catch (e) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-dark-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-accent-danger opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-lg font-medium text-accent-danger">Failed to fetch URL</p>
+                <p class="text-sm mt-1">${escapeHtml(e.message)}</p>
+            </div>
+        `;
+    }
+}
+
+async function importFromCustomURL(url) {
+    try {
+        showToast('Importing from URL...', 'info');
+        const response = await fetchAPI('/curricula/import', {
+            method: 'POST',
+            body: JSON.stringify({ url: url })
+        });
+        showToast(`Curriculum "${response.title}" imported successfully!`, 'success');
+        await refreshCurricula();
+    } catch (e) {
+        showToast('Failed to import: ' + e.message, 'error');
+    }
 }
 
 async function searchGitHub() {
@@ -2196,7 +3292,6 @@ async function importFromGitHub(repo, path) {
             body: JSON.stringify({ url: rawUrl })
         });
 
-        hideSourceBrowser();
         showToast(`Curriculum "${response.title}" imported successfully!`, 'success');
         await refreshCurricula();
     } catch (e) {
@@ -2421,7 +3516,6 @@ async function importFromCustomUrl(url) {
             method: 'POST',
             body: JSON.stringify({ url: url })
         });
-        hideSourceBrowser();
         showToast(`Curriculum "${response.title}" imported successfully!`, 'success');
         await refreshCurricula();
     } catch (e) {
@@ -2452,6 +3546,264 @@ function showToast(message, type = 'info') {
         toast.style.transition = 'opacity 0.3s';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// =============================================================================
+// Curriculum Delete/Archive Functions
+// =============================================================================
+
+// State for confirmation modal
+let confirmModalState = {
+    action: null,
+    curriculumId: null,
+    curriculumTitle: null,
+    fileName: null,
+    isArchived: false
+};
+
+// State for archived curricula
+state.archivedCurricula = [];
+
+// Show confirmation modal for delete
+function showDeleteConfirm(curriculumId, title, event) {
+    if (event) event.stopPropagation();
+
+    confirmModalState = {
+        action: 'delete',
+        curriculumId: curriculumId,
+        curriculumTitle: title,
+        fileName: null,
+        isArchived: false
+    };
+
+    document.getElementById('confirm-modal-title').textContent = 'Delete Curriculum';
+    document.getElementById('confirm-modal-message').textContent =
+        `Are you sure you want to permanently delete "${title}"? This action cannot be undone.`;
+    document.getElementById('confirm-modal-btn').textContent = 'Delete Permanently';
+    document.getElementById('confirm-modal-btn').className = 'btn-primary bg-accent-danger hover:bg-accent-danger/80';
+    document.getElementById('confirm-modal-alt-btn').classList.remove('hidden');
+    document.getElementById('confirm-modal-alt-btn').textContent = 'Archive Instead';
+    document.getElementById('confirm-modal-icon').className = 'w-10 h-10 rounded-lg flex items-center justify-center bg-accent-danger/20';
+    document.getElementById('confirm-modal-icon').innerHTML = `
+        <svg class="w-5 h-5 text-accent-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    `;
+
+    document.getElementById('confirm-action-modal').classList.remove('hidden');
+}
+
+// Show confirmation modal for archive
+function showArchiveConfirm(curriculumId, title, event) {
+    if (event) event.stopPropagation();
+
+    confirmModalState = {
+        action: 'archive',
+        curriculumId: curriculumId,
+        curriculumTitle: title,
+        fileName: null,
+        isArchived: false
+    };
+
+    document.getElementById('confirm-modal-title').textContent = 'Archive Curriculum';
+    document.getElementById('confirm-modal-message').textContent =
+        `Archive "${title}"? It will be moved to the archived folder and can be restored later.`;
+    document.getElementById('confirm-modal-btn').textContent = 'Archive';
+    document.getElementById('confirm-modal-btn').className = 'btn-primary bg-accent-warning hover:bg-accent-warning/80';
+    document.getElementById('confirm-modal-alt-btn').classList.add('hidden');
+    document.getElementById('confirm-modal-icon').className = 'w-10 h-10 rounded-lg flex items-center justify-center bg-accent-warning/20';
+    document.getElementById('confirm-modal-icon').innerHTML = `
+        <svg class="w-5 h-5 text-accent-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+        </svg>
+    `;
+
+    document.getElementById('confirm-action-modal').classList.remove('hidden');
+}
+
+// Show confirmation modal for unarchive
+function showUnarchiveConfirm(fileName, title, event) {
+    if (event) event.stopPropagation();
+
+    confirmModalState = {
+        action: 'unarchive',
+        curriculumId: null,
+        curriculumTitle: title,
+        fileName: fileName,
+        isArchived: true
+    };
+
+    document.getElementById('confirm-modal-title').textContent = 'Restore Curriculum';
+    document.getElementById('confirm-modal-message').textContent =
+        `Restore "${title}" from the archive? It will become active again.`;
+    document.getElementById('confirm-modal-btn').textContent = 'Restore';
+    document.getElementById('confirm-modal-btn').className = 'btn-primary bg-accent-success hover:bg-accent-success/80';
+    document.getElementById('confirm-modal-alt-btn').classList.add('hidden');
+    document.getElementById('confirm-modal-icon').className = 'w-10 h-10 rounded-lg flex items-center justify-center bg-accent-success/20';
+    document.getElementById('confirm-modal-icon').innerHTML = `
+        <svg class="w-5 h-5 text-accent-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+    `;
+
+    document.getElementById('confirm-action-modal').classList.remove('hidden');
+}
+
+// Show confirmation modal for delete archived
+function showDeleteArchivedConfirm(fileName, title, event) {
+    if (event) event.stopPropagation();
+
+    confirmModalState = {
+        action: 'delete-archived',
+        curriculumId: null,
+        curriculumTitle: title,
+        fileName: fileName,
+        isArchived: true
+    };
+
+    document.getElementById('confirm-modal-title').textContent = 'Delete Archived Curriculum';
+    document.getElementById('confirm-modal-message').textContent =
+        `Are you sure you want to permanently delete "${title}" from the archive? This action cannot be undone.`;
+    document.getElementById('confirm-modal-btn').textContent = 'Delete Permanently';
+    document.getElementById('confirm-modal-btn').className = 'btn-primary bg-accent-danger hover:bg-accent-danger/80';
+    document.getElementById('confirm-modal-alt-btn').classList.add('hidden');
+    document.getElementById('confirm-modal-icon').className = 'w-10 h-10 rounded-lg flex items-center justify-center bg-accent-danger/20';
+    document.getElementById('confirm-modal-icon').innerHTML = `
+        <svg class="w-5 h-5 text-accent-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    `;
+
+    document.getElementById('confirm-action-modal').classList.remove('hidden');
+}
+
+function hideConfirmModal() {
+    document.getElementById('confirm-action-modal').classList.add('hidden');
+    confirmModalState = { action: null, curriculumId: null, curriculumTitle: null, fileName: null, isArchived: false };
+}
+
+async function executeConfirmAction() {
+    const { action, curriculumId, curriculumTitle, fileName } = confirmModalState;
+
+    try {
+        switch (action) {
+            case 'delete':
+                await fetchAPI(`/curricula/${curriculumId}?confirm=true`, { method: 'DELETE' });
+                showToast(`Deleted "${curriculumTitle}"`, 'success');
+                await refreshCurricula();
+                break;
+
+            case 'archive':
+                await fetchAPI(`/curricula/${curriculumId}/archive`, { method: 'POST' });
+                showToast(`Archived "${curriculumTitle}"`, 'success');
+                await refreshCurricula();
+                await fetchArchivedCurricula();
+                break;
+
+            case 'unarchive':
+                await fetchAPI(`/curricula/archived/${encodeURIComponent(fileName)}/unarchive`, { method: 'POST' });
+                showToast(`Restored "${curriculumTitle}"`, 'success');
+                await refreshCurricula();
+                await fetchArchivedCurricula();
+                break;
+
+            case 'delete-archived':
+                await fetchAPI(`/curricula/archived/${encodeURIComponent(fileName)}?confirm=true`, { method: 'DELETE' });
+                showToast(`Permanently deleted "${curriculumTitle}"`, 'success');
+                await fetchArchivedCurricula();
+                break;
+        }
+    } catch (e) {
+        showToast('Action failed: ' + e.message, 'error');
+    }
+
+    hideConfirmModal();
+}
+
+function executeAltAction() {
+    // Switch from delete to archive
+    if (confirmModalState.action === 'delete') {
+        showArchiveConfirm(confirmModalState.curriculumId, confirmModalState.curriculumTitle);
+    }
+}
+
+// Fetch archived curricula
+async function fetchArchivedCurricula() {
+    try {
+        const data = await fetchAPI('/curricula/archived');
+        state.archivedCurricula = data.archived || [];
+        updateArchivedSection();
+    } catch (e) {
+        console.error('Failed to fetch archived curricula:', e);
+    }
+}
+
+function updateArchivedSection() {
+    const section = document.getElementById('archived-curricula-section');
+    const countEl = document.getElementById('archived-count');
+    const listEl = document.getElementById('archived-curricula-list');
+
+    if (state.archivedCurricula.length === 0) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    section.classList.remove('hidden');
+    countEl.textContent = state.archivedCurricula.length;
+
+    const html = state.archivedCurricula.map(archived => `
+        <div class="card bg-dark-800/30 p-4 flex items-center justify-between gap-4 group">
+            <div class="flex items-center gap-3 min-w-0">
+                <svg class="w-4 h-4 text-dark-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                </svg>
+                <div class="min-w-0">
+                    <div class="font-medium text-dark-300 truncate">${escapeHtml(archived.title)}</div>
+                    <div class="text-xs text-dark-500">Archived ${formatArchivedDate(archived.archived_at)} &middot; ${formatBytes(archived.size_bytes)}</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="showUnarchiveConfirm('${escapeHtml(archived.file_name)}', '${escapeHtml(archived.title)}', event)"
+                        class="p-2 text-dark-400 hover:text-accent-success hover:bg-dark-700 rounded-lg transition-colors" title="Restore">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+                <button onclick="showDeleteArchivedConfirm('${escapeHtml(archived.file_name)}', '${escapeHtml(archived.title)}', event)"
+                        class="p-2 text-dark-400 hover:text-accent-danger hover:bg-dark-700 rounded-lg transition-colors" title="Delete permanently">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+
+    listEl.innerHTML = html;
+}
+
+function toggleArchivedSection() {
+    const listEl = document.getElementById('archived-curricula-list');
+    const chevron = document.getElementById('archived-chevron');
+
+    if (listEl.classList.contains('hidden')) {
+        listEl.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        listEl.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+function formatArchivedDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // Start the application

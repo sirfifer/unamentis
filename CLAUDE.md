@@ -57,10 +57,11 @@ UnaMentisTests/
 ├── Integration/    # Integration tests
 └── Helpers/        # Test utilities (MockServices.swift, TestDataFactory)
 
-server/              # Python management server
-├── management/      # Server management, idle state, resource monitoring
+server/              # Backend servers
+├── management/      # Management Console (port 8766) - Python/aiohttp
+│   └── static/      # HTML/JS frontend for management features
 ├── database/        # Curriculum database
-└── web/            # React dashboard (TypeScript)
+└── web/            # Operations Console (port 3000) - React/TypeScript
 ```
 
 ## Key Technical Requirements
@@ -107,6 +108,43 @@ Check `docs/TASK_STATUS.md` before starting work. Claim tasks before working to 
 Follow Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`, `ci:`, `chore:`
 
 Before committing: `./scripts/lint.sh && ./scripts/test-quick.sh`
+
+## Server Work Requirements
+
+When modifying server code, you MUST restart and verify changes before considering work complete:
+
+1. Restart the affected server after code changes
+2. Verify changes work via API calls or log inspection
+3. Never tell the user to restart the server; that means you didn't finish
+
+See `AGENTS.md` for detailed restart and verification procedures.
+
+## Web Interfaces
+
+UnaMentis has two separate web interfaces for different purposes:
+
+### Operations Console (port 3000)
+**Purpose:** Backend infrastructure monitoring (DevOps focus)
+- System health monitoring (CPU, memory, thermal, battery)
+- Service status (Ollama, VibeVoice, Piper, etc.)
+- Power/idle management profiles
+- Logs, metrics, and performance data
+- Client connection monitoring
+
+**Tech:** React/TypeScript (`server/web/`)
+**URL:** http://localhost:3000
+
+### Management Console (port 8766)
+**Purpose:** Application management and content administration
+- Curriculum management (import, browse, edit)
+- User progress tracking and analytics
+- Visual asset management
+- Source browser for external curriculum import
+- AI enrichment pipeline
+- User management (future)
+
+**Tech:** Python/aiohttp with vanilla JS (`server/management/`)
+**URL:** http://localhost:8766
 
 ## Key Documentation
 

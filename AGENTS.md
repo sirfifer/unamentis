@@ -69,7 +69,35 @@ UnaMentisTests/
 ├── Unit/           # Unit tests (run frequently)
 ├── Integration/    # Integration tests
 └── Helpers/        # Test utilities, mock services
+
+server/
+├── management/     # Management Console (port 8766) - curriculum, users, content
+│   └── static/     # HTML/JS frontend
+├── database/       # Curriculum database
+└── web/            # Operations Console (port 3000) - system monitoring
 ```
+
+### Web Interfaces
+
+There are TWO separate web interfaces. Do not confuse them:
+
+| Interface | Port | Purpose | Tech |
+|-----------|------|---------|------|
+| **Operations Console** | 3000 | DevOps: system health, services, logs, metrics | React/TypeScript |
+| **Management Console** | 8766 | Content: curriculum, users, progress, assets | Python/vanilla JS |
+
+**Operations Console (port 3000)** is for backend infrastructure:
+- System health (CPU, memory, thermal, battery)
+- Service status (Ollama, VibeVoice, Piper)
+- Power/idle management
+- Logs, metrics, client connections
+
+**Management Console (port 8766)** is for everything else:
+- Curriculum management (import, browse, edit, visual assets)
+- User progress tracking and analytics
+- Source browser for external curriculum (MIT OCW, Stanford, etc.)
+- AI enrichment pipeline
+- User management (future)
 
 ### Build & Test Commands
 ```bash
@@ -113,6 +141,37 @@ xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
 - **Accessibility labels on all interactive elements** (per iOS Style Guide)
 - **Localizable strings for all user-facing text** (per iOS Style Guide)
 - **iPad adaptive layouts using size class detection** (per iOS Style Guide)
+
+### Server Work Completion Requirements
+
+**When modifying server code (Management Console, Operations Console, or any Python/Node backend), you MUST:**
+
+1. **Restart the affected server** after making code changes
+2. **Verify the changes are working** by testing the modified functionality
+3. **Check server logs** to confirm the new code is running (look for expected log output)
+
+This is non-negotiable. Server work is NOT complete until:
+- The server has been restarted with your changes
+- You have verified the changes work as expected
+- You have confirmed via logs or API calls that your code is active
+
+**Why:** Unlike compiled code where build success confirms the code will run, server code changes only take effect after restart. Telling the user to restart the server means you haven't verified your work actually functions.
+
+**How to restart:**
+```bash
+# Management Console (port 8766)
+pkill -f "server/management/server.py"
+cd server/management && python server.py &
+
+# Operations Console (port 3000)
+# Usually auto-reloads, but if needed:
+cd server/web && npm run dev
+```
+
+**How to verify:**
+- Make API calls to test modified endpoints
+- Check server logs for expected log messages
+- Confirm the browser shows updated behavior (if UI was changed)
 
 ---
 

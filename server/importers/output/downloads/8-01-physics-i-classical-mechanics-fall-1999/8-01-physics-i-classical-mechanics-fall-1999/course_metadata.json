@@ -1,0 +1,288 @@
+{
+  "source": "mit_ocw",
+  "course_id": "8-01-physics-i-classical-mechanics-fall-1999",
+  "title": "Physics I: Classical Mechanics",
+  "description": "Newton's laws, motion, energy and momentum, rotation, gravitation, oscillations, waves. Physical intuition developed through problem solving and demonstrations.",
+  "instructors": [
+    "Walter Lewin"
+  ],
+  "department": "Physics",
+  "semester": "Fall 1999",
+  "level": "undergraduate",
+  "course_url": "https://ocw.mit.edu/courses/8-01-physics-i-classical-mechanics-fall-1999/",
+  "license": {
+    "type": "CC-BY-NC-SA-4.0",
+    "name": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "permissions": [
+      "share",
+      "adapt"
+    ],
+    "conditions": [
+      "attribution",
+      "noncommercial",
+      "sharealike"
+    ],
+    "attributionRequired": true,
+    "attributionFormat": "Content from MIT OpenCourseWare (ocw.mit.edu), licensed under CC-BY-NC-SA 4.0.",
+    "holder": {
+      "name": "Massachusetts Institute of Technology",
+      "url": "https://ocw.mit.edu/"
+    },
+    "restrictions": []
+  },
+  "attribution": "This content is derived from MIT OpenCourseWare (ocw.mit.edu). Original course: \"Physics I: Classical Mechanics\" (Course Number: 8). Licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC-BY-NC-SA 4.0). Copyright Massachusetts Institute of Technology.",
+  "content": {
+    "lectures": [
+      {
+        "id": "lecture-1",
+        "number": 1,
+        "title": "Lecture 1",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-2",
+        "number": 2,
+        "title": "Lecture 2",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-3",
+        "number": 3,
+        "title": "Lecture 3",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-4",
+        "number": 4,
+        "title": "Lecture 4",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-5",
+        "number": 5,
+        "title": "Lecture 5",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-6",
+        "number": 6,
+        "title": "Lecture 6",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-7",
+        "number": 7,
+        "title": "Lecture 7",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-8",
+        "number": 8,
+        "title": "Lecture 8",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-9",
+        "number": 9,
+        "title": "Lecture 9",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-10",
+        "number": 10,
+        "title": "Lecture 10",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-11",
+        "number": 11,
+        "title": "Lecture 11",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-12",
+        "number": 12,
+        "title": "Lecture 12",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-13",
+        "number": 13,
+        "title": "Lecture 13",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-14",
+        "number": 14,
+        "title": "Lecture 14",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-15",
+        "number": 15,
+        "title": "Lecture 15",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-16",
+        "number": 16,
+        "title": "Lecture 16",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-17",
+        "number": 17,
+        "title": "Lecture 17",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-18",
+        "number": 18,
+        "title": "Lecture 18",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-19",
+        "number": 19,
+        "title": "Lecture 19",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-20",
+        "number": 20,
+        "title": "Lecture 20",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-21",
+        "number": 21,
+        "title": "Lecture 21",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-22",
+        "number": 22,
+        "title": "Lecture 22",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-23",
+        "number": 23,
+        "title": "Lecture 23",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-24",
+        "number": 24,
+        "title": "Lecture 24",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-25",
+        "number": 25,
+        "title": "Lecture 25",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-26",
+        "number": 26,
+        "title": "Lecture 26",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-27",
+        "number": 27,
+        "title": "Lecture 27",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-28",
+        "number": 28,
+        "title": "Lecture 28",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-29",
+        "number": 29,
+        "title": "Lecture 29",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-30",
+        "number": 30,
+        "title": "Lecture 30",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-31",
+        "number": 31,
+        "title": "Lecture 31",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-32",
+        "number": 32,
+        "title": "Lecture 32",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-33",
+        "number": 33,
+        "title": "Lecture 33",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-34",
+        "number": 34,
+        "title": "Lecture 34",
+        "has_video": true,
+        "has_transcript": true
+      },
+      {
+        "id": "lecture-35",
+        "number": 35,
+        "title": "Lecture 35",
+        "has_video": true,
+        "has_transcript": true
+      }
+    ],
+    "assignments": [],
+    "exams": [],
+    "resources": []
+  },
+  "selected_lectures": null
+}

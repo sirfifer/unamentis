@@ -622,252 +622,284 @@ export async function duplicateProfile(
 }
 
 // =============================================================================
-// Curriculum & Visual Asset Management APIs
+// Curriculum Import System (Source Browser)
 // =============================================================================
 
 import type {
-  CurriculaResponse,
-  CurriculumSummary,
-  CurriculumDetail,
-  CurriculumDetailResponse,
-  UMLCFDocument,
-  VisualAsset,
-  AssetUploadResponse,
-  CurriculumSaveResponse,
+  SourcesResponse,
+  CourseCatalogResponse,
+  CourseDetailResponse,
+  StartImportResponse,
+  ImportProgressResponse,
+  ImportJobsResponse,
+  ImportConfig,
+  CurriculumSource,
+  CourseCatalogEntry,
 } from '@/types';
 
-// Mock curriculum data for demo mode
-const mockCurricula: CurriculumSummary[] = [
+// Mock data for import sources
+const mockSources: CurriculumSource[] = [
   {
-    id: 'e5f6a7b8-c9d0-1234-ef56-789012345678',
-    title: 'The Renaissance: Europe\'s Rebirth',
-    description: 'Explore the Renaissance, a period of extraordinary cultural, artistic, and scientific achievement.',
-    version: '1.0.0',
-    status: 'final',
-    topicCount: 7,
-    totalDuration: 'PT45M',
-    difficulty: 'medium',
-    gradeLevel: '8',
-    keywords: ['Renaissance', 'history', 'art', 'Leonardo da Vinci'],
-    hasVisualAssets: true,
-    visualAssetCount: 46,
+    id: 'mit_ocw',
+    name: 'MIT OpenCourseWare',
+    description: 'Free lecture notes, exams, and videos from MIT. No registration required.',
+    provider: 'Massachusetts Institute of Technology',
+    website: 'https://ocw.mit.edu',
+    license: {
+      type: 'CC-BY-NC-SA-4.0',
+      name: 'Creative Commons Attribution-NonCommercial-ShareAlike 4.0',
+      url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+      requiresAttribution: true,
+      allowsCommercialUse: false,
+      allowsDerivatives: true,
+      shareAlike: true,
+    },
+    contentTypes: ['lectures', 'transcripts', 'notes', 'assignments', 'exams'],
+    subjects: ['Computer Science', 'Mathematics', 'Physics', 'Engineering'],
+    courseCount: 2500,
+    isActive: true,
+  },
+];
+
+const mockCourses: CourseCatalogEntry[] = [
+  {
+    id: '6-001-spring-2005',
+    title: 'Structure and Interpretation of Computer Programs',
+    description: 'Introduction to programming using Scheme, from the legendary MIT course.',
+    instructor: 'Hal Abelson, Gerald Jay Sussman',
+    institution: 'MIT',
+    subject: 'Computer Science',
+    level: 'Undergraduate',
+    language: 'English',
+    url: 'https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/',
+    license: mockSources[0].license,
+    contentTypes: ['lectures', 'transcripts', 'notes', 'assignments'],
+    estimatedDuration: '40 hours',
+  },
+  {
+    id: '6-006-fall-2011',
+    title: 'Introduction to Algorithms',
+    description: 'Techniques for the design and analysis of efficient algorithms.',
+    instructor: 'Erik Demaine, Srini Devadas',
+    institution: 'MIT',
+    subject: 'Computer Science',
+    level: 'Undergraduate',
+    language: 'English',
+    url: 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/',
+    license: mockSources[0].license,
+    contentTypes: ['lectures', 'transcripts', 'notes', 'assignments', 'exams'],
+    estimatedDuration: '50 hours',
   },
 ];
 
 /**
- * Fetch list of available curricula
+ * Get all registered curriculum sources
  */
-export async function getCurricula(params?: {
-  search?: string;
-  status?: string;
-}): Promise<CurriculaResponse> {
+export async function getImportSources(): Promise<SourcesResponse> {
+  return fetchWithFallback('/api/import/sources', () => ({
+    success: true,
+    sources: mockSources,
+  }));
+}
+
+/**
+ * Get course catalog for a source
+ */
+export async function getCourseCatalog(
+  sourceId: string,
+  params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    subject?: string;
+    level?: string;
+    features?: string[];
+  }
+): Promise<CourseCatalogResponse> {
   const queryParams = new URLSearchParams();
+  if (params?.page) queryParams.set('page', String(params.page));
+  if (params?.pageSize) queryParams.set('pageSize', String(params.pageSize));
   if (params?.search) queryParams.set('search', params.search);
-  if (params?.status) queryParams.set('status', params.status);
+  if (params?.subject) queryParams.set('subject', params.subject);
+  if (params?.level) queryParams.set('level', params.level);
+  if (params?.features) queryParams.set('features', params.features.join(','));
 
   const query = queryParams.toString();
-  const endpoint = `/api/curricula${query ? `?${query}` : ''}`;
+  const endpoint = `/api/import/sources/${sourceId}/courses${query ? `?${query}` : ''}`;
 
   return fetchWithFallback(endpoint, () => {
-    let curricula = [...mockCurricula];
+    let filtered = [...mockCourses];
 
     if (params?.search) {
       const search = params.search.toLowerCase();
-      curricula = curricula.filter(c =>
-        c.title.toLowerCase().includes(search) ||
-        c.description.toLowerCase().includes(search) ||
-        c.keywords?.some(k => k.toLowerCase().includes(search))
+      filtered = filtered.filter(
+        (c) =>
+          c.title.toLowerCase().includes(search) ||
+          c.description.toLowerCase().includes(search)
       );
     }
 
-    if (params?.status) {
-      curricula = curricula.filter(c => c.status === params.status);
+    if (params?.subject) {
+      filtered = filtered.filter((c) => c.subject === params.subject);
     }
 
-    return {
-      curricula,
-      total: curricula.length,
-    };
-  });
-}
+    if (params?.level) {
+      filtered = filtered.filter((c) => c.level === params.level);
+    }
 
-/**
- * Fetch detailed curriculum data including full UMLCF document
- */
-export async function getCurriculumDetail(id: string): Promise<CurriculumDetailResponse> {
-  return fetchWithFallback(`/api/curricula/${id}/full`, () => {
-    const summary = mockCurricula.find(c => c.id === id);
-    if (!summary) throw new Error('Curriculum not found');
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 20;
+    const total = filtered.length;
+    const start = (page - 1) * pageSize;
+    const paginated = filtered.slice(start, start + pageSize);
 
-    // Return minimal mock detail - in real usage, this loads the full UMLCF document
     return {
-      curriculum: {
-        ...summary,
-        document: {
-          umlcf: '1.0.0',
-          id: { value: id },
-          title: summary.title,
-          description: summary.description,
-        } as UMLCFDocument,
-        topics: [],
+      success: true,
+      courses: paginated,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+      filters: {
+        subjects: ['Computer Science', 'Mathematics', 'Physics', 'Engineering'],
+        levels: ['Undergraduate', 'Graduate'],
+        features: ['transcripts', 'notes', 'assignments', 'exams', 'videos'],
       },
     };
   });
 }
 
 /**
- * Save curriculum changes
+ * Get detailed information for a specific course
  */
-export async function saveCurriculum(
-  curriculumId: string,
-  document: UMLCFDocument
-): Promise<CurriculumSaveResponse> {
-  if (USE_MOCK) {
-    return {
-      status: 'success',
-      savedAt: new Date().toISOString(),
-    };
-  }
+export async function getCourseDetail(
+  sourceId: string,
+  courseId: string
+): Promise<CourseDetailResponse> {
+  return fetchWithFallback(
+    `/api/import/sources/${sourceId}/courses/${courseId}`,
+    () => {
+      const course = mockCourses.find((c) => c.id === courseId);
+      if (!course) {
+        return {
+          success: false,
+          course: null as unknown as CourseDetailResponse['course'],
+          canImport: false,
+          licenseWarnings: [],
+          error: `Course not found: ${courseId}`,
+        };
+      }
 
-  const response = await fetch(`${BACKEND_URL}/api/curricula/${curriculumId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(document),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-  return response.json();
-}
-
-/**
- * Upload a visual asset for a topic
- */
-export async function uploadVisualAsset(
-  curriculumId: string,
-  topicId: string,
-  file: File,
-  metadata: {
-    type: string;
-    title?: string;
-    alt: string;
-    caption?: string;
-    displayMode: string;
-    startSegment?: number;
-    endSegment?: number;
-    isReference?: boolean;
-    keywords?: string[];
-  }
-): Promise<AssetUploadResponse> {
-  if (USE_MOCK) {
-    return {
-      status: 'success',
-      asset: {
-        id: `img-${Date.now()}`,
-        type: metadata.type as 'image' | 'diagram',
-        url: URL.createObjectURL(file),
-        title: metadata.title,
-        alt: metadata.alt,
-        caption: metadata.caption,
-        mimeType: file.type,
-        segmentTiming: metadata.startSegment !== undefined ? {
-          startSegment: metadata.startSegment,
-          endSegment: metadata.endSegment ?? metadata.startSegment,
-          displayMode: metadata.displayMode as 'persistent' | 'inline',
-        } : undefined,
-        keywords: metadata.keywords,
-      },
-      url: URL.createObjectURL(file),
-    };
-  }
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('topicId', topicId);
-  formData.append('metadata', JSON.stringify(metadata));
-
-  const response = await fetch(
-    `${BACKEND_URL}/api/curricula/${curriculumId}/topics/${topicId}/assets`,
-    {
-      method: 'POST',
-      body: formData,
+      return {
+        success: true,
+        course: {
+          ...course,
+          longDescription: `${course.description}\n\nThis is a comprehensive course covering key topics in ${course.subject}.`,
+          prerequisites: ['Basic programming knowledge'],
+          learningOutcomes: [
+            'Understand fundamental concepts',
+            'Apply learned techniques to solve problems',
+          ],
+          topics: ['Introduction', 'Core Concepts', 'Advanced Topics'],
+          contentSummary: {
+            lectureCount: 24,
+            hasTranscripts: true,
+            hasLectureNotes: true,
+            hasAssignments: true,
+            hasExams: course.contentTypes.includes('exams'),
+            hasVideos: false,
+            hasSolutions: true,
+          },
+        },
+        canImport: true,
+        licenseWarnings: [],
+        attribution: `This content is from ${course.institution}, licensed under ${course.license.name}.`,
+      };
     }
   );
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-    return {
-      status: 'error',
-      error: error.error || `HTTP ${response.status}`,
-    };
-  }
-  return response.json();
 }
 
 /**
- * Delete a visual asset
+ * Start a new import job
  */
-export async function deleteVisualAsset(
-  curriculumId: string,
-  topicId: string,
-  assetId: string
-): Promise<{ status: string }> {
+export async function startImport(config: ImportConfig): Promise<StartImportResponse> {
   if (USE_MOCK) {
-    return { status: 'success' };
-  }
-
-  const response = await fetch(
-    `${BACKEND_URL}/api/curricula/${curriculumId}/topics/${topicId}/assets/${assetId}`,
-    { method: 'DELETE' }
-  );
-
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.json();
-}
-
-/**
- * Update visual asset metadata
- */
-export async function updateVisualAsset(
-  curriculumId: string,
-  topicId: string,
-  assetId: string,
-  updates: Partial<VisualAsset>
-): Promise<{ status: string; asset: VisualAsset }> {
-  if (USE_MOCK) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return {
-      status: 'success',
-      asset: { id: assetId, ...updates } as VisualAsset,
+      success: true,
+      jobId: `job-${Date.now()}`,
+      status: 'queued',
     };
   }
 
-  const response = await fetch(
-    `${BACKEND_URL}/api/curricula/${curriculumId}/topics/${topicId}/assets/${assetId}`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    }
-  );
-
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.json();
-}
-
-/**
- * Reload curricula from disk
- */
-export async function reloadCurricula(): Promise<{ status: string; loaded: number }> {
-  if (USE_MOCK) {
-    return { status: 'success', loaded: mockCurricula.length };
-  }
-
-  const response = await fetch(`${BACKEND_URL}/api/curricula/reload`, {
+  const response = await fetch(`${BACKEND_URL}/api/import/jobs`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
   });
 
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+    return {
+      success: false,
+      jobId: '',
+      status: 'failed',
+      error: data.error || `HTTP ${response.status}`,
+      licenseRestriction: data.licenseRestriction,
+    };
+  }
+
   return response.json();
 }
+
+/**
+ * Get progress for an import job
+ */
+export async function getImportProgress(jobId: string): Promise<ImportProgressResponse> {
+  return fetchWithFallback(`/api/import/jobs/${jobId}`, () => ({
+    success: false,
+    progress: null as unknown as ImportProgressResponse['progress'],
+    error: 'Mock mode - job not found',
+  }));
+}
+
+/**
+ * List all import jobs
+ */
+export async function getImportJobs(status?: string): Promise<ImportJobsResponse> {
+  const endpoint = status ? `/api/import/jobs?status=${status}` : '/api/import/jobs';
+
+  return fetchWithFallback(endpoint, () => ({
+    success: true,
+    jobs: [],
+  }));
+}
+
+/**
+ * Cancel an import job
+ */
+export async function cancelImport(jobId: string): Promise<{ success: boolean; error?: string }> {
+  if (USE_MOCK) {
+    return { success: true };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/import/jobs/${jobId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Unknown error' }));
+    return { success: false, error: data.error || `HTTP ${response.status}` };
+  }
+
+  return response.json();
+}
+
+// =============================================================================
+// Curriculum & Visual Asset Management
+// =============================================================================
+// NOTE: Curriculum management has been consolidated to the Management Console (port 8766).
+// These APIs and components are NOT part of the Operations Console.
+// The Operations Console focuses on DevOps tasks: system health, logs, metrics, and services.

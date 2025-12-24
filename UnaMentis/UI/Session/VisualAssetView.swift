@@ -49,31 +49,54 @@ struct VisualAssetView: View {
     }
 
     private func loadImageData() async {
-        // First try cached data
+        // 1. First try Core Data cached data
         if let cached = asset.cachedData {
             imageData = cached
             isLoading = false
             return
         }
 
-        // Then try local path
+        // 2. Then try VisualAssetCache (disk/memory cache)
+        if let assetId = asset.assetId {
+            if let cached = await VisualAssetCache.shared.retrieve(assetId: assetId) {
+                imageData = cached
+                isLoading = false
+                // Also update Core Data for future quick access
+                await MainActor.run {
+                    asset.cachedData = cached
+                }
+                return
+            }
+        }
+
+        // 3. Then try local file path
         if let localPath = asset.localPath {
             let url = URL(fileURLWithPath: localPath)
             if let data = try? Data(contentsOf: url) {
                 imageData = data
                 isLoading = false
+                // Cache for future use
+                if let assetId = asset.assetId {
+                    try? await VisualAssetCache.shared.cache(assetId: assetId, data: data)
+                }
+                await MainActor.run {
+                    asset.cachedData = data
+                }
                 return
             }
         }
 
-        // Finally try remote URL
+        // 4. Finally try remote URL (fallback, also caches result)
         if let remoteURL = asset.remoteURL {
             do {
                 let (data, _) = try await URLSession.shared.data(from: remoteURL)
                 imageData = data
                 isLoading = false
 
-                // Cache for future use
+                // Cache in VisualAssetCache and Core Data
+                if let assetId = asset.assetId {
+                    try? await VisualAssetCache.shared.cache(assetId: assetId, data: data)
+                }
                 await MainActor.run {
                     asset.cachedData = data
                 }
@@ -649,14 +672,42 @@ struct InlineVisualAssetView: View {
     }
 
     private func loadImageData() async {
-        // First try cached data
+        // 1. First try Core Data cached data
         if let cached = asset.cachedData {
             imageData = cached
             isLoading = false
             return
         }
 
-        // Try remote URL
+        // 2. Then try VisualAssetCache (disk/memory cache)
+        if let assetId = asset.assetId {
+            if let cached = await VisualAssetCache.shared.retrieve(assetId: assetId) {
+                imageData = cached
+                isLoading = false
+                await MainActor.run {
+                    asset.cachedData = cached
+                }
+                return
+            }
+        }
+
+        // 3. Then try local file path
+        if let localPath = asset.localPath {
+            let url = URL(fileURLWithPath: localPath)
+            if let data = try? Data(contentsOf: url) {
+                imageData = data
+                isLoading = false
+                if let assetId = asset.assetId {
+                    try? await VisualAssetCache.shared.cache(assetId: assetId, data: data)
+                }
+                await MainActor.run {
+                    asset.cachedData = data
+                }
+                return
+            }
+        }
+
+        // 4. Finally try remote URL (fallback)
         if let remoteURL = asset.remoteURL {
             do {
                 let (data, _) = try await URLSession.shared.data(from: remoteURL)
@@ -664,6 +715,9 @@ struct InlineVisualAssetView: View {
                 isLoading = false
 
                 // Cache for future use
+                if let assetId = asset.assetId {
+                    try? await VisualAssetCache.shared.cache(assetId: assetId, data: data)
+                }
                 await MainActor.run {
                     asset.cachedData = data
                 }

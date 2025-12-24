@@ -161,6 +161,20 @@ public struct CurriculaListResponse: Codable, Sendable {
     public let total: Int
 }
 
+/// Bundled asset data from server
+public struct BundledAssetData: Codable, Sendable {
+    public let data: String  // Base64-encoded
+    public let mimeType: String
+    public let size: Int
+}
+
+/// Response wrapper for curriculum with bundled assets
+public struct CurriculumWithAssetsResponse: Codable, Sendable {
+    let assetData: [String: BundledAssetData]
+
+    // The rest of the UMLCF fields are decoded separately
+}
+
 // MARK: - Curriculum Service Errors
 
 public enum CurriculumServiceError: Error, LocalizedError, Sendable {
@@ -351,6 +365,74 @@ public actor CurriculumService {
         }
     }
 
+    /// Fetch full UMLCF curriculum with bundled asset data
+    /// Returns the UMLCF document and a dictionary of asset ID to binary data
+    public func fetchFullCurriculumWithAssets(id: String) async throws -> (UMLCFDocument, [String: Data]) {
+        guard let baseURL = baseURL else {
+            throw CurriculumServiceError.noServerConfigured
+        }
+
+        let url = baseURL.appendingPathComponent("api/curricula/\(id)/full-with-assets")
+
+        let (data, response) = try await session.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw CurriculumServiceError.networkError("Invalid response")
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            if httpResponse.statusCode == 404 {
+                throw CurriculumServiceError.notFound(id)
+            }
+            let message = String(data: data, encoding: .utf8)
+            throw CurriculumServiceError.serverError(httpResponse.statusCode, message)
+        }
+
+        // First decode the UMLCF document
+        let document: UMLCFDocument
+        do {
+            document = try JSONDecoder().decode(UMLCFDocument.self, from: data)
+        } catch let decodingError as DecodingError {
+            let errorDetail = Self.formatDecodingError(decodingError)
+            throw CurriculumServiceError.decodingError(errorDetail)
+        }
+
+        // Now extract the assetData field separately
+        var assetDataMap: [String: Data] = [:]
+
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let assetDataDict = jsonObject["assetData"] as? [String: [String: Any]] {
+            for (assetId, assetInfo) in assetDataDict {
+                if let base64String = assetInfo["data"] as? String,
+                   let binaryData = Data(base64Encoded: base64String) {
+                    assetDataMap[assetId] = binaryData
+                }
+            }
+        }
+
+        return (document, assetDataMap)
+    }
+
+    /// Helper to format decoding errors with detailed path info
+    private static func formatDecodingError(_ error: DecodingError) -> String {
+        switch error {
+        case .keyNotFound(let key, let context):
+            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
+            return "Missing key '\(key.stringValue)' at path: \(path.isEmpty ? "root" : path)"
+        case .typeMismatch(let type, let context):
+            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
+            return "Type mismatch: expected \(type) at path: \(path.isEmpty ? "root" : path). \(context.debugDescription)"
+        case .valueNotFound(let type, let context):
+            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
+            return "Value not found: expected \(type) at path: \(path.isEmpty ? "root" : path)"
+        case .dataCorrupted(let context):
+            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
+            return "Data corrupted at path: \(path.isEmpty ? "root" : path). \(context.debugDescription)"
+        @unknown default:
+            return error.localizedDescription
+        }
+    }
+
     /// Fetch transcript for a specific topic
     public func fetchTopicTranscript(
         curriculumId: String,
@@ -417,6 +499,50 @@ public actor CurriculumService {
 
         // Import to Core Data (runs on MainActor)
         return try await parser.importToCoreData(document: umlcfDocument, replaceExisting: true)
+    }
+
+    /// Download and import a curriculum with bundled assets to Core Data
+    /// This fetches the curriculum with pre-cached assets from the server,
+    /// imports it to Core Data, and caches all assets locally for offline use.
+    @MainActor
+    public func downloadAndImportWithAssets(
+        curriculumId: String,
+        parser: UMLCFParser
+    ) async throws -> Curriculum {
+        // Fetch UMLCF document with bundled asset data
+        let (umlcfDocument, assetDataMap) = try await fetchFullCurriculumWithAssets(id: curriculumId)
+
+        // Import to Core Data
+        let curriculum = try await parser.importToCoreData(document: umlcfDocument, replaceExisting: true)
+
+        // Cache all bundled assets
+        let assetCache = VisualAssetCache.shared
+        for (assetId, data) in assetDataMap {
+            do {
+                try await assetCache.cache(assetId: assetId, data: data)
+            } catch {
+                // Log but don't fail the import for individual asset cache failures
+                print("Warning: Failed to cache asset \(assetId): \(error)")
+            }
+        }
+
+        // Also update Core Data entities with cached data for any matching visual assets
+        if let topics = curriculum.topics as? Set<Topic> {
+            for topic in topics {
+                for asset in topic.visualAssetSet {
+                    if let assetId = asset.assetId, let data = assetDataMap[assetId] {
+                        asset.cachedData = data
+                    }
+                }
+            }
+
+            // Save context after updating cached data
+            if curriculum.managedObjectContext?.hasChanges == true {
+                try curriculum.managedObjectContext?.save()
+            }
+        }
+
+        return curriculum
     }
 }
 

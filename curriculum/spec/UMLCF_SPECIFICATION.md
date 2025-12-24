@@ -323,6 +323,8 @@ Each content node can include a `media` object with two categories:
 | `chart` | Data visualizations | Graphs, statistics |
 | `slideImage` | Single slide from a deck | Key presentation slides |
 | `slideDeck` | Full presentation reference | Complete slide sets |
+| `video` | Video content (MP4, WebM) | Demonstrations, animations |
+| `videoLecture` | Full lecture video (streaming) | Original source lecture recordings |
 
 ### Embedded Media Fields
 
@@ -391,6 +393,44 @@ For mathematical content, use LaTeX notation:
   }
 }
 ```
+
+### Video Lecture Format
+
+For lecture videos from external sources (MIT OCW, Stanford, etc.):
+
+```json
+{
+  "id": "vid-lecture-1",
+  "type": "videoLecture",
+  "url": "https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/video-lectures/lecture-1/",
+  "title": "Lecture 1: Introduction to SICP",
+  "description": "Professor Abelson introduces the course and discusses the nature of computer science.",
+  "duration": "PT1H15M",
+  "source": {
+    "name": "MIT OpenCourseWare",
+    "courseId": "6-001-spring-2005",
+    "attribution": "Content from MIT OpenCourseWare (ocw.mit.edu), licensed under CC-BY-NC-SA 4.0."
+  },
+  "hasTranscript": true,
+  "transcriptUrl": "https://ocw.mit.edu/courses/6-001/.../transcript.pdf"
+}
+```
+
+**Video Lecture Fields:**
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | Yes | string | Unique identifier |
+| `type` | Yes | string | Must be "videoLecture" |
+| `url` | Yes | string | URL to video page or stream |
+| `title` | Yes | string | Lecture title |
+| `description` | No | string | Lecture description |
+| `duration` | No | string | ISO 8601 duration |
+| `source` | No | object | Attribution and source info |
+| `hasTranscript` | No | boolean | Whether transcript is available |
+| `transcriptUrl` | No | string | URL to transcript if available |
+
+Video lectures are intended for in-app playback (windowed or fullscreen) and link back to the original source for proper attribution.
 
 ### Accessibility Requirements
 

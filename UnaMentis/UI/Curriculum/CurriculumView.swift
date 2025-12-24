@@ -701,9 +701,9 @@ struct ServerCurriculumBrowser: View {
             let parser = UMLCFParser()
 
             Self.logger.info("⬇️ Step 2: Starting download from server...")
-            downloadProgress = "Downloading curriculum data..."
+            downloadProgress = "Downloading curriculum with assets..."
 
-            let downloadedCurriculum = try await CurriculumService.shared.downloadAndImport(
+            let downloadedCurriculum = try await CurriculumService.shared.downloadAndImportWithAssets(
                 curriculumId: curriculum.id,
                 parser: parser
             )

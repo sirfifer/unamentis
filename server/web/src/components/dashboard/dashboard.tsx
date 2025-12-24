@@ -1,21 +1,15 @@
 /**
  * UnaMentis Operations Console
  *
- * This is the OPERATIONS interface for system administrators and DevOps.
- * It focuses on:
+ * This console provides operations monitoring features:
  * - System health monitoring (CPU, memory, thermal, battery)
  * - Service status and management (Ollama, VibeVoice, Piper, etc.)
  * - Power/idle management profiles and thresholds
  * - Logs, metrics, and performance data
  * - Client connection monitoring
  *
- * The PRIMARY MANAGEMENT interface (port 8766) is for:
- * - Curriculum management and content administration
- * - User-facing features and educational content
- * - Day-to-day administrative tasks
- * - Acquisition and publishing workflows
- *
- * These two interfaces serve different audiences and purposes.
+ * Note: Curriculum management (Source Browser, import, enrichment) is in
+ * the Management Console at port 8766.
  */
 'use client';
 
@@ -30,7 +24,6 @@ import { ClientsPanelCompact, ClientsPanel } from './clients-panel';
 import { MetricsPanel, LatencyOverview } from './metrics-panel';
 import { ModelsPanel } from './models-panel';
 import { HealthPanel } from './health-panel';
-import { CurriculumPanel } from './curriculum-panel';
 import type { DashboardStats } from '@/types';
 import { getStats } from '@/lib/api-client';
 import { formatDuration } from '@/lib/utils';
@@ -182,13 +175,6 @@ export function Dashboard() {
           {activeTab === 'health' && (
             <div className="animate-in fade-in duration-300">
               <HealthPanel />
-            </div>
-          )}
-
-          {/* Curriculum Tab */}
-          {activeTab === 'curriculum' && (
-            <div className="animate-in fade-in duration-300">
-              <CurriculumPanel />
             </div>
           )}
         </div>

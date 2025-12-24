@@ -24,6 +24,12 @@ from resource_monitor import resource_monitor, ResourceMonitor
 from idle_manager import idle_manager, IdleManager, IdleState
 from metrics_history import metrics_history, MetricsHistory
 
+# Import curriculum importer system
+from import_api import register_import_routes, init_import_system, set_import_complete_callback
+
+# Import diagnostic logging system
+from diagnostic_logging import diag_logger, get_diagnostic_config, set_diagnostic_config
+
 # Add aiohttp for async HTTP server with WebSocket support
 try:
     from aiohttp import web
@@ -185,6 +191,8 @@ class CurriculumSummary:
     keywords: List[str] = field(default_factory=list)
     file_path: str = ""
     loaded_at: float = field(default_factory=time.time)
+    visual_asset_count: int = 0
+    has_visual_assets: bool = False
 
 
 @dataclass
@@ -198,6 +206,8 @@ class TopicSummary:
     has_transcript: bool = False
     segment_count: int = 0
     assessment_count: int = 0
+    embedded_asset_count: int = 0
+    reference_asset_count: int = 0
 
 
 @dataclass
@@ -330,6 +340,7 @@ class ManagementState:
         content = umlcf.get("content", [])
         topic_count = 0
         topics = []
+        total_visual_assets = 0
         if content and isinstance(content, list):
             root = content[0]
             children = root.get("children", [])
@@ -342,6 +353,12 @@ class ManagementState:
                 segments = transcript.get("segments", [])
                 assessments = child.get("assessments", [])
 
+                # Count visual assets
+                media = child.get("media", {})
+                embedded_count = len(media.get("embedded", []))
+                reference_count = len(media.get("reference", []))
+                total_visual_assets += embedded_count + reference_count
+
                 topics.append(TopicSummary(
                     id=child.get("id", {}).get("value", f"topic-{idx}"),
                     title=child.get("title", "Untitled"),
@@ -350,7 +367,9 @@ class ManagementState:
                     duration=duration,
                     has_transcript=len(segments) > 0,
                     segment_count=len(segments),
-                    assessment_count=len(assessments)
+                    assessment_count=len(assessments),
+                    embedded_asset_count=embedded_count,
+                    reference_asset_count=reference_count
                 ))
 
         # Extract glossary
@@ -373,7 +392,9 @@ class ManagementState:
             difficulty=educational.get("difficulty", "medium"),
             age_range=educational.get("typicalAgeRange", "18+"),
             keywords=umlcf.get("metadata", {}).get("keywords", []),
-            file_path=str(file_path)
+            file_path=str(file_path),
+            visual_asset_count=total_visual_assets,
+            has_visual_assets=total_visual_assets > 0
         )
 
         # Create detailed view
@@ -1530,13 +1551,24 @@ async def handle_get_topic_transcript(request: web.Request) -> web.Response:
                 transcript = child.get("transcript", {})
                 # Extract segments directly for iOS client compatibility
                 segments = transcript.get("segments", []) if isinstance(transcript, dict) else []
+
+                # Get media assets
+                media = child.get("media", {})
+                embedded_assets = media.get("embedded", [])
+                reference_assets = media.get("reference", [])
+
                 return web.json_response({
                     "topic_id": topic_id,
                     "topic_title": child.get("title", ""),
                     "segments": segments,
                     "misconceptions": child.get("misconceptions", []),
                     "examples": child.get("examples", []),
-                    "assessments": child.get("assessments", [])
+                    "assessments": child.get("assessments", []),
+                    "media": {
+                        "embedded": embedded_assets,
+                        "reference": reference_assets,
+                        "total_count": len(embedded_assets) + len(reference_assets)
+                    }
                 })
 
         return web.json_response({"error": "Topic not found"}, status=404)
@@ -1688,6 +1720,289 @@ async def handle_reload_curricula(request: web.Request) -> web.Response:
 
     except Exception as e:
         logger.error(f"Error reloading curricula: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_delete_curriculum(request: web.Request) -> web.Response:
+    """
+    DELETE /api/curricula/{curriculum_id}
+
+    Permanently delete a curriculum file.
+    Query params:
+    - confirm: Must be "true" to actually delete (safety check)
+    """
+    try:
+        curriculum_id = request.match_info.get("curriculum_id")
+        confirm = request.query.get("confirm", "false").lower() == "true"
+        logger.info(f"Delete curriculum request: id={curriculum_id}, confirm={confirm}")
+
+        if curriculum_id not in state.curriculums:
+            logger.warning(f"Delete failed: curriculum not found: {curriculum_id}")
+            return web.json_response({"error": "Curriculum not found"}, status=404)
+
+        curriculum = state.curriculums[curriculum_id]
+        file_path = Path(curriculum.file_path)
+
+        if not confirm:
+            # Return info about what would be deleted without actually deleting
+            return web.json_response({
+                "status": "confirmation_required",
+                "message": "Add ?confirm=true to permanently delete this curriculum",
+                "curriculum": {
+                    "id": curriculum_id,
+                    "title": curriculum.title,
+                    "file_path": str(file_path),
+                    "topic_count": curriculum.topic_count,
+                }
+            })
+
+        if not file_path.exists():
+            logger.warning(f"Delete failed: file not found on disk: {file_path}")
+            return web.json_response({"error": "Curriculum file not found on disk"}, status=404)
+
+        # Delete the file
+        file_path.unlink()
+        logger.info(f"Successfully deleted curriculum file: {file_path}")
+
+        # Remove from state
+        del state.curriculums[curriculum_id]
+        if curriculum_id in state.curriculum_details:
+            del state.curriculum_details[curriculum_id]
+        if curriculum_id in state.curriculum_raw:
+            del state.curriculum_raw[curriculum_id]
+
+        await broadcast_message("curriculum_deleted", {
+            "id": curriculum_id,
+            "title": curriculum.title,
+        })
+
+        return web.json_response({
+            "status": "deleted",
+            "id": curriculum_id,
+            "title": curriculum.title,
+        })
+
+    except Exception as e:
+        logger.error(f"Error deleting curriculum: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_archive_curriculum(request: web.Request) -> web.Response:
+    """
+    POST /api/curricula/{curriculum_id}/archive
+
+    Archive a curriculum (move to archived folder instead of deleting).
+    """
+    try:
+        curriculum_id = request.match_info.get("curriculum_id")
+        logger.info(f"Archive curriculum request: id={curriculum_id}")
+
+        if curriculum_id not in state.curriculums:
+            logger.warning(f"Archive failed: curriculum not found: {curriculum_id}")
+            return web.json_response({"error": "Curriculum not found"}, status=404)
+
+        curriculum = state.curriculums[curriculum_id]
+        file_path = Path(curriculum.file_path)
+
+        if not file_path.exists():
+            logger.warning(f"Archive failed: file not found on disk: {file_path}")
+            return web.json_response({"error": "Curriculum file not found on disk"}, status=404)
+
+        # Create archived directory if it doesn't exist
+        archived_dir = PROJECT_ROOT / "curriculum" / "archived"
+        archived_dir.mkdir(parents=True, exist_ok=True)
+
+        # Move to archived folder
+        archived_path = archived_dir / file_path.name
+        # Handle name conflicts
+        counter = 1
+        while archived_path.exists():
+            archived_path = archived_dir / f"{file_path.stem}-{counter}{file_path.suffix}"
+            counter += 1
+
+        import shutil
+        shutil.move(str(file_path), str(archived_path))
+        logger.info(f"Successfully archived curriculum: {file_path} -> {archived_path}")
+
+        # Remove from state
+        del state.curriculums[curriculum_id]
+        if curriculum_id in state.curriculum_details:
+            del state.curriculum_details[curriculum_id]
+        if curriculum_id in state.curriculum_raw:
+            del state.curriculum_raw[curriculum_id]
+
+        await broadcast_message("curriculum_archived", {
+            "id": curriculum_id,
+            "title": curriculum.title,
+            "archived_path": str(archived_path),
+        })
+
+        return web.json_response({
+            "status": "archived",
+            "id": curriculum_id,
+            "title": curriculum.title,
+            "archived_path": str(archived_path),
+        })
+
+    except Exception as e:
+        logger.error(f"Error archiving curriculum: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_get_archived_curricula(_request: web.Request) -> web.Response:
+    """
+    GET /api/curricula/archived
+
+    Get list of archived curricula.
+    """
+    try:
+        archived_dir = PROJECT_ROOT / "curriculum" / "archived"
+
+        if not archived_dir.exists():
+            return web.json_response({
+                "archived": [],
+                "total": 0
+            })
+
+        archived = []
+        for umlcf_file in archived_dir.glob("*.umlcf"):
+            try:
+                with open(umlcf_file, 'r', encoding='utf-8') as f:
+                    umlcf = json.load(f)
+
+                umlcf_id = umlcf.get("id", {}).get("value", umlcf_file.stem)
+                content = umlcf.get("content", [])
+                topic_count = 0
+                if content and isinstance(content, list):
+                    root = content[0]
+                    topic_count = len(root.get("children", []))
+
+                archived.append({
+                    "id": umlcf_id,
+                    "title": umlcf.get("title", "Untitled"),
+                    "description": umlcf.get("description", ""),
+                    "file_path": str(umlcf_file),
+                    "file_name": umlcf_file.name,
+                    "topic_count": topic_count,
+                    "archived_at": umlcf_file.stat().st_mtime,
+                })
+            except Exception as e:
+                logger.warning(f"Failed to read archived curriculum {umlcf_file}: {e}")
+
+        # Sort by archived date (newest first)
+        archived.sort(key=lambda x: x["archived_at"], reverse=True)
+
+        return web.json_response({
+            "archived": archived,
+            "total": len(archived)
+        })
+
+    except Exception as e:
+        logger.error(f"Error getting archived curricula: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_unarchive_curriculum(request: web.Request) -> web.Response:
+    """
+    POST /api/curricula/archived/{file_name}/unarchive
+
+    Restore an archived curriculum back to active.
+    """
+    try:
+        file_name = request.match_info.get("file_name")
+
+        archived_dir = PROJECT_ROOT / "curriculum" / "archived"
+        archived_path = archived_dir / file_name
+
+        if not archived_path.exists():
+            return web.json_response({"error": "Archived curriculum not found"}, status=404)
+
+        # Move back to active directory
+        active_dir = PROJECT_ROOT / "curriculum" / "examples" / "realistic"
+        active_path = active_dir / file_name
+
+        # Handle name conflicts
+        counter = 1
+        while active_path.exists():
+            active_path = active_dir / f"{archived_path.stem}-{counter}{archived_path.suffix}"
+            counter += 1
+
+        import shutil
+        shutil.move(str(archived_path), str(active_path))
+        logger.info(f"Unarchived curriculum: {archived_path} -> {active_path}")
+
+        # Reload the curriculum
+        state._load_curriculum_file(active_path)
+
+        # Get the curriculum info
+        with open(active_path, 'r', encoding='utf-8') as f:
+            umlcf = json.load(f)
+        curriculum_id = umlcf.get("id", {}).get("value", active_path.stem)
+
+        await broadcast_message("curriculum_unarchived", {
+            "id": curriculum_id,
+            "title": umlcf.get("title", "Untitled"),
+        })
+
+        return web.json_response({
+            "status": "unarchived",
+            "id": curriculum_id,
+            "title": umlcf.get("title", "Untitled"),
+            "file_path": str(active_path),
+        })
+
+    except Exception as e:
+        logger.error(f"Error unarchiving curriculum: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_delete_archived_curriculum(request: web.Request) -> web.Response:
+    """
+    DELETE /api/curricula/archived/{file_name}
+
+    Permanently delete an archived curriculum.
+    Query params:
+    - confirm: Must be "true" to actually delete
+    """
+    try:
+        file_name = request.match_info.get("file_name")
+        confirm = request.query.get("confirm", "false").lower() == "true"
+
+        archived_dir = PROJECT_ROOT / "curriculum" / "archived"
+        archived_path = archived_dir / file_name
+
+        if not archived_path.exists():
+            return web.json_response({"error": "Archived curriculum not found"}, status=404)
+
+        # Read info for response
+        with open(archived_path, 'r', encoding='utf-8') as f:
+            umlcf = json.load(f)
+        curriculum_id = umlcf.get("id", {}).get("value", archived_path.stem)
+        title = umlcf.get("title", "Untitled")
+
+        if not confirm:
+            return web.json_response({
+                "status": "confirmation_required",
+                "message": "Add ?confirm=true to permanently delete this archived curriculum",
+                "curriculum": {
+                    "id": curriculum_id,
+                    "title": title,
+                    "file_path": str(archived_path),
+                }
+            })
+
+        # Delete the file
+        archived_path.unlink()
+        logger.info(f"Permanently deleted archived curriculum: {archived_path}")
+
+        return web.json_response({
+            "status": "deleted",
+            "id": curriculum_id,
+            "title": title,
+        })
+
+    except Exception as e:
+        logger.error(f"Error deleting archived curriculum: {e}")
         return web.json_response({"error": str(e)}, status=500)
 
 
@@ -2069,6 +2384,301 @@ async def handle_update_visual_asset(request: web.Request) -> web.Response:
 
 
 # =============================================================================
+# Asset Pre-Download & Caching
+# =============================================================================
+
+# Rate limiter for external downloads (especially Wikimedia)
+_last_download_time = 0.0
+_download_lock = asyncio.Lock()
+DOWNLOAD_RATE_LIMIT_SECONDS = 1.0  # 1 request per second for Wikimedia
+
+
+async def download_and_save_asset(
+    url: str,
+    curriculum_id: str,
+    topic_id: str,
+    asset_id: str
+) -> Optional[str]:
+    """
+    Download an asset from a remote URL and save it locally.
+    Returns the local path relative to PROJECT_ROOT, or None on failure.
+
+    Rate-limited to 1 request per second for Wikimedia Commons compliance.
+    """
+    global _last_download_time
+
+    async with _download_lock:
+        # Enforce rate limiting
+        now = time.time()
+        elapsed = now - _last_download_time
+        if elapsed < DOWNLOAD_RATE_LIMIT_SECONDS:
+            await asyncio.sleep(DOWNLOAD_RATE_LIMIT_SECONDS - elapsed)
+
+        _last_download_time = time.time()
+
+    try:
+        # Determine file extension from URL
+        url_path = url.split("?")[0]  # Remove query params
+        ext = Path(url_path).suffix.lower()
+        if not ext or ext not in [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"]:
+            ext = ".jpg"  # Default to jpg
+
+        # Create assets directory
+        assets_dir = PROJECT_ROOT / "curriculum" / "assets" / curriculum_id / topic_id
+        assets_dir.mkdir(parents=True, exist_ok=True)
+
+        local_path = assets_dir / f"{asset_id}{ext}"
+
+        # Skip if already downloaded
+        if local_path.exists():
+            logger.info(f"Asset already cached: {local_path}")
+            return str(local_path.relative_to(PROJECT_ROOT))
+
+        # Download with proper headers
+        headers = {
+            "User-Agent": "UnaMentis/1.0 (Educational App; https://unamentis.com; support@unamentis.com)"
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as response:
+                if response.status == 200:
+                    content = await response.read()
+
+                    # Verify it's actually an image
+                    content_type = response.headers.get("Content-Type", "")
+                    if not content_type.startswith("image/"):
+                        logger.warning(f"Non-image content type for {url}: {content_type}")
+
+                    # Save to disk
+                    with open(local_path, "wb") as f:
+                        f.write(content)
+
+                    logger.info(f"Downloaded asset: {url} -> {local_path} ({len(content)} bytes)")
+                    return str(local_path.relative_to(PROJECT_ROOT))
+
+                elif response.status == 429:
+                    logger.warning(f"Rate limited downloading {url}, will retry later")
+                    return None
+                else:
+                    logger.error(f"Failed to download {url}: HTTP {response.status}")
+                    return None
+
+    except asyncio.TimeoutError:
+        logger.error(f"Timeout downloading {url}")
+        return None
+    except Exception as e:
+        logger.error(f"Error downloading {url}: {e}")
+        return None
+
+
+async def handle_preload_curriculum_assets(request: web.Request) -> web.Response:
+    """
+    Pre-download all remote assets for a curriculum and update UMLCF with localPath.
+
+    POST /api/curricula/{curriculum_id}/preload-assets
+
+    This endpoint:
+    1. Iterates all topics in the curriculum
+    2. For each media asset with a URL but no localPath, downloads the asset
+    3. Updates the UMLCF file with localPath references
+    4. Returns a summary of downloaded/failed assets
+    """
+    try:
+        curriculum_id = request.match_info.get("curriculum_id")
+
+        if curriculum_id not in state.curriculum_raw:
+            return web.json_response({"error": "Curriculum not found"}, status=404)
+
+        umlcf = state.curriculum_raw[curriculum_id]
+        content = umlcf.get("content", [])
+
+        if not content:
+            return web.json_response({"error": "No content in curriculum"}, status=404)
+
+        root = content[0]
+        children = root.get("children", [])
+
+        downloaded = []
+        failed = []
+        skipped = []
+
+        for topic in children:
+            topic_id = topic.get("id", {}).get("value", "")
+            if not topic_id:
+                continue
+
+            media = topic.get("media", {})
+
+            # Process both embedded and reference assets
+            for asset_list_key in ["embedded", "reference"]:
+                assets = media.get(asset_list_key, [])
+
+                for asset in assets:
+                    asset_id = asset.get("id", "")
+                    url = asset.get("url", "")
+                    local_path = asset.get("localPath", "")
+
+                    # Skip if no URL or already has localPath
+                    if not url:
+                        continue
+                    if local_path:
+                        skipped.append({"id": asset_id, "reason": "already_cached"})
+                        continue
+
+                    # Download the asset
+                    logger.info(f"Downloading asset {asset_id} from {url}")
+                    result_path = await download_and_save_asset(
+                        url=url,
+                        curriculum_id=curriculum_id,
+                        topic_id=topic_id,
+                        asset_id=asset_id
+                    )
+
+                    if result_path:
+                        asset["localPath"] = result_path
+                        downloaded.append({
+                            "id": asset_id,
+                            "topic": topic_id,
+                            "localPath": result_path
+                        })
+                    else:
+                        failed.append({
+                            "id": asset_id,
+                            "topic": topic_id,
+                            "url": url
+                        })
+
+        # Save the updated curriculum file
+        if downloaded and curriculum_id in state.curriculums:
+            file_path = Path(state.curriculums[curriculum_id].file_path)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(umlcf, f, indent=2, ensure_ascii=False)
+
+            # Reload to update state
+            state._load_curriculum_file(file_path)
+            logger.info(f"Updated curriculum file with {len(downloaded)} local paths")
+
+        return web.json_response({
+            "status": "success",
+            "downloaded": len(downloaded),
+            "failed": len(failed),
+            "skipped": len(skipped),
+            "details": {
+                "downloaded": downloaded,
+                "failed": failed,
+                "skipped": skipped
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Error preloading curriculum assets: {e}")
+        import traceback
+        traceback.print_exc()
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_get_curriculum_with_assets(request: web.Request) -> web.Response:
+    """
+    Get full UMLCF data with base64-encoded asset data bundled.
+
+    GET /api/curricula/{curriculum_id}/full-with-assets
+
+    Returns the UMLCF JSON with an additional 'assetData' field containing
+    base64-encoded binary data for all assets that have localPath set.
+
+    Response format:
+    {
+        ...umlcf fields...,
+        "assetData": {
+            "asset-id-1": {
+                "data": "base64-encoded-data",
+                "mimeType": "image/jpeg",
+                "size": 12345
+            },
+            ...
+        }
+    }
+    """
+    try:
+        curriculum_id = request.match_info.get("curriculum_id")
+
+        if curriculum_id not in state.curriculum_raw:
+            return web.json_response({"error": "Curriculum not found"}, status=404)
+
+        # Deep copy the UMLCF to avoid modifying the cached version
+        import copy
+        umlcf = copy.deepcopy(state.curriculum_raw[curriculum_id])
+
+        content = umlcf.get("content", [])
+        if not content:
+            return web.json_response(umlcf)
+
+        root = content[0]
+        children = root.get("children", [])
+
+        # Collect all assets with local paths
+        asset_data = {}
+
+        for topic in children:
+            media = topic.get("media", {})
+
+            for asset_list_key in ["embedded", "reference"]:
+                assets = media.get(asset_list_key, [])
+
+                for asset in assets:
+                    asset_id = asset.get("id", "")
+                    local_path = asset.get("localPath", "")
+
+                    if not local_path or not asset_id:
+                        continue
+
+                    # Read the local file
+                    full_path = PROJECT_ROOT / local_path
+                    if not full_path.exists():
+                        logger.warning(f"Local asset file not found: {full_path}")
+                        continue
+
+                    try:
+                        with open(full_path, "rb") as f:
+                            data = f.read()
+
+                        # Determine MIME type
+                        ext = full_path.suffix.lower()
+                        mime_types = {
+                            ".jpg": "image/jpeg",
+                            ".jpeg": "image/jpeg",
+                            ".png": "image/png",
+                            ".gif": "image/gif",
+                            ".webp": "image/webp",
+                            ".svg": "image/svg+xml"
+                        }
+                        mime_type = mime_types.get(ext, "application/octet-stream")
+
+                        import base64
+                        asset_data[asset_id] = {
+                            "data": base64.b64encode(data).decode("ascii"),
+                            "mimeType": mime_type,
+                            "size": len(data)
+                        }
+
+                    except Exception as e:
+                        logger.error(f"Error reading asset {asset_id}: {e}")
+
+        # Add asset data to response
+        umlcf["assetData"] = asset_data
+
+        logger.info(f"Returning curriculum with {len(asset_data)} bundled assets")
+
+        return web.json_response(umlcf)
+
+    except Exception as e:
+        logger.error(f"Error getting curriculum with assets: {e}")
+        import traceback
+        traceback.print_exc()
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# =============================================================================
 # WebSocket Handler
 # =============================================================================
 
@@ -2332,6 +2942,87 @@ async def handle_get_idle_history(request: web.Request) -> web.Response:
     except Exception as e:
         logger.error(f"Error getting idle history: {e}")
         return web.json_response({"error": str(e)}, status=500)
+
+
+# =============================================================================
+# Diagnostic Logging API Endpoints
+# =============================================================================
+
+
+async def handle_get_diagnostic_config(request: web.Request) -> web.Response:
+    """Get current diagnostic logging configuration."""
+    try:
+        config = get_diagnostic_config()
+        return web.json_response({
+            "success": True,
+            "config": config,
+        })
+    except Exception as e:
+        logger.error(f"Error getting diagnostic config: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_set_diagnostic_config(request: web.Request) -> web.Response:
+    """
+    Update diagnostic logging configuration.
+
+    Request body options:
+    {
+        "enabled": true/false,       // Toggle diagnostic logging on/off
+        "level": "DEBUG",            // DEBUG, INFO, WARNING, ERROR
+        "log_requests": true/false,  // Log HTTP requests
+        "log_responses": true/false, // Log HTTP responses
+        "log_timing": true/false     // Log operation timing
+    }
+    """
+    try:
+        data = await request.json()
+
+        # Update config with provided values
+        updated_config = set_diagnostic_config(**data)
+
+        diag_logger.info("Diagnostic config updated via API", context=updated_config)
+
+        return web.json_response({
+            "success": True,
+            "config": updated_config,
+            "message": "Diagnostic logging configuration updated"
+        })
+
+    except Exception as e:
+        logger.error(f"Error setting diagnostic config: {e}")
+        return web.json_response({"error": str(e)}, status=400)
+
+
+async def handle_diagnostic_toggle(request: web.Request) -> web.Response:
+    """
+    Quick toggle for diagnostic logging on/off.
+
+    POST /api/system/diagnostic/toggle
+    Body: {"enabled": true} or {"enabled": false}
+    """
+    try:
+        data = await request.json()
+        enabled = data.get("enabled", not diag_logger.is_enabled())
+
+        if enabled:
+            diag_logger.enable()
+            message = "Diagnostic logging ENABLED"
+        else:
+            diag_logger.disable()
+            message = "Diagnostic logging DISABLED"
+
+        logger.info(message)
+
+        return web.json_response({
+            "success": True,
+            "enabled": diag_logger.is_enabled(),
+            "message": message
+        })
+
+    except Exception as e:
+        logger.error(f"Error toggling diagnostic logging: {e}")
+        return web.json_response({"error": str(e)}, status=400)
 
 
 # =============================================================================
@@ -2671,6 +3362,7 @@ def create_app() -> web.Application:
 
     # Curriculum
     app.router.add_get("/api/curricula", handle_get_curricula)
+    app.router.add_get("/api/curricula/archived", handle_get_archived_curricula)  # Must be before {curriculum_id}
     app.router.add_get("/api/curricula/{curriculum_id}", handle_get_curriculum_detail)
     app.router.add_get("/api/curricula/{curriculum_id}/full", handle_get_curriculum_full)
     app.router.add_get("/api/curricula/{curriculum_id}/topics/{topic_id}/transcript", handle_get_topic_transcript)
@@ -2678,11 +3370,35 @@ def create_app() -> web.Application:
     app.router.add_post("/api/curricula/reload", handle_reload_curricula)
     app.router.add_post("/api/curricula/import", handle_import_curriculum)
     app.router.add_put("/api/curricula/{curriculum_id}", handle_save_curriculum)
+    app.router.add_delete("/api/curricula/{curriculum_id}", handle_delete_curriculum)
+    app.router.add_post("/api/curricula/{curriculum_id}/archive", handle_archive_curriculum)
+    app.router.add_post("/api/curricula/archived/{file_name}/unarchive", handle_unarchive_curriculum)
+    app.router.add_delete("/api/curricula/archived/{file_name}", handle_delete_archived_curriculum)
 
     # Visual Asset Management
     app.router.add_post("/api/curricula/{curriculum_id}/topics/{topic_id}/assets", handle_upload_visual_asset)
     app.router.add_delete("/api/curricula/{curriculum_id}/topics/{topic_id}/assets/{asset_id}", handle_delete_visual_asset)
     app.router.add_patch("/api/curricula/{curriculum_id}/topics/{topic_id}/assets/{asset_id}", handle_update_visual_asset)
+
+    # Asset Pre-Download & Caching
+    app.router.add_post("/api/curricula/{curriculum_id}/preload-assets", handle_preload_curriculum_assets)
+    app.router.add_get("/api/curricula/{curriculum_id}/full-with-assets", handle_get_curriculum_with_assets)
+
+    # Curriculum Import System (Source Browser)
+    register_import_routes(app)
+
+    # Set up callback to reload curricula when import completes
+    def on_import_complete(progress):
+        """Called when an import job completes successfully."""
+        logger.info(f"Import completed: {progress.config.output_name}, reloading curricula")
+        state.reload_curricula()
+        # Also broadcast to connected clients
+        asyncio.create_task(broadcast_message("curriculum_imported", {
+            "id": progress.config.output_name,
+            "title": getattr(progress, "_course_title", progress.config.output_name),
+        }))
+
+    set_import_complete_callback(on_import_complete)
 
     # WebSocket
     app.router.add_get("/ws", handle_websocket)
@@ -2703,6 +3419,11 @@ def create_app() -> web.Application:
     app.router.add_post("/api/system/idle/force-state", handle_idle_force_state)
     app.router.add_post("/api/system/unload-models", handle_unload_models)
 
+    # Diagnostic Logging
+    app.router.add_get("/api/system/diagnostic", handle_get_diagnostic_config)
+    app.router.add_post("/api/system/diagnostic", handle_set_diagnostic_config)
+    app.router.add_post("/api/system/diagnostic/toggle", handle_diagnostic_toggle)
+
     # Profile Management
     app.router.add_get("/api/system/profiles/{profile_id}", handle_get_profile)
     app.router.add_post("/api/system/profiles", handle_create_profile)
@@ -2719,6 +3440,13 @@ def create_app() -> web.Application:
     static_dir = Path(__file__).parent / "static"
     if static_dir.exists():
         app.router.add_static("/static", static_dir)
+
+    # Serve curriculum assets from the assets directory
+    assets_dir = Path(__file__).parent.parent.parent / "curriculum" / "assets"
+    if assets_dir.exists():
+        app.router.add_static("/assets/curriculum/assets", assets_dir)
+        logger.info(f"Serving curriculum assets from: {assets_dir}")
+
     app.router.add_get("/", handle_dashboard)
 
     # Startup hook to detect existing services and load curricula
@@ -2735,6 +3463,13 @@ def create_app() -> web.Application:
         asyncio.create_task(_metrics_recording_loop())
 
         logger.info("[Startup] Resource monitoring, idle management, and metrics history started")
+
+        # Log diagnostic logging status
+        diag_logger.info("Server startup complete", context={
+            "host": HOST,
+            "port": PORT,
+            "diagnostic_enabled": diag_logger.is_enabled()
+        })
 
     # Cleanup hook to stop background tasks
     async def on_cleanup(app):

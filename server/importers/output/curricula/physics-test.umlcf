@@ -1,0 +1,71 @@
+{
+  "umlcf": "1.0.0",
+  "id": {
+    "catalog": "UnaMentis",
+    "value": "physics-test"
+  },
+  "title": "physics-test",
+  "description": "Imported from mit_ocw",
+  "version": {
+    "number": "1.0.0",
+    "date": "2025-12-24"
+  },
+  "lifecycle": {
+    "status": "draft",
+    "contributors": [
+      {
+        "role": "publisher",
+        "name": "UnaMentis Importer"
+      }
+    ]
+  },
+  "metadata": {
+    "language": "en-US",
+    "keywords": []
+  },
+  "educational": {
+    "audience": {
+      "type": "learner",
+      "educationalLevel": "collegiate"
+    }
+  },
+  "rights": {
+    "type": "CC-BY-NC-SA-4.0",
+    "name": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+    "permissions": [
+      "share",
+      "adapt"
+    ],
+    "conditions": [
+      "attribution",
+      "noncommercial",
+      "sharealike"
+    ],
+    "attributionRequired": true,
+    "attributionFormat": "Content from MIT OpenCourseWare (ocw.mit.edu), licensed under CC-BY-NC-SA 4.0.",
+    "holder": {
+      "name": "Massachusetts Institute of Technology",
+      "url": "https://ocw.mit.edu/"
+    },
+    "restrictions": []
+  },
+  "content": [
+    {
+      "id": {
+        "value": "imported-content"
+      },
+      "title": "Imported Content",
+      "type": "module",
+      "orderIndex": 0,
+      "children": []
+    }
+  ],
+  "glossary": [],
+  "_import_metadata": {
+    "source": "mit_ocw",
+    "course_id": "8-01-physics-i-classical-mechanics-fall-1999",
+    "imported_at": "2025-12-24T02:40:06.883762",
+    "attribution": "This content is derived from MIT OpenCourseWare (ocw.mit.edu). Original course: \"Physics I: Classical Mechanics\" (Course Number: 8). Licensed under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC-BY-NC-SA 4.0). Copyright Massachusetts Institute of Technology."
+  }
+}

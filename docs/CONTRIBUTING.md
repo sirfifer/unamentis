@@ -243,6 +243,24 @@ Brief description of changes
 - Memory leaks checked
 - Latency targets met
 
+## Web Interfaces
+
+UnaMentis has two separate web interfaces. When developing or testing:
+
+| Interface | Port | Purpose |
+|-----------|------|---------|
+| **Operations Console** | 3000 | DevOps monitoring (system health, services, logs) |
+| **Management Console** | 8766 | Content management (curriculum, users, progress) |
+
+**Start the servers:**
+```bash
+# Management Console (Python)
+python server/management/server.py
+
+# Operations Console (React)
+cd server/web && npm run dev
+```
+
 ## Development Environment
 
 ### Required Tools

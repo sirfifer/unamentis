@@ -1,0 +1,1802 @@
+{
+  "metadata": {
+    "source": "MIT OpenCourseWare",
+    "source_url": "https://ocw.mit.edu/",
+    "last_updated": "2025-01-15",
+    "total_courses": 71,
+    "license": {
+      "type": "CC-BY-NC-SA-4.0",
+      "name": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+      "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+    },
+    "departments": [
+      "Electrical Engineering and Computer Science",
+      "Mathematics",
+      "Physics",
+      "Biology",
+      "Chemistry",
+      "Brain and Cognitive Sciences",
+      "Mechanical Engineering",
+      "Aeronautics and Astronautics",
+      "Civil and Environmental Engineering",
+      "Chemical Engineering",
+      "Materials Science and Engineering",
+      "Nuclear Science and Engineering",
+      "Economics",
+      "Sloan School of Management",
+      "Political Science",
+      "Linguistics and Philosophy",
+      "Literature",
+      "History",
+      "Anthropology",
+      "Architecture",
+      "Urban Studies and Planning",
+      "Media Arts and Sciences",
+      "Music and Theater Arts",
+      "Health Sciences and Technology",
+      "Science, Technology, and Society",
+      "Writing and Humanistic Studies",
+      "Earth, Atmospheric, and Planetary Sciences",
+      "Biological Engineering",
+      "Comparative Media Studies"
+    ],
+    "filter_applied": "Only courses with full text content (no video OR video with transcripts)"
+  },
+  "courses": [
+    {
+      "id": "6-867-machine-learning-fall-2006",
+      "number": "6.867",
+      "title": "Machine Learning",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Tommi Jaakkola"
+      ],
+      "semester": "Fall 2006",
+      "level": "graduate",
+      "description": "Introductory graduate course on machine learning covering classification, linear regression, boosting, support vector machines, hidden Markov models, and Bayesian networks.",
+      "url": "https://ocw.mit.edu/courses/6-867-machine-learning-fall-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "machine learning",
+        "SVM",
+        "HMM",
+        "Bayesian networks",
+        "classification"
+      ]
+    },
+    {
+      "id": "18-657-mathematics-of-machine-learning-fall-2015",
+      "number": "18.657",
+      "title": "Mathematics of Machine Learning",
+      "department": "Mathematics",
+      "instructors": [
+        "Philippe Rigollet"
+      ],
+      "semester": "Fall 2015",
+      "level": "graduate",
+      "description": "Mathematically rigorous introduction to machine learning with emphasis on methods and their analysis. Topics include supervised learning, empirical risk minimization, and statistical learning theory.",
+      "url": "https://ocw.mit.edu/courses/18-657-mathematics-of-machine-learning-fall-2015/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "machine learning",
+        "mathematics",
+        "statistics",
+        "learning theory"
+      ]
+    },
+    {
+      "id": "6-864-advanced-natural-language-processing-fall-2005",
+      "number": "6.864",
+      "title": "Advanced Natural Language Processing",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Regina Barzilay",
+        "Michael Collins"
+      ],
+      "semester": "Fall 2005",
+      "level": "graduate",
+      "description": "Graduate introduction to natural language processing covering syntactic, semantic, and discourse processing models. Emphasizes machine learning approaches including HMMs, PCFGs, and EM algorithm.",
+      "url": "https://ocw.mit.edu/courses/6-864-advanced-natural-language-processing-fall-2005/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 22,
+      "keywords": [
+        "NLP",
+        "natural language processing",
+        "machine learning",
+        "linguistics",
+        "AI"
+      ]
+    },
+    {
+      "id": "6-863j-natural-language-and-computer-representation-spring-2003",
+      "number": "6.863J",
+      "title": "Natural Language and the Computer Representation of Knowledge",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Robert Berwick"
+      ],
+      "semester": "Spring 2003",
+      "level": "graduate",
+      "description": "Laboratory-oriented course on the theory and practice of building computer systems for human language processing, with emphasis on linguistic, cognitive, and engineering foundations.",
+      "url": "https://ocw.mit.edu/courses/6-863j-natural-language-and-the-computer-representation-of-knowledge-spring-2003/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "NLP",
+        "computational linguistics",
+        "knowledge representation",
+        "AI"
+      ]
+    },
+    {
+      "id": "6-001-structure-and-interpretation-of-computer-programs-spring-2005",
+      "number": "6.001",
+      "title": "Structure and Interpretation of Computer Programs",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Harold Abelson",
+        "Gerald Jay Sussman"
+      ],
+      "semester": "Spring 2005",
+      "level": "undergraduate",
+      "description": "Introduction to programming and computational modeling. Covers techniques to control complexity in large systems, building abstractions with procedures and data, state, and the environment model of evaluation.",
+      "url": "https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 28,
+      "keywords": [
+        "programming",
+        "scheme",
+        "lisp",
+        "abstraction",
+        "computer science"
+      ]
+    },
+    {
+      "id": "6-042j-mathematics-for-computer-science-fall-2010",
+      "number": "6.042J",
+      "title": "Mathematics for Computer Science",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Tom Leighton",
+        "Marten van Dijk"
+      ],
+      "semester": "Fall 2010",
+      "level": "undergraduate",
+      "description": "Elementary discrete mathematics for computer science and engineering: logic, proofs, induction, number theory, probability, counting.",
+      "url": "https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-fall-2010/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 25,
+      "keywords": [
+        "discrete mathematics",
+        "proofs",
+        "probability",
+        "computer science"
+      ]
+    },
+    {
+      "id": "6-033-computer-system-engineering-spring-2018",
+      "number": "6.033",
+      "title": "Computer System Engineering",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Katrina LaCurts"
+      ],
+      "semester": "Spring 2018",
+      "level": "undergraduate",
+      "description": "Topics on the engineering of computer software and hardware systems: techniques for controlling complexity; strong modularity using client-server design, operating systems; performance, networks; naming; security and privacy; fault-tolerant systems, atomicity and coordination of concurrent activities, and recovery; impact of computer systems on society.",
+      "url": "https://ocw.mit.edu/courses/6-033-computer-system-engineering-spring-2018/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "systems",
+        "operating systems",
+        "networks",
+        "security"
+      ]
+    },
+    {
+      "id": "6-828-operating-system-engineering-fall-2012",
+      "number": "6.828",
+      "title": "Operating System Engineering",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Frans Kaashoek",
+        "Robert Morris"
+      ],
+      "semester": "Fall 2012",
+      "level": "graduate",
+      "description": "Fundamental design and implementation of operating systems. Topics include virtual memory, file systems, threads, context switches, kernels, interrupts, system calls, interprocess communication, coordination, and the interaction between software and hardware.",
+      "url": "https://ocw.mit.edu/courses/6-828-operating-system-engineering-fall-2012/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 23,
+      "keywords": [
+        "operating systems",
+        "kernels",
+        "virtual memory",
+        "systems programming"
+      ]
+    },
+    {
+      "id": "6-824-distributed-systems-spring-2020",
+      "number": "6.824",
+      "title": "Distributed Computer Systems Engineering",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Robert Morris",
+        "Frans Kaashoek"
+      ],
+      "semester": "Spring 2020",
+      "level": "graduate",
+      "description": "Abstractions and implementation techniques for engineering distributed systems: remote procedure call, threads and locking, client/server, peer-to-peer, consistency, fault tolerance, and security.",
+      "url": "https://ocw.mit.edu/courses/6-824-distributed-computer-systems-engineering-spring-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 23,
+      "keywords": [
+        "distributed systems",
+        "fault tolerance",
+        "consistency",
+        "RPC"
+      ]
+    },
+    {
+      "id": "18-06-linear-algebra-spring-2010",
+      "number": "18.06",
+      "title": "Linear Algebra",
+      "department": "Mathematics",
+      "instructors": [
+        "Gilbert Strang"
+      ],
+      "semester": "Spring 2010",
+      "level": "undergraduate",
+      "description": "Basic subject on matrix theory and linear algebra. Emphasis on topics useful in other disciplines: systems of equations, vector spaces, determinants, eigenvalues, similarity, and positive definite matrices.",
+      "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 34,
+      "keywords": [
+        "linear algebra",
+        "matrices",
+        "eigenvalues",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "18-06sc-linear-algebra-fall-2011",
+      "number": "18.06SC",
+      "title": "Linear Algebra",
+      "department": "Mathematics",
+      "instructors": [
+        "Gilbert Strang"
+      ],
+      "semester": "Fall 2011",
+      "level": "undergraduate",
+      "description": "Scholar course version of Linear Algebra designed for independent study. Covers systems of linear equations and the properties of matrices, essential for physics, economics, and engineering.",
+      "url": "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 34,
+      "keywords": [
+        "linear algebra",
+        "matrices",
+        "vector spaces",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "18-01-single-variable-calculus-fall-2006",
+      "number": "18.01",
+      "title": "Single Variable Calculus",
+      "department": "Mathematics",
+      "instructors": [
+        "David Jerison"
+      ],
+      "semester": "Fall 2006",
+      "level": "undergraduate",
+      "description": "Differentiation and integration of functions of one variable. Applications to geometry, physics, and elementary differential equations.",
+      "url": "https://ocw.mit.edu/courses/18-01-single-variable-calculus-fall-2006/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 39,
+      "keywords": [
+        "calculus",
+        "differentiation",
+        "integration",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "18-05-introduction-to-probability-and-statistics-spring-2014",
+      "number": "18.05",
+      "title": "Introduction to Probability and Statistics",
+      "department": "Mathematics",
+      "instructors": [
+        "Jeremy Orloff",
+        "Jonathan Bloom"
+      ],
+      "semester": "Spring 2014",
+      "level": "undergraduate",
+      "description": "Elementary introduction to probability and statistics with applications. Basic probability models, combinatorics, random variables, discrete and continuous probability distributions, statistical estimation and testing.",
+      "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "probability",
+        "statistics",
+        "mathematics",
+        "distributions"
+      ]
+    },
+    {
+      "id": "res-18-009-learn-differential-equations-fall-2015",
+      "number": "RES.18-009",
+      "title": "Learn Differential Equations: Up Close with Gilbert Strang and Cleve Moler",
+      "department": "Mathematics",
+      "instructors": [
+        "Gilbert Strang",
+        "Cleve Moler"
+      ],
+      "semester": "Fall 2015",
+      "level": "undergraduate",
+      "description": "Gilbert Strang explains differential equations and linear algebra, crucial subjects in science and engineering. Includes MATLAB demonstrations by Cleve Moler.",
+      "url": "https://ocw.mit.edu/courses/res-18-009-learn-differential-equations-up-close-with-gilbert-strang-and-cleve-moler-fall-2015/",
+      "features": [
+        "video",
+        "transcript"
+      ],
+      "lecture_count": 55,
+      "keywords": [
+        "differential equations",
+        "linear algebra",
+        "MATLAB",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "8-01-physics-i-classical-mechanics-fall-1999",
+      "number": "8.01",
+      "title": "Physics I: Classical Mechanics",
+      "department": "Physics",
+      "instructors": [
+        "Walter Lewin"
+      ],
+      "semester": "Fall 1999",
+      "level": "undergraduate",
+      "description": "Newton's laws, motion, energy and momentum, rotation, gravitation, oscillations, waves. Physical intuition developed through problem solving and demonstrations.",
+      "url": "https://ocw.mit.edu/courses/8-01-physics-i-classical-mechanics-fall-1999/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 35,
+      "keywords": [
+        "physics",
+        "mechanics",
+        "newton",
+        "classical physics"
+      ]
+    },
+    {
+      "id": "8-044-statistical-physics-i-spring-2013",
+      "number": "8.044",
+      "title": "Statistical Physics I",
+      "department": "Physics",
+      "instructors": [
+        "Mehran Kardar"
+      ],
+      "semester": "Spring 2013",
+      "level": "undergraduate",
+      "description": "Introduction to probability, statistical mechanics, and thermodynamics. Random variables, joint and conditional probability, and the Boltzmann distribution.",
+      "url": "https://ocw.mit.edu/courses/8-044-statistical-physics-i-spring-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 28,
+      "keywords": [
+        "statistical physics",
+        "thermodynamics",
+        "probability",
+        "physics"
+      ]
+    },
+    {
+      "id": "8-333-statistical-mechanics-i-fall-2013",
+      "number": "8.333",
+      "title": "Statistical Mechanics I: Statistical Mechanics of Particles",
+      "department": "Physics",
+      "instructors": [
+        "Mehran Kardar"
+      ],
+      "semester": "Fall 2013",
+      "level": "graduate",
+      "description": "Covers thermodynamics and classical statistical mechanics. Topics include probability theory, microcanonical and canonical ensembles, and quantum statistical mechanics.",
+      "url": "https://ocw.mit.edu/courses/8-333-statistical-mechanics-i-statistical-mechanics-of-particles-fall-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 26,
+      "keywords": [
+        "statistical mechanics",
+        "thermodynamics",
+        "physics",
+        "ensembles"
+      ]
+    },
+    {
+      "id": "7-03-genetics-fall-2004",
+      "number": "7.03",
+      "title": "Genetics",
+      "department": "Biology",
+      "instructors": [
+        "Chris Kaiser"
+      ],
+      "semester": "Fall 2004",
+      "level": "undergraduate",
+      "description": "Principles of genetics with application to studying biological function at the level of molecules, cells, and multicellular organisms, including humans.",
+      "url": "https://ocw.mit.edu/courses/7-03-genetics-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 26,
+      "keywords": [
+        "genetics",
+        "biology",
+        "DNA",
+        "heredity"
+      ]
+    },
+    {
+      "id": "5-12-organic-chemistry-i-spring-2005",
+      "number": "5.12",
+      "title": "Organic Chemistry I",
+      "department": "Chemistry",
+      "instructors": [
+        "Sarah Tabacco"
+      ],
+      "semester": "Spring 2005",
+      "level": "undergraduate",
+      "description": "Introduction to organic chemistry, including structure and bonding, acidity, functional groups, stereochemistry, and reactions of organic molecules.",
+      "url": "https://ocw.mit.edu/courses/5-12-organic-chemistry-i-spring-2005/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 36,
+      "keywords": [
+        "organic chemistry",
+        "chemistry",
+        "reactions",
+        "stereochemistry"
+      ]
+    },
+    {
+      "id": "9-00sc-introduction-to-psychology-fall-2011",
+      "number": "9.00SC",
+      "title": "Introduction to Psychology",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "John Gabrieli"
+      ],
+      "semester": "Fall 2011",
+      "level": "undergraduate",
+      "description": "Survey of the scientific study of human nature: how the mind works and how the brain supports it. Topics include perception, emotion, learning, memory, cognition, child development, personality, and social interaction.",
+      "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/",
+      "features": [
+        "video",
+        "transcript",
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "psychology",
+        "cognition",
+        "brain",
+        "memory",
+        "perception"
+      ]
+    },
+    {
+      "id": "9-12-experimental-molecular-neurobiology-fall-2006",
+      "number": "9.12",
+      "title": "Experimental Molecular Neurobiology",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "Martha Constantine-Paton"
+      ],
+      "semester": "Fall 2006",
+      "level": "undergraduate",
+      "description": "Basic experimental techniques in cellular and molecular neurobiology: tissue culture, DNA manipulation, synaptic protein analysis, immunocytochemistry, and fluorescent microscopy.",
+      "url": "https://ocw.mit.edu/courses/9-12-experimental-molecular-neurobiology-fall-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 14,
+      "keywords": [
+        "neurobiology",
+        "molecular biology",
+        "brain",
+        "laboratory"
+      ]
+    },
+    {
+      "id": "9-081-human-memory-and-learning-fall-2002",
+      "number": "9.081",
+      "title": "Human Memory and Learning",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "John Gabrieli"
+      ],
+      "semester": "Fall 2002",
+      "level": "graduate",
+      "description": "Surveys cognitive and neural organization of human memory and learning: working memory, episodic and semantic memory, and implicit forms of memory.",
+      "url": "https://ocw.mit.edu/courses/9-081-human-memory-and-learning-fall-2002/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "memory",
+        "learning",
+        "cognition",
+        "neuroscience"
+      ]
+    },
+    {
+      "id": "9-35-sensation-and-perception-spring-2009",
+      "number": "9.35",
+      "title": "Sensation and Perception",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "Peter Schiller"
+      ],
+      "semester": "Spring 2009",
+      "level": "undergraduate",
+      "description": "Introduction to perception and the neural basis of sensory processing. Topics include visual, auditory, and somatosensory systems.",
+      "url": "https://ocw.mit.edu/courses/9-35-sensation-and-perception-spring-2009/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "perception",
+        "sensation",
+        "vision",
+        "neuroscience"
+      ]
+    },
+    {
+      "id": "2-001-mechanics-and-materials-i-fall-2006",
+      "number": "2.001",
+      "title": "Mechanics and Materials I",
+      "department": "Mechanical Engineering",
+      "instructors": [
+        "Simona Socrate"
+      ],
+      "semester": "Fall 2006",
+      "level": "undergraduate",
+      "description": "Introduction to statics and strength of materials. Application of equilibrium principles to structural systems and mechanisms.",
+      "url": "https://ocw.mit.edu/courses/2-001-mechanics-and-materials-i-fall-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "mechanics",
+        "materials",
+        "statics",
+        "engineering"
+      ]
+    },
+    {
+      "id": "2-004-modeling-dynamics-and-control-ii-spring-2008",
+      "number": "2.004",
+      "title": "Modeling Dynamics and Control II",
+      "department": "Mechanical Engineering",
+      "instructors": [
+        "Neville Hogan"
+      ],
+      "semester": "Spring 2008",
+      "level": "undergraduate",
+      "description": "Covers dynamics and control of mechanical systems. System modeling, time response, frequency response, and stability.",
+      "url": "https://ocw.mit.edu/courses/2-004-modeling-dynamics-and-control-ii-spring-2008/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "dynamics",
+        "control systems",
+        "mechanical engineering"
+      ]
+    },
+    {
+      "id": "2-087-engineering-math-differential-equations-fall-2014",
+      "number": "2.087",
+      "title": "Engineering Math: Differential Equations and Linear Algebra",
+      "department": "Mechanical Engineering",
+      "instructors": [
+        "David Gossard"
+      ],
+      "semester": "Fall 2014",
+      "level": "undergraduate",
+      "description": "Introduction to linear algebra and ordinary differential equations for mechanical engineering, including numerical approaches to solving systems of equations.",
+      "url": "https://ocw.mit.edu/courses/2-087-engineering-math-differential-equations-and-linear-algebra-fall-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "differential equations",
+        "linear algebra",
+        "engineering mathematics"
+      ]
+    },
+    {
+      "id": "16-00-introduction-to-aerospace-engineering-spring-2003",
+      "number": "16.00",
+      "title": "Introduction to Aerospace Engineering and Design",
+      "department": "Aeronautics and Astronautics",
+      "instructors": [
+        "Jeffrey Hoffman",
+        "Dava Newman"
+      ],
+      "semester": "Spring 2003",
+      "level": "undergraduate",
+      "description": "Fundamental concepts of aerospace engineering through lectures on aeronautics, astronautics, and design. Student teams design, build, and fly radio-controlled lighter-than-air vehicles.",
+      "url": "https://ocw.mit.edu/courses/16-00-introduction-to-aerospace-engineering-and-design-spring-2003/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "aerospace",
+        "aeronautics",
+        "design",
+        "engineering"
+      ]
+    },
+    {
+      "id": "16-20-structural-mechanics-fall-2002",
+      "number": "16.20",
+      "title": "Structural Mechanics",
+      "department": "Aeronautics and Astronautics",
+      "instructors": [
+        "Paul Lagace"
+      ],
+      "semester": "Fall 2002",
+      "level": "undergraduate",
+      "description": "Bending, shear, and torsion of thin-wall shell beams; buckling of columns and stability phenomena; introduction to structural dynamics; design of aerospace structures.",
+      "url": "https://ocw.mit.edu/courses/16-20-structural-mechanics-fall-2002/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "structural mechanics",
+        "aerospace",
+        "buckling",
+        "dynamics"
+      ]
+    },
+    {
+      "id": "14-02-principles-of-macroeconomics-fall-2004",
+      "number": "14.02",
+      "title": "Principles of Macroeconomics",
+      "department": "Economics",
+      "instructors": [
+        "Olivier Blanchard"
+      ],
+      "semester": "Fall 2004",
+      "level": "undergraduate",
+      "description": "Introduction to macroeconomic analysis. Topics include national income, output, employment, money, interest rates, exchange rates, and economic growth.",
+      "url": "https://ocw.mit.edu/courses/14-02-principles-of-macroeconomics-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "macroeconomics",
+        "economics",
+        "GDP",
+        "monetary policy"
+      ]
+    },
+    {
+      "id": "15-431-entrepreneurial-finance-spring-2011",
+      "number": "15.431",
+      "title": "Entrepreneurial Finance",
+      "department": "Sloan School of Management",
+      "instructors": [
+        "Antoinette Schoar"
+      ],
+      "semester": "Spring 2011",
+      "level": "graduate",
+      "description": "Elements of entrepreneurial finance for technology-based start-up ventures. Covers valuation, funding, venture capital, and exit strategies.",
+      "url": "https://ocw.mit.edu/courses/15-431-entrepreneurial-finance-spring-2011/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "entrepreneurship",
+        "finance",
+        "venture capital",
+        "startups"
+      ]
+    },
+    {
+      "id": "15-414-financial-management-summer-2003",
+      "number": "15.414",
+      "title": "Financial Management",
+      "department": "Sloan School of Management",
+      "instructors": [
+        "Dirk Jenter"
+      ],
+      "semester": "Summer 2003",
+      "level": "graduate",
+      "description": "Corporate finance and capital markets: valuation, risk management, derivatives, financing decisions, and dividend policy.",
+      "url": "https://ocw.mit.edu/courses/15-414-financial-management-summer-2003/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 20,
+      "keywords": [
+        "finance",
+        "corporate finance",
+        "valuation",
+        "risk management"
+      ]
+    },
+    {
+      "id": "15-010-economic-analysis-for-business-decisions-fall-2004",
+      "number": "15.010",
+      "title": "Economic Analysis for Business Decisions",
+      "department": "Sloan School of Management",
+      "instructors": [
+        "Robert Pindyck"
+      ],
+      "semester": "Fall 2004",
+      "level": "graduate",
+      "description": "Microeconomics for managers: market demand, pricing strategy, market power, and regulatory policies.",
+      "url": "https://ocw.mit.edu/courses/15-010-economic-analysis-for-business-decisions-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "economics",
+        "business",
+        "pricing",
+        "market analysis"
+      ]
+    },
+    {
+      "id": "15-351-managing-innovation-and-entrepreneurship-spring-2008",
+      "number": "15.351",
+      "title": "Managing Innovation and Entrepreneurship",
+      "department": "Sloan School of Management",
+      "instructors": [
+        "Fiona Murray"
+      ],
+      "semester": "Spring 2008",
+      "level": "graduate",
+      "description": "Building organizations to bring technological innovations to market. Practices and processes for managing innovation effectively.",
+      "url": "https://ocw.mit.edu/courses/15-351-managing-innovation-and-entrepreneurship-spring-2008/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "innovation",
+        "entrepreneurship",
+        "management",
+        "technology"
+      ]
+    },
+    {
+      "id": "24-01-classics-of-western-philosophy-spring-2016",
+      "number": "24.01",
+      "title": "Classics of Western Philosophy",
+      "department": "Linguistics and Philosophy",
+      "instructors": [
+        "Sally Haslanger"
+      ],
+      "semester": "Spring 2016",
+      "level": "undergraduate",
+      "description": "Introduces Western philosophical tradition through Plato, Aristotle, Descartes, Hume, and Kant. Topics include nature of mind, existence of God, and foundations of knowledge.",
+      "url": "https://ocw.mit.edu/courses/24-01-classics-of-western-philosophy-spring-2016/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 26,
+      "keywords": [
+        "philosophy",
+        "Plato",
+        "Aristotle",
+        "Descartes",
+        "ethics"
+      ]
+    },
+    {
+      "id": "24-200-ancient-philosophy-fall-2004",
+      "number": "24.200",
+      "title": "Ancient Philosophy",
+      "department": "Linguistics and Philosophy",
+      "instructors": [
+        "Rae Langton"
+      ],
+      "semester": "Fall 2004",
+      "level": "undergraduate",
+      "description": "Study of ancient Greek philosophy including Socrates, Plato, and Aristotle. Examines ethics, metaphysics, and epistemology.",
+      "url": "https://ocw.mit.edu/courses/24-200-ancient-philosophy-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "philosophy",
+        "ancient Greece",
+        "Socrates",
+        "Plato",
+        "Aristotle"
+      ]
+    },
+    {
+      "id": "24-09-minds-and-machines-fall-2011",
+      "number": "24.09",
+      "title": "Minds and Machines",
+      "department": "Linguistics and Philosophy",
+      "instructors": [
+        "Alex Byrne"
+      ],
+      "semester": "Fall 2011",
+      "level": "undergraduate",
+      "description": "Introduction to philosophy of mind: consciousness, mental representation, personal identity, and artificial intelligence.",
+      "url": "https://ocw.mit.edu/courses/24-09-minds-and-machines-fall-2011/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "philosophy",
+        "mind",
+        "consciousness",
+        "AI",
+        "cognition"
+      ]
+    },
+    {
+      "id": "21l-451-introduction-to-literary-theory-fall-2014",
+      "number": "21L.451",
+      "title": "Introduction to Literary Theory",
+      "department": "Literature",
+      "instructors": [
+        "Noel Jackson"
+      ],
+      "semester": "Fall 2014",
+      "level": "undergraduate",
+      "description": "Introduction to major schools of literary theory including structuralism, psychoanalysis, Marxism, and postcolonialism.",
+      "url": "https://ocw.mit.edu/courses/21l-451-introduction-to-literary-theory-fall-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "literature",
+        "literary theory",
+        "criticism",
+        "humanities"
+      ]
+    },
+    {
+      "id": "21l-709-studies-in-literary-history-modernism-fall-2010",
+      "number": "21L.709",
+      "title": "Studies in Literary History: Modernism",
+      "department": "Literature",
+      "instructors": [
+        "Wyn Kelley"
+      ],
+      "semester": "Fall 2010",
+      "level": "undergraduate",
+      "description": "Explores how literature, philosophy, and film respond to profound changes in world view marking the twentieth century. Nietzsche to Fellini.",
+      "url": "https://ocw.mit.edu/courses/21l-709-studies-in-literary-history-modernism-from-nietzsche-to-fellini-fall-2010/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "literature",
+        "modernism",
+        "philosophy",
+        "film",
+        "humanities"
+      ]
+    },
+    {
+      "id": "21h-001-how-to-stage-a-revolution-fall-2013",
+      "number": "21H.001",
+      "title": "How to Stage a Revolution",
+      "department": "History",
+      "instructors": [
+        "Jeffrey Ravel"
+      ],
+      "semester": "Fall 2013",
+      "level": "undergraduate",
+      "description": "Comparative history of revolutions from the French Revolution through twentieth-century upheavals. Examines causes, dynamics, and outcomes.",
+      "url": "https://ocw.mit.edu/courses/21h-001-how-to-stage-a-revolution-fall-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "history",
+        "revolution",
+        "politics",
+        "social change"
+      ]
+    },
+    {
+      "id": "4-401-introduction-to-building-technology-fall-2018",
+      "number": "4.401",
+      "title": "Introduction to Building Technology",
+      "department": "Architecture",
+      "instructors": [
+        "Christoph Reinhart"
+      ],
+      "semester": "Fall 2018",
+      "level": "undergraduate",
+      "description": "Introduction to building technology including structures, materials, and environmental control systems in architecture.",
+      "url": "https://ocw.mit.edu/courses/4-401-introduction-to-building-technology-fall-2018/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "architecture",
+        "building technology",
+        "structures",
+        "design"
+      ]
+    },
+    {
+      "id": "11-001j-introduction-to-urban-design-spring-2006",
+      "number": "11.001J",
+      "title": "Introduction to Urban Design and Development",
+      "department": "Urban Studies and Planning",
+      "instructors": [
+        "Dennis Frenchman"
+      ],
+      "semester": "Spring 2006",
+      "level": "undergraduate",
+      "description": "Introduction to the theory and practice of urban design. Examines how cities are shaped through planning, design, and development.",
+      "url": "https://ocw.mit.edu/courses/11-001j-introduction-to-urban-design-and-development-spring-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "urban design",
+        "planning",
+        "cities",
+        "development"
+      ]
+    },
+    {
+      "id": "6-831-user-interface-design-spring-2011",
+      "number": "6.831",
+      "title": "User Interface Design and Implementation",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Robert Miller"
+      ],
+      "semester": "Spring 2011",
+      "level": "undergraduate",
+      "description": "Principles and techniques for designing, implementing, and evaluating user interfaces. Topics include usability, interaction design, and prototyping.",
+      "url": "https://ocw.mit.edu/courses/6-831-user-interface-design-and-implementation-spring-2011/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "UI design",
+        "HCI",
+        "usability",
+        "interaction design"
+      ]
+    },
+    {
+      "id": "6-005-software-construction-spring-2016",
+      "number": "6.005",
+      "title": "Software Construction",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Rob Miller",
+        "Max Goldman"
+      ],
+      "semester": "Spring 2016",
+      "level": "undergraduate",
+      "description": "Fundamental principles and techniques of software development: specification, design, implementation, testing, and debugging. Emphasis on correctness and maintainability.",
+      "url": "https://ocw.mit.edu/courses/6-005-software-construction-spring-2016/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 26,
+      "keywords": [
+        "software engineering",
+        "programming",
+        "testing",
+        "design"
+      ]
+    },
+    {
+      "id": "6-837-computer-graphics-fall-2012",
+      "number": "6.837",
+      "title": "Computer Graphics",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Fredo Durand",
+        "Wojciech Matusik"
+      ],
+      "semester": "Fall 2012",
+      "level": "undergraduate",
+      "description": "Introduction to computer graphics: image synthesis, modeling, rendering, and animation. Topics include ray tracing, rasterization, and GPU programming.",
+      "url": "https://ocw.mit.edu/courses/6-837-computer-graphics-fall-2012/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "computer graphics",
+        "rendering",
+        "animation",
+        "3D"
+      ]
+    },
+    {
+      "id": "18-701-algebra-i-fall-2010",
+      "number": "18.701",
+      "title": "Algebra I",
+      "department": "Mathematics",
+      "instructors": [
+        "Michael Artin"
+      ],
+      "semester": "Fall 2010",
+      "level": "undergraduate",
+      "description": "Introduction to abstract algebra: groups, vector spaces, linear transformations, symmetry, and group actions.",
+      "url": "https://ocw.mit.edu/courses/18-701-algebra-i-fall-2010/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "algebra",
+        "groups",
+        "vector spaces",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "1-00-introduction-to-computers-spring-2012",
+      "number": "1.00",
+      "title": "Introduction to Computers and Engineering Problem Solving",
+      "department": "Civil and Environmental Engineering",
+      "instructors": [
+        "Steven Lerman"
+      ],
+      "semester": "Spring 2012",
+      "level": "undergraduate",
+      "description": "Introduction to programming using Java with emphasis on engineering problem solving. Data structures, algorithms, and object-oriented programming.",
+      "url": "https://ocw.mit.edu/courses/1-00-introduction-to-computers-and-engineering-problem-solving-spring-2012/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "programming",
+        "Java",
+        "engineering",
+        "computer science"
+      ]
+    },
+    {
+      "id": "10-302-transport-processes-fall-2004",
+      "number": "10.302",
+      "title": "Transport Processes",
+      "department": "Chemical Engineering",
+      "instructors": [
+        "Kenneth Smith"
+      ],
+      "semester": "Fall 2004",
+      "level": "undergraduate",
+      "description": "Fundamental concepts of fluid mechanics, heat transfer, and mass transfer in chemical engineering applications.",
+      "url": "https://ocw.mit.edu/courses/10-302-transport-processes-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "transport phenomena",
+        "fluid mechanics",
+        "heat transfer",
+        "chemical engineering"
+      ]
+    },
+    {
+      "id": "21a-00-introduction-to-anthropology-spring-2013",
+      "number": "21A.00",
+      "title": "Introduction to Anthropology",
+      "department": "Anthropology",
+      "instructors": [
+        "Stefan Helmreich"
+      ],
+      "semester": "Spring 2013",
+      "level": "undergraduate",
+      "description": "Introduction to anthropology covering cultural, biological, archaeological, and linguistic perspectives on human diversity.",
+      "url": "https://ocw.mit.edu/courses/21a-00-introduction-to-anthropology-spring-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "anthropology",
+        "culture",
+        "society",
+        "human diversity"
+      ]
+    },
+    {
+      "id": "sts-001-technology-in-american-history-fall-2006",
+      "number": "STS.001",
+      "title": "Technology in American History",
+      "department": "Science, Technology, and Society",
+      "instructors": [
+        "Merritt Roe Smith"
+      ],
+      "semester": "Fall 2006",
+      "level": "undergraduate",
+      "description": "History of technology in America from colonial times to the present. Explores the relationship between technology and society.",
+      "url": "https://ocw.mit.edu/courses/sts-001-technology-in-american-history-fall-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "technology",
+        "history",
+        "society",
+        "America"
+      ]
+    },
+    {
+      "id": "21w-730-expository-writing-fall-2014",
+      "number": "21W.730",
+      "title": "Expository Writing",
+      "department": "Writing and Humanistic Studies",
+      "instructors": [
+        "Steve Strang"
+      ],
+      "semester": "Fall 2014",
+      "level": "undergraduate",
+      "description": "Intensive practice in expository writing: developing ideas, organizing material, revising, and editing.",
+      "url": "https://ocw.mit.edu/courses/21w-730-expository-writing-fall-2014/",
+      "features": [
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "writing",
+        "composition",
+        "rhetoric",
+        "communication"
+      ]
+    },
+    {
+      "id": "12-001-introduction-to-geology-fall-2013",
+      "number": "12.001",
+      "title": "Introduction to Geology",
+      "department": "Earth, Atmospheric, and Planetary Sciences",
+      "instructors": [
+        "Taylor Perron"
+      ],
+      "semester": "Fall 2013",
+      "level": "undergraduate",
+      "description": "Introduction to physical geology: Earth structure, plate tectonics, minerals, rocks, and geological processes.",
+      "url": "https://ocw.mit.edu/courses/12-001-introduction-to-geology-fall-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "geology",
+        "Earth science",
+        "plate tectonics",
+        "rocks"
+      ]
+    },
+    {
+      "id": "20-020-introduction-to-biological-engineering-spring-2009",
+      "number": "20.020",
+      "title": "Introduction to Biological Engineering Design",
+      "department": "Biological Engineering",
+      "instructors": [
+        "Natalie Kuldell"
+      ],
+      "semester": "Spring 2009",
+      "level": "undergraduate",
+      "description": "Introduction to biological engineering including synthetic biology, genetic engineering, and design principles.",
+      "url": "https://ocw.mit.edu/courses/20-020-introduction-to-biological-engineering-design-spring-2009/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "biological engineering",
+        "synthetic biology",
+        "genetics",
+        "design"
+      ]
+    },
+    {
+      "id": "cms-100-introduction-to-media-studies-fall-2014",
+      "number": "CMS.100",
+      "title": "Introduction to Media Studies",
+      "department": "Comparative Media Studies",
+      "instructors": [
+        "Vivek Bald"
+      ],
+      "semester": "Fall 2014",
+      "level": "undergraduate",
+      "description": "Introduction to media studies: critical analysis of media forms, technologies, and cultural practices.",
+      "url": "https://ocw.mit.edu/courses/cms-100-introduction-to-media-studies-fall-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "media studies",
+        "culture",
+        "technology",
+        "communication"
+      ]
+    },
+    {
+      "id": "21m-065-introduction-to-musical-composition-spring-2014",
+      "number": "21M.065",
+      "title": "Introduction to Musical Composition",
+      "department": "Music and Theater Arts",
+      "instructors": [
+        "Keeril Makan"
+      ],
+      "semester": "Spring 2014",
+      "level": "undergraduate",
+      "description": "Introduction to musical composition: exploring melody, harmony, rhythm, and form through composition exercises.",
+      "url": "https://ocw.mit.edu/courses/21m-065-introduction-to-musical-composition-spring-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "music",
+        "composition",
+        "theory",
+        "arts"
+      ]
+    },
+    {
+      "id": "hst-161-molecular-biology-and-genetics-fall-2007",
+      "number": "HST.161",
+      "title": "Molecular Biology and Genetics in Modern Medicine",
+      "department": "Health Sciences and Technology",
+      "instructors": [
+        "David Housman"
+      ],
+      "semester": "Fall 2007",
+      "level": "graduate",
+      "description": "Application of molecular biology and genetics to medical diagnosis and treatment. Topics include gene therapy and genetic diseases.",
+      "url": "https://ocw.mit.edu/courses/hst-161-molecular-biology-and-genetics-in-modern-medicine-fall-2007/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "molecular biology",
+        "genetics",
+        "medicine",
+        "gene therapy"
+      ]
+    },
+    {
+      "id": "mas-863-how-to-make-almost-anything-fall-2002",
+      "number": "MAS.863",
+      "title": "How to Make (Almost) Anything",
+      "department": "Media Arts and Sciences",
+      "instructors": [
+        "Neil Gershenfeld"
+      ],
+      "semester": "Fall 2002",
+      "level": "graduate",
+      "description": "Introduction to digital fabrication: 3D printing, laser cutting, CNC machining, and embedded programming. Making physical things with digital tools.",
+      "url": "https://ocw.mit.edu/courses/mas-863-how-to-make-almost-anything-fall-2002/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 15,
+      "keywords": [
+        "fabrication",
+        "making",
+        "3D printing",
+        "electronics",
+        "design"
+      ]
+    },
+    {
+      "id": "6-170-software-studio-spring-2013",
+      "number": "6.170",
+      "title": "Software Studio",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Daniel Jackson"
+      ],
+      "semester": "Spring 2013",
+      "level": "undergraduate",
+      "description": "Software engineering principles and web application development. Design patterns, RESTful APIs, and modern development practices.",
+      "url": "https://ocw.mit.edu/courses/6-170-software-studio-spring-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "software engineering",
+        "web development",
+        "REST",
+        "design patterns"
+      ]
+    },
+    {
+      "id": "6-801-machine-vision-fall-2004",
+      "number": "6.801",
+      "title": "Machine Vision",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Berthold Horn"
+      ],
+      "semester": "Fall 2004",
+      "level": "graduate",
+      "description": "Computer vision: image formation, segmentation, recognition, motion analysis, and 3D reconstruction.",
+      "url": "https://ocw.mit.edu/courses/6-801-machine-vision-fall-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "computer vision",
+        "image processing",
+        "machine vision",
+        "AI"
+      ]
+    },
+    {
+      "id": "6-345-automatic-speech-recognition-spring-2003",
+      "number": "6.345",
+      "title": "Automatic Speech Recognition",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Victor Zue"
+      ],
+      "semester": "Spring 2003",
+      "level": "graduate",
+      "description": "Algorithms and systems for automatic speech recognition. Acoustic modeling, language modeling, and decoding.",
+      "url": "https://ocw.mit.edu/courses/6-345-automatic-speech-recognition-spring-2003/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "speech recognition",
+        "NLP",
+        "audio",
+        "AI"
+      ]
+    },
+    {
+      "id": "6-440-information-theory-spring-2016",
+      "number": "6.440",
+      "title": "Information Theory",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Yury Polyanskiy"
+      ],
+      "semester": "Spring 2016",
+      "level": "graduate",
+      "description": "Mathematical theory of information: entropy, data compression, channel capacity, and error-correcting codes.",
+      "url": "https://ocw.mit.edu/courses/6-440-information-theory-spring-2016/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "information theory",
+        "entropy",
+        "coding",
+        "communication"
+      ]
+    },
+    {
+      "id": "6-079-introduction-to-convex-optimization-fall-2009",
+      "number": "6.079",
+      "title": "Introduction to Convex Optimization",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Stephen Boyd",
+        "Lieven Vandenberghe"
+      ],
+      "semester": "Fall 2009",
+      "level": "graduate",
+      "description": "Convex sets, functions, and optimization problems. Applications to signal processing, machine learning, and control.",
+      "url": "https://ocw.mit.edu/courses/6-079-introduction-to-convex-optimization-fall-2009/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "optimization",
+        "convex",
+        "machine learning",
+        "mathematics"
+      ]
+    },
+    {
+      "id": "9-40-introduction-to-neural-computation-spring-2018",
+      "number": "9.40",
+      "title": "Introduction to Neural Computation",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "Michale Fee",
+        "Daniel Zysman"
+      ],
+      "semester": "Spring 2018",
+      "level": "undergraduate",
+      "description": "Mathematical models of neural computation: single neurons, neural networks, and learning algorithms.",
+      "url": "https://ocw.mit.edu/courses/9-40-introduction-to-neural-computation-spring-2018/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "neural networks",
+        "computational neuroscience",
+        "brain",
+        "learning"
+      ]
+    },
+    {
+      "id": "6-189-multicore-programming-primer-iap-2007",
+      "number": "6.189",
+      "title": "Multicore Programming Primer",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Saman Amarasinghe"
+      ],
+      "semester": "January IAP 2007",
+      "level": "undergraduate",
+      "description": "Introduction to multicore and parallel programming: threads, synchronization, and performance optimization.",
+      "url": "https://ocw.mit.edu/courses/6-189-multicore-programming-primer-january-iap-2007/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 10,
+      "keywords": [
+        "parallel programming",
+        "multicore",
+        "concurrency",
+        "performance"
+      ]
+    },
+    {
+      "id": "17-407-chinese-foreign-policy-fall-2005",
+      "number": "17.407",
+      "title": "Chinese Foreign Policy",
+      "department": "Political Science",
+      "instructors": [
+        "M. Taylor Fravel"
+      ],
+      "semester": "Fall 2005",
+      "level": "undergraduate",
+      "description": "Analysis of Chinese foreign policy from 1949 to present. Topics include grand strategy, security policy, and international relations.",
+      "url": "https://ocw.mit.edu/courses/17-407-chinese-foreign-policy-fall-2005/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "political science",
+        "China",
+        "foreign policy",
+        "international relations"
+      ]
+    },
+    {
+      "id": "7-29j-cellular-neurobiology-spring-2012",
+      "number": "7.29J",
+      "title": "Cellular Neurobiology",
+      "department": "Biology",
+      "instructors": [
+        "Troy Bhawoo"
+      ],
+      "semester": "Spring 2012",
+      "level": "undergraduate",
+      "description": "Introduction to structure and function of the nervous system. Cellular properties of neurons, synaptic transmission, and sensory systems.",
+      "url": "https://ocw.mit.edu/courses/7-29j-cellular-neurobiology-spring-2012/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "neurobiology",
+        "neurons",
+        "synapses",
+        "nervous system"
+      ]
+    },
+    {
+      "id": "9-013j-cell-and-molecular-neurobiology-spring-2008",
+      "number": "9.013J",
+      "title": "Cell and Molecular Neurobiology",
+      "department": "Brain and Cognitive Sciences",
+      "instructors": [
+        "Chip Quinn",
+        "Troy Bhawoo"
+      ],
+      "semester": "Spring 2008",
+      "level": "graduate",
+      "description": "Major areas of cellular and molecular neurobiology: excitable membranes, synaptic transmission, neural plasticity, and neural development.",
+      "url": "https://ocw.mit.edu/courses/9-013j-cell-and-molecular-neurobiology-spring-2008/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "neurobiology",
+        "cell biology",
+        "synapses",
+        "plasticity"
+      ]
+    },
+    {
+      "id": "15-390-new-enterprises-spring-2013",
+      "number": "15.390",
+      "title": "New Enterprises",
+      "department": "Sloan School of Management",
+      "instructors": [
+        "Bill Aulet"
+      ],
+      "semester": "Spring 2013",
+      "level": "graduate",
+      "description": "How to start a new venture: opportunity identification, business models, team building, and financing.",
+      "url": "https://ocw.mit.edu/courses/15-390-new-enterprises-spring-2013/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "entrepreneurship",
+        "startups",
+        "business",
+        "venture creation"
+      ]
+    },
+    {
+      "id": "2-086-numerical-computation-fall-2014",
+      "number": "2.086",
+      "title": "Numerical Computation for Mechanical Engineers",
+      "department": "Mechanical Engineering",
+      "instructors": [
+        "Anthony Patera"
+      ],
+      "semester": "Fall 2014",
+      "level": "undergraduate",
+      "description": "Numerical methods for mechanical engineering: linear algebra, probability, statistics, ODE solving, and data fitting.",
+      "url": "https://ocw.mit.edu/courses/2-086-numerical-computation-for-mechanical-engineers-fall-2014/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "numerical methods",
+        "MATLAB",
+        "engineering",
+        "computation"
+      ]
+    },
+    {
+      "id": "res-18-008-calculus-revisited-fall-2011",
+      "number": "RES.18-008",
+      "title": "Calculus Revisited: Complex Variables, Differential Equations, and Linear Algebra",
+      "department": "Mathematics",
+      "instructors": [
+        "Herbert Gross"
+      ],
+      "semester": "Fall 2011",
+      "level": "undergraduate",
+      "description": "Video series covering complex variables, differential equations, and linear algebra. Originally released in 1972.",
+      "url": "https://ocw.mit.edu/courses/res-18-008-calculus-revisited-complex-variables-differential-equations-and-linear-algebra-fall-2011/",
+      "features": [
+        "video",
+        "transcript"
+      ],
+      "lecture_count": 20,
+      "keywords": [
+        "calculus",
+        "complex variables",
+        "differential equations",
+        "linear algebra"
+      ]
+    },
+    {
+      "id": "8-033-relativity-fall-2006",
+      "number": "8.033",
+      "title": "Relativity",
+      "department": "Physics",
+      "instructors": [
+        "Scott Hughes"
+      ],
+      "semester": "Fall 2006",
+      "level": "undergraduate",
+      "description": "Special relativity and introduction to general relativity. Lorentz transformations, relativistic mechanics, and Einstein field equations.",
+      "url": "https://ocw.mit.edu/courses/8-033-relativity-fall-2006/",
+      "features": [
+        "lecture_notes",
+        "assignments",
+        "exams"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "relativity",
+        "physics",
+        "special relativity",
+        "spacetime"
+      ]
+    },
+    {
+      "id": "6-892-computational-models-of-discourse-spring-2004",
+      "number": "6.892",
+      "title": "Computational Models of Discourse",
+      "department": "Electrical Engineering and Computer Science",
+      "instructors": [
+        "Regina Barzilay"
+      ],
+      "semester": "Spring 2004",
+      "level": "graduate",
+      "description": "Computational approaches to discourse: coherence, summarization, and dialogue systems.",
+      "url": "https://ocw.mit.edu/courses/6-892-computational-models-of-discourse-spring-2004/",
+      "features": [
+        "lecture_notes",
+        "assignments"
+      ],
+      "lecture_count": 24,
+      "keywords": [
+        "NLP",
+        "discourse",
+        "summarization",
+        "dialogue",
+        "AI"
+      ]
+    }
+  ]
+}

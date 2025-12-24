@@ -1734,7 +1734,8 @@
                   "endSegment": 7,
                   "displayMode": "persistent"
                 },
-                "audioDescription": "Leonardo da Vinci's world-famous Mona Lisa. A woman sits with her hands folded, gazing at the viewer with her famous enigmatic smile. The painting demonstrates Leonardo's sfumato technique, where colors and edges blend softly like smoke. The misty landscape behind her adds depth and mystery."
+                "audioDescription": "Leonardo da Vinci's world-famous Mona Lisa. A woman sits with her hands folded, gazing at the viewer with her famous enigmatic smile. The painting demonstrates Leonardo's sfumato technique, where colors and edges blend softly like smoke. The misty landscape behind her adds depth and mystery.",
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-renaissance-art/img-mona-lisa.jpg"
               },
               {
                 "id": "img-last-supper",
@@ -1753,7 +1754,8 @@
                   "endSegment": 9,
                   "displayMode": "highlight"
                 },
-                "audioDescription": "Leonardo da Vinci's monumental painting of The Last Supper. Jesus sits in the center with his twelve apostles on either side, reacting to his announcement that one will betray him. The room's architecture creates perfect linear perspective, with all lines converging on Jesus's head."
+                "audioDescription": "Leonardo da Vinci's monumental painting of The Last Supper. Jesus sits in the center with his twelve apostles on either side, reacting to his announcement that one will betray him. The room's architecture creates perfect linear perspective, with all lines converging on Jesus's head.",
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-renaissance-art/img-last-supper.jpg"
               },
               {
                 "id": "img-david-michelangelo",
@@ -1845,7 +1847,8 @@
                   "mythology",
                   "classical",
                   "florence"
-                ]
+                ],
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-renaissance-art/ref-botticelli-birth-venus.jpg"
               },
               {
                 "id": "ref-school-of-athens",
@@ -1860,7 +1863,8 @@
                   "aristotle",
                   "classical",
                   "athens"
-                ]
+                ],
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-renaissance-art/ref-school-of-athens.jpg"
               },
               {
                 "id": "ref-vitruvian-man",
@@ -2779,7 +2783,8 @@
                   "woodcuts",
                   "prints",
                   "german art"
-                ]
+                ],
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-northern-renaissance/ref-durer-engravings.jpg"
               }
             ]
           }
@@ -2986,7 +2991,8 @@
                   "endSegment": 4,
                   "displayMode": "persistent"
                 },
-                "audioDescription": "The United States Capitol Building in Washington DC. The building features Renaissance-inspired classical architecture, with its famous dome directly modeled on the dome of St. Peter's Basilica in Rome. The columns, symmetry, and proportions all reflect Renaissance ideals of beauty and order."
+                "audioDescription": "The United States Capitol Building in Washington DC. The building features Renaissance-inspired classical architecture, with its famous dome directly modeled on the dome of St. Peter's Basilica in Rome. The columns, symmetry, and proportions all reflect Renaissance ideals of beauty and order.",
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-legacy-today/img-us-capitol.jpg"
               },
               {
                 "id": "img-scientific-method",
@@ -3073,7 +3079,8 @@
                   "uffizi",
                   "florence",
                   "art"
-                ]
+                ],
+                "localPath": "curriculum/assets/e5f6a7b8-c9d0-1234-ef56-789012345678/topic-legacy-today/ref-museum-virtual-tours.jpg"
               },
               {
                 "id": "ref-comparison-table",

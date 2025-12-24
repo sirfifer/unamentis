@@ -140,7 +140,30 @@ UnaMentis/
 │   ├── TTS/        # Text-to-speech
 │   └── LLM/        # Language models
 └── UI/             # SwiftUI views
+
+server/
+├── management/     # Management Console (port 8766)
+└── web/            # Operations Console (port 3000)
 ```
+
+## Web Interfaces
+
+UnaMentis includes two web-based administration interfaces:
+
+### Operations Console (port 3000)
+Backend infrastructure monitoring for DevOps:
+- System health (CPU, memory, thermal, battery)
+- Service status and management
+- Power/idle profiles
+- Logs, metrics, performance data
+
+### Management Console (port 8766)
+Application and content management:
+- Curriculum management (import, browse, edit)
+- Visual asset management
+- User progress tracking
+- Source browser for external curriculum
+- AI enrichment pipeline
 
 ## Technology Stack
 

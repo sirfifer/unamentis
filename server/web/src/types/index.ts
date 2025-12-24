@@ -332,6 +332,10 @@ export interface MetricsHistorySummary {
 // =============================================================================
 // Curriculum & Visual Asset Types
 // =============================================================================
+// NOTE: These types are no longer used in the Operations Console.
+// Curriculum management has been consolidated to the Management Console (port 8766).
+// These type definitions are retained for reference but all curriculum UI has been removed.
+// The Operations Console focuses exclusively on DevOps tasks.
 
 /** Types of visual assets supported in UMLCF */
 export type VisualAssetType =
@@ -689,4 +693,189 @@ export interface CurriculumSaveResponse {
   status: 'success' | 'error';
   error?: string;
   savedAt?: string;
+}
+
+// =============================================================================
+// Curriculum Import System Types (Source Browser)
+// =============================================================================
+
+/** License information for a curriculum source */
+export interface LicenseInfo {
+  type: string;
+  name: string;
+  url?: string;
+  requiresAttribution: boolean;
+  allowsCommercialUse: boolean;
+  allowsDerivatives: boolean;
+  shareAlike: boolean;
+}
+
+/** Curriculum source (e.g., MIT OCW, Stanford SEE) */
+export interface CurriculumSource {
+  id: string;
+  name: string;
+  description: string;
+  provider: string;
+  website: string;
+  logo?: string;
+  license: LicenseInfo;
+  contentTypes: string[];
+  subjects: string[];
+  courseCount: number;
+  isActive: boolean;
+  lastUpdated?: string;
+}
+
+/** Course catalog entry (summary for listing) */
+export interface CourseCatalogEntry {
+  id: string;
+  title: string;
+  description: string;
+  instructor?: string;
+  institution: string;
+  subject: string;
+  level: string;
+  language: string;
+  thumbnail?: string;
+  url: string;
+  license: LicenseInfo;
+  contentTypes: string[];
+  estimatedDuration?: string;
+  lastUpdated?: string;
+}
+
+/** Detailed course information */
+export interface CourseDetail extends CourseCatalogEntry {
+  longDescription?: string;
+  syllabus?: string;
+  prerequisites?: string[];
+  learningOutcomes?: string[];
+  topics?: string[];
+  contentSummary: {
+    lectureCount: number;
+    hasTranscripts: boolean;
+    hasLectureNotes: boolean;
+    hasAssignments: boolean;
+    hasExams: boolean;
+    hasVideos: boolean;
+    hasSolutions: boolean;
+  };
+  downloads?: {
+    type: string;
+    format: string;
+    size?: number;
+    url: string;
+  }[];
+}
+
+/** Import configuration options */
+export interface ImportConfig {
+  sourceId: string;
+  courseId: string;
+  outputName: string;
+  includeTranscripts: boolean;
+  includeLectureNotes: boolean;
+  includeAssignments: boolean;
+  includeExams: boolean;
+  includeVideos: boolean;
+  generateObjectives: boolean;
+  createCheckpoints: boolean;
+  generateSpokenText: boolean;
+  buildKnowledgeGraph: boolean;
+  generatePracticeProblems: boolean;
+}
+
+/** Import job status */
+export type ImportStatus =
+  | 'queued'
+  | 'downloading'
+  | 'validating'
+  | 'extracting'
+  | 'enriching'
+  | 'generating'
+  | 'storing'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
+
+/** Import progress information */
+export interface ImportProgress {
+  jobId: string;
+  status: ImportStatus;
+  sourceId: string;
+  courseId: string;
+  courseName: string;
+  currentStage: string;
+  stageProgress: number;
+  overallProgress: number;
+  startedAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  error?: string;
+  warnings: string[];
+  stats: {
+    filesDownloaded: number;
+    filesProcessed: number;
+    topicsCreated: number;
+    objectivesGenerated: number;
+    assessmentsGenerated: number;
+  };
+}
+
+/** API response for sources list */
+export interface SourcesResponse {
+  success: boolean;
+  sources: CurriculumSource[];
+  error?: string;
+}
+
+/** API response for course catalog */
+export interface CourseCatalogResponse {
+  success: boolean;
+  courses: CourseCatalogEntry[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+  filters?: {
+    subjects: string[];
+    levels: string[];
+    features: string[];
+  };
+  error?: string;
+}
+
+/** API response for course detail */
+export interface CourseDetailResponse {
+  success: boolean;
+  course: CourseDetail;
+  canImport: boolean;
+  licenseWarnings: string[];
+  attribution?: string;
+  error?: string;
+}
+
+/** API response for starting import */
+export interface StartImportResponse {
+  success: boolean;
+  jobId: string;
+  status: ImportStatus;
+  error?: string;
+  licenseRestriction?: boolean;
+}
+
+/** API response for import progress */
+export interface ImportProgressResponse {
+  success: boolean;
+  progress: ImportProgress;
+  error?: string;
+}
+
+/** API response for import jobs list */
+export interface ImportJobsResponse {
+  success: boolean;
+  jobs: ImportProgress[];
+  error?: string;
 }

@@ -6,4 +6,4 @@ export { ServersPanel, ServersPanelCompact } from './servers-panel';
 export { ClientsPanel, ClientsPanelCompact } from './clients-panel';
 export { MetricsPanel, LatencyOverview } from './metrics-panel';
 export { ModelsPanel } from './models-panel';
-export { CurriculumPanel } from './curriculum-panel';
+// Note: SourceBrowserPanel is in the Management Console at port 8766, not here

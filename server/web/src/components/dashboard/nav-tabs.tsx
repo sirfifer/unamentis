@@ -9,10 +9,10 @@ import {
   Server,
   FlaskConical,
   Activity,
-  BookOpen,
 } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'metrics' | 'logs' | 'clients' | 'servers' | 'models' | 'health' | 'curriculum';
+// Operations console tabs (curriculum management is in the Management Console at port 8766)
+export type TabId = 'dashboard' | 'metrics' | 'logs' | 'clients' | 'servers' | 'models' | 'health';
 
 interface NavTabsProps {
   activeTab: TabId;
@@ -22,7 +22,6 @@ interface NavTabsProps {
 const tabs: { id: TabId; label: string; shortLabel: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: LayoutDashboard },
   { id: 'health', label: 'System Health', shortLabel: 'Health', icon: Activity },
-  { id: 'curriculum', label: 'Curriculum', shortLabel: 'Content', icon: BookOpen },
   { id: 'metrics', label: 'Metrics', shortLabel: 'Metrics', icon: BarChart3 },
   { id: 'logs', label: 'Logs', shortLabel: 'Logs', icon: FileText },
   { id: 'clients', label: 'Clients', shortLabel: 'Clients', icon: Smartphone },

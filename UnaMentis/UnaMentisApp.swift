@@ -118,7 +118,7 @@ struct UnaMentisApp: App {
             // Handle: unamentis://lesson?id=UUID&depth=intermediate
             if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                let idString = components.queryItems?.first(where: { $0.name == "id" })?.value,
-               let _ = UUID(uuidString: idString) {
+               UUID(uuidString: idString) != nil {
                 // Navigate to lesson with the specified topic
                 // The appState.selectedTab and navigation will be handled by ContentView
                 Self.logger.info("DeepLink: Start lesson \(idString)")

@@ -2,8 +2,9 @@
 set -e
 echo "Running quick tests..."
 xcodebuild test \
+  -project UnaMentis.xcodeproj \
   -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:UnaMentisTests/Unit \
   CODE_SIGNING_ALLOWED=NO \
   | xcbeautify

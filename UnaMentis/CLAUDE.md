@@ -7,17 +7,29 @@ Swift 6.0/SwiftUI iOS application for voice-first AI tutoring.
 ```bash
 # Build for simulator
 xcodebuild -project UnaMentis.xcodeproj -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 
 # Run all tests
 xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 
 # Run specific test class
 xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:UnaMentisTests/ProgressTrackerTests
 ```
+
+## MANDATORY: Test Before Commit
+
+**All tests must pass before work is considered complete.**
+
+When adding new files to the project:
+1. Verify the file is added to the Xcode project (not just the filesystem)
+2. Run the build to confirm compilation
+3. Run the full test suite to confirm no regressions
+4. Only then is the implementation complete
+
+**Never claim work is complete without verifying tests pass.**
 
 ## Swift 6.0 Strict Concurrency
 

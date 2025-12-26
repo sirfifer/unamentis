@@ -107,6 +107,8 @@
 		DDB8F9FA27FB41776BEC5E4F /* ResumeLearningIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95ADD176671FCC091AE0A2E6 /* ResumeLearningIntent.swift */; };
 		9B2D0344F603FE6374A5AD82 /* ShowProgressIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE99DEACD70682FBFDDAC185 /* ShowProgressIntent.swift */; };
 		C98EF8EA4DC6D3C81607F6A3 /* StartLessonIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16503A70E42DE0BC81F08C21 /* StartLessonIntent.swift */; };
+		STARTCONV123456789ABCDEF0 /* StartConversationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = STARTCONV0ABCDEF123456789 /* StartConversationIntent.swift */; };
+		HELPVIEW0123456789ABCDEF /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = HELPVIEWREF123456789ABC /* HelpView.swift */; };
 		ADDED877DD6C660DA5B03FD5 /* TopicEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141E1CE7FED01904DABB416D /* TopicEntity.swift */; };
 		E6CBD689E679A8881DF96C0E /* AppIntentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F2F6FDDD57EA81615D0D41 /* AppIntentsTests.swift */; };
 		C3D4E5F678901234567890AB /* CurriculumDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345678 /* CurriculumDownloadManager.swift */; };
@@ -226,6 +228,8 @@
 		95ADD176671FCC091AE0A2E6 /* ResumeLearningIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/Intents/ResumeLearningIntent.swift"; sourceTree = SOURCE_ROOT; };
 		BE99DEACD70682FBFDDAC185 /* ShowProgressIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/Intents/ShowProgressIntent.swift"; sourceTree = SOURCE_ROOT; };
 		16503A70E42DE0BC81F08C21 /* StartLessonIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/Intents/StartLessonIntent.swift"; sourceTree = SOURCE_ROOT; };
+		STARTCONV0ABCDEF123456789 /* StartConversationIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/Intents/StartConversationIntent.swift"; sourceTree = SOURCE_ROOT; };
+		HELPVIEWREF123456789ABC /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/UI/Settings/HelpView.swift"; sourceTree = SOURCE_ROOT; };
 		141E1CE7FED01904DABB416D /* TopicEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentis/Intents/TopicEntity.swift"; sourceTree = SOURCE_ROOT; };
 		F0F2F6FDDD57EA81615D0D41 /* AppIntentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UnaMentisTests/Unit/Intents/AppIntentsTests.swift"; sourceTree = SOURCE_ROOT; };
 		A1B2C3D4E5F6789012345678 /* CurriculumDownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumDownloadManager.swift; sourceTree = "<group>"; };
@@ -744,6 +748,8 @@
 				DDB8F9FA27FB41776BEC5E4F /* ResumeLearningIntent.swift in Sources */,
 				9B2D0344F603FE6374A5AD82 /* ShowProgressIntent.swift in Sources */,
 				C98EF8EA4DC6D3C81607F6A3 /* StartLessonIntent.swift in Sources */,
+				STARTCONV123456789ABCDEF0 /* StartConversationIntent.swift in Sources */,
+				HELPVIEW0123456789ABCDEF /* HelpView.swift in Sources */,
 				ADDED877DD6C660DA5B03FD5 /* TopicEntity.swift in Sources */,
 				05D30C780E95912853747429 /* APIKeyManager.swift in Sources */,
 				63DA72E27AD8F3C5AF92BEDF /* APIProviderDetailView.swift in Sources */,

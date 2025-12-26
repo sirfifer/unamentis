@@ -11,8 +11,9 @@ if [ "$RUN_E2E_TESTS" != "true" ]; then
 fi
 echo "Running E2E tests (this may take 10-30 minutes)..."
 xcodebuild test \
+  -project UnaMentis.xcodeproj \
   -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:UnaMentisTests/E2E \
   CODE_SIGNING_ALLOWED=NO \
   | xcbeautify

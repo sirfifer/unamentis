@@ -26,7 +26,11 @@ See the CLAUDE.md in each directory for component-specific instructions.
 ```bash
 # iOS build
 xcodebuild -project UnaMentis.xcodeproj -scheme UnaMentis \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+
+# Run all tests
+xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 
 # Quick tests
 ./scripts/test-quick.sh
@@ -41,6 +45,17 @@ xcodebuild -project UnaMentis.xcodeproj -scheme UnaMentis \
 # Health check (lint + quick tests)
 ./scripts/health-check.sh
 ```
+
+## MANDATORY: Test Before Commit
+
+**Work is NOT complete until all tests pass locally.** This is non-negotiable.
+
+Before considering any implementation complete:
+1. Run `./scripts/test-quick.sh` or full test suite
+2. Verify ALL tests pass (not just "no new failures")
+3. If tests fail, fix them before committing
+
+**If you tell the user "tests are passing" or "implementation is complete" when tests are actually failing, that is a failure.** Always verify by running tests locally.
 
 ## Key Technical Requirements
 

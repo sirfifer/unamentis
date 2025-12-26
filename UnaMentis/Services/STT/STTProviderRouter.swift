@@ -47,13 +47,19 @@ public actor STTProviderRouter: STTService {
     private var _isStreaming: Bool = false
 
     /// Current provider identifier for debugging/telemetry
+    /// Note: This queries the health monitor directly for accurate status
     public var currentProviderIdentifier: String {
-        if onDeviceAvailable {
-            return "glm-asr-ondevice"
-        } else if healthStatus == .unhealthy {
-            return "deepgram"
+        get async {
+            if onDeviceAvailable {
+                return "glm-asr-ondevice"
+            }
+            // Check health monitor directly for accurate status
+            let currentHealth = await healthMonitor.currentStatus
+            if currentHealth == .unhealthy {
+                return "deepgram"
+            }
+            return "glm-asr"
         }
-        return "glm-asr"
     }
 
     // MARK: - STTService Protocol Properties
@@ -78,6 +84,14 @@ public actor STTProviderRouter: STTService {
         _metrics = await activeProvider.metrics
         _costPerHour = await activeProvider.costPerHour
         _isStreaming = await activeProvider.isStreaming
+    }
+
+    /// Refresh cached metrics based on current health status
+    /// Call this when you need up-to-date metrics without starting streaming
+    public func refreshMetrics() async {
+        let provider = await selectProvider()
+        _metrics = await provider.metrics
+        _costPerHour = await provider.costPerHour
     }
 
     // MARK: - Initialization
@@ -168,10 +182,10 @@ public actor STTProviderRouter: STTService {
     /// - Returns: AsyncStream of STT results
     public func startStreaming(audioFormat: sending AVAudioFormat) async throws -> AsyncStream<STTResult> {
         // Select provider based on health
-        activeProvider = selectProvider()
+        activeProvider = await selectProvider()
         _isStreaming = true
 
-        let providerName = currentProviderIdentifier
+        let providerName = await currentProviderIdentifier
         logger.info("Starting streaming with provider: \(providerName)")
 
         let stream = try await activeProvider.startStreaming(audioFormat: audioFormat)
@@ -227,7 +241,7 @@ public actor STTProviderRouter: STTService {
         }
     }
 
-    private func selectProvider() -> any STTService {
+    private func selectProvider() async -> any STTService {
         #if LLAMA_AVAILABLE
         // Priority 1: On-device if available and models loaded
         if onDeviceAvailable, let onDevice = onDeviceService {
@@ -237,9 +251,11 @@ public actor STTProviderRouter: STTService {
         #endif
 
         // Priority 2: Server GLM-ASR if healthy
-        switch healthStatus {
+        // Check health monitor directly for accurate status
+        let currentHealth = await healthMonitor.currentStatus
+        switch currentHealth {
         case .healthy, .degraded:
-            logger.debug("Selecting server GLM-ASR (status: \(healthStatus))")
+            logger.debug("Selecting server GLM-ASR (status: \(currentHealth))")
             return glmASRService
         case .unhealthy:
             logger.debug("Selecting Deepgram (GLM-ASR unhealthy)")
@@ -248,9 +264,9 @@ public actor STTProviderRouter: STTService {
     }
 
     /// Force switch to server mode (e.g., for thermal throttling)
-    public func switchToServerMode() {
+    public func switchToServerMode() async {
         onDeviceAvailable = false
-        activeProvider = selectProvider()
+        activeProvider = await selectProvider()
         logger.info("Switched to server mode")
     }
 

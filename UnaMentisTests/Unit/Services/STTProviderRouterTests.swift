@@ -266,6 +266,8 @@ final class STTProviderRouterTests: XCTestCase {
             healthMonitor: mockHealthMonitor
         )
 
+        // Refresh metrics to get current provider's cost
+        await router.refreshMetrics()
         let cost = await router.costPerHour
 
         XCTAssertEqual(cost, Decimal(string: "0.258"), "Should use Deepgram cost when failover")
@@ -289,6 +291,8 @@ final class STTProviderRouterTests: XCTestCase {
             healthMonitor: mockHealthMonitor
         )
 
+        // Refresh metrics to get current provider's metrics
+        await router.refreshMetrics()
         let metrics = await router.metrics
 
         XCTAssertEqual(metrics.medianLatency, expectedMetrics.medianLatency)

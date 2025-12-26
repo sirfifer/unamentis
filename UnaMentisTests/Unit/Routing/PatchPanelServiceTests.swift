@@ -40,6 +40,9 @@ final class PatchPanelServiceTests: XCTestCase {
     // MARK: - Routing Resolution Tests
 
     func testRouteUsesDefaultForSimpleTask() async {
+        // Mark on-device endpoints as available for this test
+        await patchPanel.setEndpointStatus("llama-1b-device", status: .available)
+
         let decision = await patchPanel.resolveRouting(
             taskType: .acknowledgment,
             context: RoutingContext()
@@ -161,6 +164,9 @@ final class PatchPanelServiceTests: XCTestCase {
     }
 
     func testThermalThrottleDoesNotTriggerOnNominal() async {
+        // Mark on-device endpoints as available for this test
+        await patchPanel.setEndpointStatus("llama-1b-device", status: .available)
+
         let coolContext = RoutingContext(thermalState: .nominal)
 
         let decision = await patchPanel.resolveRouting(
@@ -174,6 +180,9 @@ final class PatchPanelServiceTests: XCTestCase {
     }
 
     func testOfflineModeRuleTriggersWhenNoNetwork() async {
+        // Mark on-device endpoints as available for this test
+        await patchPanel.setEndpointStatus("llama-3b-device", status: .available)
+
         let offlineContext = RoutingContext(networkType: .none)
 
         let decision = await patchPanel.resolveRouting(
@@ -205,6 +214,9 @@ final class PatchPanelServiceTests: XCTestCase {
     }
 
     func testRulePriorityOrdering() async {
+        // Mark on-device endpoints as available for this test
+        await patchPanel.setEndpointStatus("llama-3b-device", status: .available)
+
         // Create context that matches multiple rules
         let complexContext = RoutingContext(
             thermalState: .serious,
@@ -245,7 +257,10 @@ final class PatchPanelServiceTests: XCTestCase {
 
     func testFallbackChainUsedWhenDefaultUnavailable() async {
         // Mark all default endpoints for acknowledgment as unavailable
+        // Default chain for acknowledgment is ["llama-1b-device", "llama-3b-device", "gpt-4o-mini"]
         await patchPanel.setEndpointStatus("llama-1b-device", status: .unavailable)
+        await patchPanel.setEndpointStatus("llama-3b-device", status: .unavailable)
+        await patchPanel.setEndpointStatus("gpt-4o-mini", status: .unavailable)
 
         let decision = await patchPanel.resolveRouting(
             taskType: .acknowledgment,

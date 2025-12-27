@@ -221,27 +221,16 @@ struct LaunchScreenView: View {
 
 /// Tab indices for programmatic navigation
 enum AppTab: Int {
-    #if DEBUG
-    case debug = 0
-    case session = 1
-    case curriculum = 2
-    case history = 3
-    case analytics = 4
-    case settings = 5
-    #else
     case session = 0
     case curriculum = 1
     case history = 2
     case analytics = 3
     case settings = 4
-    #endif
 }
 
 /// Root content view with tab navigation
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
-    @State private var debugTestResult: String = ""
-    @State private var isTestingLLM: Bool = false
     @State private var isLoading: Bool = true
 
     /// Selected tab for programmatic navigation from deep links
@@ -322,41 +311,6 @@ struct ContentView: View {
     @ViewBuilder
     private var mainContent: some View {
         TabView(selection: $selectedTab) {
-            // Debug LLM test view on first tab in DEBUG builds
-            #if DEBUG
-            VStack(spacing: 20) {
-                Text("LLM Debug Test")
-                    .font(.title)
-
-                if isTestingLLM {
-                    ProgressView("Testing LLM...")
-                } else {
-                    Button("Test LLM") {
-                        Task {
-                            await testOnDeviceLLM()
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-
-                ScrollView {
-                    Text(debugTestResult)
-                        .font(.system(.body, design: .monospaced))
-                        .padding()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
-                .padding()
-            }
-            .tabItem {
-                Label("Debug", systemImage: "ladybug")
-            }
-            .tag(AppTab.debug.rawValue)
-            // Note: Auto-LLM test removed - it caused hangs on physical device
-            // when trying to connect to localhost. Use the Test button manually.
-            #endif
-
             SessionTabContent(
                 deepLinkTopicId: $deepLinkTopicId,
                 autoStartChat: $autoStartChat,
@@ -392,56 +346,6 @@ struct ContentView: View {
                 .tag(AppTab.settings.rawValue)
         }
     }
-
-    #if DEBUG
-    /// Debug test function to directly test on-device LLM without voice input
-    private func testOnDeviceLLM() async {
-        print("[DEBUG] Starting direct LLM test")
-        isTestingLLM = true
-        debugTestResult = "Testing LLM...\n"
-
-        // Use SelfHostedLLMService to connect to local Ollama server for testing
-        let llmService = SelfHostedLLMService.ollama(model: "qwen2.5:32b")
-
-        let messages = [
-            LLMMessage(role: .system, content: "You are a helpful assistant. Be brief."),
-            LLMMessage(role: .user, content: "Hello! Say hi in one sentence.")
-        ]
-
-        // Use a config with empty model to let the service use its configured model
-        var config = LLMConfig.default
-        config.model = ""  // Let SelfHostedLLMService use its configured model (llama3.2:3b)
-
-        do {
-            debugTestResult += "[DEBUG] Calling streamCompletion...\n"
-            print("[DEBUG] Calling streamCompletion...")
-            let stream = try await llmService.streamCompletion(messages: messages, config: config)
-
-            var response = ""
-            debugTestResult += "[DEBUG] Iterating stream...\n"
-            print("[DEBUG] Iterating stream...")
-
-            for await token in stream {
-                response += token.content
-                debugTestResult = "Response so far: \(response)\n"
-                print("[DEBUG] Token: '\(token.content)', isDone: \(token.isDone)")
-
-                if token.isDone {
-                    break
-                }
-            }
-
-            debugTestResult = "SUCCESS!\n\nResponse:\n\(response)"
-            print("[DEBUG] LLM test complete: \(response)")
-
-        } catch {
-            debugTestResult = "ERROR:\n\(error.localizedDescription)\n\nFull error:\n\(error)"
-            print("[DEBUG] LLM test error: \(error)")
-        }
-
-        isTestingLLM = false
-    }
-    #endif
 }
 
 // MARK: - Session Tab Content

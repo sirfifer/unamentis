@@ -10,6 +10,7 @@ import AVFoundation
 public struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showingSettingsHelp = false
+    @State private var showingOnboarding = false
 
     public init() { }
 
@@ -441,10 +442,16 @@ public struct SettingsView: View {
                     } label: {
                         Label("Siri Voice Commands", systemImage: "waveform.circle")
                     }
+
+                    Button {
+                        showingOnboarding = true
+                    } label: {
+                        Label("Show Welcome Tour", systemImage: "hand.wave")
+                    }
                 } header: {
                     Text("Help")
                 } footer: {
-                    Text("Learn how to use Siri voice commands for hands-free learning.")
+                    Text("Learn how to use the app with Siri voice commands and the welcome tour.")
                 }
 
                 // About Section
@@ -476,6 +483,9 @@ public struct SettingsView: View {
             #endif
             .sheet(isPresented: $showingSettingsHelp) {
                 SettingsHelpSheet()
+            }
+            .fullScreenCover(isPresented: $showingOnboarding) {
+                OnboardingView(hasCompletedOnboarding: .constant(true))
             }
         }
     }

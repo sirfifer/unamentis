@@ -17,6 +17,7 @@ public struct SessionView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: SessionViewModel
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var showingSessionHelp = false
 
     /// The topic being studied (optional - for curriculum-based sessions)
     let topic: Topic?
@@ -160,10 +161,22 @@ public struct SessionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        viewModel.showSettings = true
-                    } label: {
-                        Image(systemName: "gear")
+                    HStack(spacing: 12) {
+                        Button {
+                            showingSessionHelp = true
+                        } label: {
+                            Image(systemName: "questionmark.circle")
+                        }
+                        .accessibilityLabel("Session help")
+                        .accessibilityHint("Learn how to use voice conversations")
+
+                        Button {
+                            viewModel.showSettings = true
+                        } label: {
+                            Image(systemName: "gear")
+                        }
+                        .accessibilityLabel("Session settings")
+                        .accessibilityHint("Configure audio and AI settings")
                     }
                 }
 
@@ -173,10 +186,16 @@ public struct SessionView: View {
                             latency: viewModel.lastLatency,
                             cost: viewModel.sessionCost
                         )
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Session metrics")
+                        .accessibilityValue("Latency \(Int(viewModel.lastLatency * 1000)) milliseconds, Cost \(String(format: "$%.3f", NSDecimalNumber(decimal: viewModel.sessionCost).doubleValue))")
                     }
                 }
             }
             #endif
+            .sheet(isPresented: $showingSessionHelp) {
+                SessionHelpSheet()
+            }
             .sheet(isPresented: $viewModel.showSettings) {
                 SessionSettingsView()
             }
@@ -210,6 +229,10 @@ struct TopicProgressBar: View {
         return Double(completedSegments) / Double(totalSegments)
     }
 
+    private var progressPercentage: Int {
+        Int(progress * 100)
+    }
+
     var body: some View {
         VStack(spacing: 4) {
             // Progress bar
@@ -238,6 +261,10 @@ struct TopicProgressBar: View {
             }
         }
         .padding(.horizontal, 16)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Lesson progress")
+        .accessibilityValue("\(completedSegments) of \(totalSegments) segments completed, \(progressPercentage) percent")
+        .accessibilityHint("Shows your progress through the current lesson")
     }
 }
 
@@ -245,7 +272,7 @@ struct TopicProgressBar: View {
 
 struct SessionStatusView: View {
     let state: SessionState
-    
+
     var body: some View {
         HStack(spacing: 12) {
             // Status dot
@@ -260,7 +287,7 @@ struct SessionStatusView: View {
                             .opacity(0.7)
                     }
                 }
-            
+
             Text(state.rawValue)
                 .font(.headline)
                 .foregroundStyle(.secondary)
@@ -271,8 +298,11 @@ struct SessionStatusView: View {
             Capsule()
                 .fill(.ultraThinMaterial)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Session status")
+        .accessibilityValue(statusAccessibilityDescription)
     }
-    
+
     private var statusColor: Color {
         switch state {
         case .idle: return .gray
@@ -282,6 +312,25 @@ struct SessionStatusView: View {
         case .interrupted: return .yellow
         case .processingUserUtterance: return .purple
         case .error: return .red
+        }
+    }
+
+    private var statusAccessibilityDescription: String {
+        switch state {
+        case .idle:
+            return "Idle. Ready to start a conversation."
+        case .userSpeaking:
+            return "Listening. Speak now, you are being heard."
+        case .aiThinking:
+            return "Processing. The AI is preparing a response."
+        case .aiSpeaking:
+            return "Speaking. The AI tutor is responding."
+        case .interrupted:
+            return "Interrupted. The AI paused to listen to you."
+        case .processingUserUtterance:
+            return "Processing your speech."
+        case .error:
+            return "Error occurred."
         }
     }
 }
@@ -424,6 +473,17 @@ struct AudioLevelView: View {
             }
         }
         .frame(height: 40)
+        .accessibilityElement()
+        .accessibilityLabel("Audio level meter")
+        .accessibilityValue(accessibilityDescription)
+        .accessibilityHint(isAIAudio ? "Shows AI speech volume" : "Shows your voice volume")
+    }
+
+    private var accessibilityDescription: String {
+        let normalizedLevel = max(0, min(1, (level + 60) / 60))
+        let percentage = Int(normalizedLevel * 100)
+        let source = isAIAudio ? "AI" : "Your voice"
+        return "\(source) at \(percentage) percent"
     }
 
     private func barScale(for index: Int) -> CGFloat {
@@ -499,6 +559,8 @@ struct SessionControlButton: View {
         }
         .disabled(isLoading)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isActive)
+        .accessibilityLabel(isLoading ? "Loading" : (isActive ? "Stop session" : "Start session"))
+        .accessibilityHint(isActive ? "Double-tap to end the conversation" : "Double-tap to begin a voice conversation")
     }
 }
 
@@ -2607,9 +2669,180 @@ class SessionViewModel: ObservableObject {
 }
 
 
+// MARK: - Session Help Sheet
+
+/// In-app help for the session view explaining all UI elements and interactions
+struct SessionHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                // Overview Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Voice conversations let you learn through natural dialogue with an AI tutor. Just speak and the tutor will respond.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Status Indicator Section
+                Section("Status Indicator") {
+                    StatusHelpRow(color: .gray, title: "Idle", description: "Ready to start. Tap the mic button to begin.")
+                    StatusHelpRow(color: .green, title: "Listening", description: "Your voice is being heard. Speak naturally.")
+                    StatusHelpRow(color: .orange, title: "Processing", description: "The AI is preparing a response.")
+                    StatusHelpRow(color: .blue, title: "Speaking", description: "The AI tutor is responding.")
+                    StatusHelpRow(color: .yellow, title: "Interrupted", description: "You spoke while the AI was talking. It paused to listen.")
+                }
+
+                // Controls Section
+                Section("Controls") {
+                    HelpItemRow(
+                        icon: "mic.fill",
+                        iconColor: .blue,
+                        title: "Start Button",
+                        description: "Tap to begin a voice conversation."
+                    )
+                    HelpItemRow(
+                        icon: "stop.fill",
+                        iconColor: .red,
+                        title: "Stop Button",
+                        description: "Tap to end the current session."
+                    )
+                    HelpItemRow(
+                        icon: "playpause.fill",
+                        iconColor: .blue,
+                        title: "Pause/Resume",
+                        description: "In lessons, pause to take a break without ending."
+                    )
+                }
+
+                // Audio Level Section
+                Section("Audio Level Meter") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("The bars show audio volume in real-time:")
+                            .font(.subheadline)
+
+                        HStack {
+                            Circle().fill(.blue).frame(width: 12, height: 12)
+                            Text("Blue bars: AI is speaking")
+                                .font(.caption)
+                        }
+                        HStack {
+                            Circle().fill(.green).frame(width: 12, height: 12)
+                            Text("Green bars: Your voice")
+                                .font(.caption)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Tips Section
+                Section("Tips") {
+                    Label("Speak clearly at a normal pace", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green, .primary)
+                    Label("You can interrupt anytime by speaking", systemImage: "hand.raised.fill")
+                        .foregroundStyle(.orange, .primary)
+                    Label("Use headphones for best results", systemImage: "airpodspro")
+                        .foregroundStyle(.blue, .primary)
+                    Label("Visual aids appear during lessons", systemImage: "photo.fill")
+                        .foregroundStyle(.purple, .primary)
+                }
+
+                // Metrics Section
+                Section("Session Metrics") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "timer")
+                            Text("Latency: Response time in milliseconds. Lower is better.")
+                                .font(.caption)
+                        }
+                        HStack {
+                            Image(systemName: "dollarsign.circle")
+                            Text("Cost: Estimated API usage cost. On-device is free.")
+                                .font(.caption)
+                        }
+                    }
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 4)
+                }
+            }
+            .navigationTitle("Session Help")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// Helper row for status indicator help
+private struct StatusHelpRow: View {
+    let color: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(color)
+                .frame(width: 12, height: 12)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
+/// Helper row for controls and features help
+private struct HelpItemRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     SessionView()
         .environmentObject(AppState())
+}
+
+#Preview("Session Help") {
+    SessionHelpSheet()
 }

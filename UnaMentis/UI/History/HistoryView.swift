@@ -13,9 +13,10 @@ import UIKit
 /// Session history view showing past conversations
 public struct HistoryView: View {
     @StateObject private var viewModel = HistoryViewModel()
-    
+    @State private var showingHistoryHelp = false
+
     public init() { }
-    
+
     public var body: some View {
         NavigationStack {
             Group {
@@ -28,22 +29,36 @@ public struct HistoryView: View {
             .navigationTitle("History")
             #if os(iOS)
             .toolbar {
-                if !viewModel.sessions.isEmpty {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Menu {
-                            Button("Export All") {
-                                viewModel.exportAllSessions()
-                            }
-                            Button("Clear History", role: .destructive) {
-                                viewModel.showClearConfirmation = true
-                            }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 12) {
+                        Button {
+                            showingHistoryHelp = true
                         } label: {
-                            Image(systemName: "ellipsis.circle")
+                            Image(systemName: "questionmark.circle")
+                        }
+                        .accessibilityLabel("History help")
+                        .accessibilityHint("Learn about session history and metrics")
+
+                        if !viewModel.sessions.isEmpty {
+                            Menu {
+                                Button("Export All") {
+                                    viewModel.exportAllSessions()
+                                }
+                                Button("Clear History", role: .destructive) {
+                                    viewModel.showClearConfirmation = true
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                            }
+                            .accessibilityLabel("History options")
                         }
                     }
                 }
             }
             #endif
+            .sheet(isPresented: $showingHistoryHelp) {
+                HistoryHelpSheet()
+            }
             .confirmationDialog(
                 "Clear History",
                 isPresented: $viewModel.showClearConfirmation,
@@ -143,7 +158,7 @@ struct SessionListView: View {
 
 struct SessionRowView: View {
     let session: SessionSummary
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -154,7 +169,7 @@ struct SessionRowView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
+
             HStack(spacing: 16) {
                 Label(formatDuration(session.duration), systemImage: "clock")
                 Label("\(session.turnCount) turns", systemImage: "message")
@@ -164,6 +179,10 @@ struct SessionRowView: View {
             .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(session.topicName ?? "General Conversation")")
+        .accessibilityValue("Duration \(formatDuration(session.duration)), \(session.turnCount) turns, cost \(formatCost(session.totalCost))")
+        .accessibilityHint("Double-tap to view session details")
     }
     
     private func formatTime(_ date: Date) -> String {
@@ -290,7 +309,7 @@ struct TranscriptCard: View {
 struct MetricsCard: View {
     let latency: TimeInterval
     let cost: Decimal
-    
+
     var body: some View {
         HStack {
             VStack {
@@ -301,9 +320,12 @@ struct MetricsCard: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
-            
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Average latency")
+            .accessibilityValue("\(Int(latency * 1000)) milliseconds")
+
             Divider()
-            
+
             VStack {
                 Text(String(format: "$%.3f", NSDecimalNumber(decimal: cost).doubleValue))
                     .font(.title2.bold())
@@ -312,6 +334,9 @@ struct MetricsCard: View {
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Total cost")
+            .accessibilityValue(String(format: "$%.3f", NSDecimalNumber(decimal: cost).doubleValue))
         }
         .padding()
         .background {
@@ -469,8 +494,139 @@ struct TranscriptPreview: Identifiable {
     let content: String
 }
 
+// MARK: - History Help Sheet
+
+/// In-app help for the history view explaining metrics and features
+struct HistoryHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                // Overview Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Review your past learning sessions. Each entry shows when you studied, how long, and key metrics.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Metrics Explained Section
+                Section("Understanding Metrics") {
+                    HistoryHelpRow(
+                        icon: "clock.fill",
+                        iconColor: .green,
+                        title: "Duration",
+                        description: "Total time spent in the session."
+                    )
+                    HistoryHelpRow(
+                        icon: "message.fill",
+                        iconColor: .blue,
+                        title: "Turns",
+                        description: "Number of conversation exchanges. You speak, then the AI responds. That's one turn."
+                    )
+                    HistoryHelpRow(
+                        icon: "dollarsign.circle.fill",
+                        iconColor: .orange,
+                        title: "Cost",
+                        description: "Estimated API usage costs. On-device and self-hosted options are free."
+                    )
+                    HistoryHelpRow(
+                        icon: "timer",
+                        iconColor: .purple,
+                        title: "Avg Latency",
+                        description: "Average response time. Lower is better. Target: under 500ms."
+                    )
+                }
+
+                // What Good Metrics Look Like
+                Section("Target Metrics") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Latency")
+                            Spacer()
+                            Text("< 500ms")
+                                .foregroundStyle(.green)
+                        }
+                        HStack {
+                            Text("Cost per hour")
+                            Spacer()
+                            Text("< $0.50")
+                                .foregroundStyle(.green)
+                        }
+                    }
+                    .font(.subheadline)
+                }
+
+                // Export Section
+                Section("Exporting Data") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Export your session history as JSON for backup or analysis. Use the menu button to export all sessions.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Tips Section
+                Section("Tips") {
+                    Label("Tap any session to see the full transcript", systemImage: "hand.tap.fill")
+                        .foregroundStyle(.blue, .primary)
+                    Label("Sessions are grouped by date automatically", systemImage: "calendar")
+                        .foregroundStyle(.purple, .primary)
+                    Label("Pull down to refresh the session list", systemImage: "arrow.down.circle.fill")
+                        .foregroundStyle(.green, .primary)
+                }
+            }
+            .navigationTitle("History Help")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// Helper row for history help items
+private struct HistoryHelpRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     HistoryView()
+}
+
+#Preview("History Help") {
+    HistoryHelpSheet()
 }

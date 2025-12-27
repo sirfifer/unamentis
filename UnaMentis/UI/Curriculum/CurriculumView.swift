@@ -16,6 +16,7 @@ struct CurriculumView: View {
     @State private var showingServerBrowser = false
     @State private var importError: String?
     @State private var showingError = false
+    @State private var showingCurriculumHelp = false
 
     private static let logger = Logger(label: "com.unamentis.curriculum.view")
 
@@ -108,27 +109,40 @@ struct CurriculumView: View {
             }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Menu {
+                HStack(spacing: 12) {
                     Button {
-                        showingImportOptions = true
+                        showingCurriculumHelp = true
                     } label: {
-                        Label("Import Curriculum", systemImage: "square.and.arrow.down")
+                        Image(systemName: "questionmark.circle")
                     }
-                    .keyboardShortcut("i", modifiers: .command)
+                    .accessibilityLabel("Curriculum help")
+                    .accessibilityHint("Learn about curricula and topics")
 
-                    if !curricula.isEmpty {
-                        Divider()
-                        Button(role: .destructive) {
-                            Task { await deleteAllCurricula() }
+                    Menu {
+                        Button {
+                            showingImportOptions = true
                         } label: {
-                            Label("Delete All Curricula", systemImage: "trash")
+                            Label("Import Curriculum", systemImage: "square.and.arrow.down")
                         }
+                        .keyboardShortcut("i", modifiers: .command)
+
+                        if !curricula.isEmpty {
+                            Divider()
+                            Button(role: .destructive) {
+                                Task { await deleteAllCurricula() }
+                            } label: {
+                                Label("Delete All Curricula", systemImage: "trash")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .accessibilityLabel("Curriculum options")
                     }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .accessibilityLabel("Curriculum options")
                 }
             }
+        }
+        .sheet(isPresented: $showingCurriculumHelp) {
+            CurriculumHelpSheet()
         }
         .onAppear {
             Self.logger.info("CurriculumView onAppear")
@@ -461,6 +475,8 @@ struct TopicDetailView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
             }
+            .accessibilityLabel("Start Lesson")
+            .accessibilityHint("Begin a voice-guided lesson on \(topic.title ?? "this topic")")
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(Color(.systemBackground))
@@ -1055,7 +1071,185 @@ struct ServerCurriculumDetailView: View {
     }
 }
 
+// MARK: - Curriculum Help Sheet
+
+/// In-app help for the curriculum view explaining concepts and navigation
+struct CurriculumHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                // Overview Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Curricula are structured courses containing topics for progressive learning. Each topic is a focused lesson on a specific concept.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Curriculum vs Topic Section
+                Section("Understanding Structure") {
+                    CurriculumHelpRow(
+                        icon: "book.fill",
+                        iconColor: .blue,
+                        title: "Curriculum",
+                        description: "A complete course with multiple related topics."
+                    )
+                    CurriculumHelpRow(
+                        icon: "doc.text.fill",
+                        iconColor: .orange,
+                        title: "Topic",
+                        description: "A single lesson covering one concept with audio and visuals."
+                    )
+                    CurriculumHelpRow(
+                        icon: "text.quote",
+                        iconColor: .purple,
+                        title: "Segment",
+                        description: "A portion of a topic that covers one idea."
+                    )
+                }
+
+                // Status Icons Section
+                Section("Topic Status") {
+                    HStack(spacing: 12) {
+                        StatusIcon(status: .notStarted)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Not Started")
+                                .font(.subheadline.weight(.medium))
+                            Text("You haven't begun this topic yet.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    HStack(spacing: 12) {
+                        StatusIcon(status: .inProgress)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("In Progress")
+                                .font(.subheadline.weight(.medium))
+                            Text("You're currently studying this topic.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    HStack(spacing: 12) {
+                        StatusIcon(status: .completed)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Completed")
+                                .font(.subheadline.weight(.medium))
+                            Text("You've finished this topic at least once.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    HStack(spacing: 12) {
+                        StatusIcon(status: .reviewing)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Reviewing")
+                                .font(.subheadline.weight(.medium))
+                            Text("You're revisiting for reinforcement.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                // Mastery Section
+                Section("Mastery Score") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Your mastery percentage shows how well you understand a topic:")
+                            .font(.subheadline)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("• Time spent studying")
+                            Text("• Questions answered correctly")
+                            Text("• Amount of content covered")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                        Text("Higher mastery means better understanding and retention.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 4)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Import Section
+                Section("Getting Content") {
+                    CurriculumHelpRow(
+                        icon: "globe",
+                        iconColor: .green,
+                        title: "Browse Server",
+                        description: "Download curricula from your management console."
+                    )
+                    CurriculumHelpRow(
+                        icon: "doc.badge.plus",
+                        iconColor: .orange,
+                        title: "Load Sample",
+                        description: "Try a built-in sample curriculum to get started."
+                    )
+                }
+
+                // Tips Section
+                Section("Tips") {
+                    Label("Tap any topic to see details and start a lesson", systemImage: "hand.tap.fill")
+                        .foregroundStyle(.blue, .primary)
+                    Label("Swipe left on a curriculum to delete it", systemImage: "hand.draw.fill")
+                        .foregroundStyle(.red, .primary)
+                    Label("Pull down to refresh your curriculum list", systemImage: "arrow.down.circle.fill")
+                        .foregroundStyle(.green, .primary)
+                }
+            }
+            .navigationTitle("Curriculum Help")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// Helper row for curriculum help items
+private struct CurriculumHelpRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
 #Preview {
     CurriculumView()
         .environmentObject(AppState())
+}
+
+#Preview("Curriculum Help") {
+    CurriculumHelpSheet()
 }

@@ -2955,5 +2955,71 @@
       "dormant": 3087
     },
     "sample_count": 54
+  },
+  "2025-12-26T14:00:00": {
+    "hour": "2025-12-26T14:00:00",
+    "avg_battery_draw_w": 23.24,
+    "max_battery_draw_w": 87.23,
+    "min_battery_percent": 89.0,
+    "max_battery_percent": 100.0,
+    "avg_thermal_level": 0.0,
+    "max_thermal_level": 0,
+    "avg_cpu_temp_c": 0.0,
+    "max_cpu_temp_c": 0.0,
+    "avg_cpu_percent": 246.8,
+    "max_cpu_percent": 1288.4,
+    "service_cpu_avg": {
+      "management": 5.7,
+      "ollama": 0.0,
+      "vibevoice": 0.0,
+      "nextjs": 0.1,
+      "piper": 0.0
+    },
+    "service_cpu_max": {
+      "management": 7.1,
+      "ollama": 0.1,
+      "vibevoice": 0.0,
+      "nextjs": 0.4,
+      "piper": 0.0
+    },
+    "total_requests": 0,
+    "total_inferences": 0,
+    "idle_state_seconds": {
+      "dormant": 3573
+    },
+    "sample_count": 109
+  },
+  "2025-12-26T15:00:00": {
+    "hour": "2025-12-26T15:00:00",
+    "avg_battery_draw_w": 25.77,
+    "max_battery_draw_w": 49.71,
+    "min_battery_percent": 91.0,
+    "max_battery_percent": 100.0,
+    "avg_thermal_level": 0.0,
+    "max_thermal_level": 0,
+    "avg_cpu_temp_c": 0.0,
+    "max_cpu_temp_c": 0.0,
+    "avg_cpu_percent": 162.7,
+    "max_cpu_percent": 423.8,
+    "service_cpu_avg": {
+      "management": 5.6,
+      "ollama": 0.0,
+      "vibevoice": 0.0,
+      "nextjs": 0.0,
+      "piper": 0.0
+    },
+    "service_cpu_max": {
+      "management": 6.0,
+      "ollama": 0.0,
+      "vibevoice": 0.0,
+      "nextjs": 0.0,
+      "piper": 0.0
+    },
+    "total_requests": 0,
+    "total_inferences": 0,
+    "idle_state_seconds": {
+      "dormant": 3566
+    },
+    "sample_count": 52
   }
 }

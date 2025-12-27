@@ -96,6 +96,9 @@ struct UnaMentisApp: App {
         }
     }
     
+    /// Whether the user has completed onboarding
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -105,6 +108,13 @@ struct UnaMentisApp: App {
                 // Handle deep links from Siri and Shortcuts
                 .onOpenURL { url in
                     handleDeepLink(url)
+                }
+                // Show onboarding for first-time users
+                .fullScreenCover(isPresented: Binding(
+                    get: { !hasCompletedOnboarding },
+                    set: { if $0 == false { hasCompletedOnboarding = true } }
+                )) {
+                    OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
                 }
         }
     }

@@ -9,22 +9,23 @@ import SwiftUI
 public struct AnalyticsView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = AnalyticsViewModel()
-    
+    @State private var showingAnalyticsHelp = false
+
     public init() { }
-    
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     // Quick stats
                     QuickStatsView(metrics: viewModel.currentMetrics)
-                    
+
                     // Latency metrics
                     LatencyMetricsCard(metrics: viewModel.currentMetrics)
-                    
+
                     // Cost breakdown
                     CostMetricsCard(metrics: viewModel.currentMetrics)
-                    
+
                     // Session quality
                     QualityMetricsCard(metrics: viewModel.currentMetrics)
                 }
@@ -41,22 +42,37 @@ public struct AnalyticsView: View {
             #if os(iOS)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    if let exportURL = viewModel.exportURL {
-                        ShareLink(item: exportURL) {
-                            Label("Export", systemImage: "square.and.arrow.up")
-                        }
-                    } else {
+                    HStack(spacing: 12) {
                         Button {
-                            Task {
-                                await viewModel.generateExport(telemetry: appState.telemetry)
-                            }
+                            showingAnalyticsHelp = true
                         } label: {
-                            Label("Prepare Export", systemImage: "square.and.arrow.up")
+                            Image(systemName: "questionmark.circle")
+                        }
+                        .accessibilityLabel("Analytics help")
+                        .accessibilityHint("Learn about performance metrics and costs")
+
+                        if let exportURL = viewModel.exportURL {
+                            ShareLink(item: exportURL) {
+                                Label("Export", systemImage: "square.and.arrow.up")
+                            }
+                            .accessibilityLabel("Export metrics")
+                        } else {
+                            Button {
+                                Task {
+                                    await viewModel.generateExport(telemetry: appState.telemetry)
+                                }
+                            } label: {
+                                Label("Prepare Export", systemImage: "square.and.arrow.up")
+                            }
+                            .accessibilityLabel("Prepare metrics export")
                         }
                     }
                 }
             }
             #endif
+            .sheet(isPresented: $showingAnalyticsHelp) {
+                AnalyticsHelpSheet()
+            }
         }
     }
 }
@@ -107,16 +123,16 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundStyle(color)
-            
+
             Text(value)
                 .font(.title3.bold())
-            
+
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -127,6 +143,9 @@ struct StatCard: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(.ultraThinMaterial)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(value)
     }
 }
 
@@ -185,14 +204,14 @@ struct LatencyRow: View {
     let median: TimeInterval
     let p99: TimeInterval
     let target: TimeInterval
-    
+
     var body: some View {
         HStack {
             Text(label)
                 .font(.subheadline)
-            
+
             Spacer()
-            
+
             // Median
             VStack(alignment: .trailing) {
                 Text(formatMs(median))
@@ -203,7 +222,7 @@ struct LatencyRow: View {
                     .foregroundStyle(.secondary)
             }
             .frame(width: 60)
-            
+
             // P99
             VStack(alignment: .trailing) {
                 Text(formatMs(p99))
@@ -215,8 +234,11 @@ struct LatencyRow: View {
             }
             .frame(width: 60)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label) latency")
+        .accessibilityValue("Median \(formatMs(median)), 99th percentile \(formatMs(p99))")
     }
-    
+
     private func formatMs(_ seconds: TimeInterval) -> String {
         String(format: "%.0fms", seconds * 1000)
     }
@@ -323,7 +345,7 @@ struct QualityMetricsCard: View {
 struct QualityItem: View {
     let label: String
     let value: String
-    
+
     var body: some View {
         VStack {
             Text(value)
@@ -333,6 +355,9 @@ struct QualityItem: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(label)
+        .accessibilityValue(value)
     }
 }
 
@@ -369,8 +394,168 @@ class AnalyticsViewModel: ObservableObject {
     }
 }
 
+// MARK: - Analytics Help Sheet
+
+/// In-app help for the analytics view explaining all metrics
+struct AnalyticsHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                // Overview Section
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Track your learning progress and system performance. Use this data to optimize your experience and reduce costs.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Latency Section
+                Section("Latency Metrics") {
+                    AnalyticsHelpRow(
+                        icon: "waveform",
+                        iconColor: .blue,
+                        title: "STT (Speech-to-Text)",
+                        description: "Time to convert your speech to text. Target: < 150ms."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "brain",
+                        iconColor: .purple,
+                        title: "LLM TTFT",
+                        description: "Time-To-First-Token. How quickly the AI starts responding. Target: < 200ms."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "speaker.wave.2",
+                        iconColor: .green,
+                        title: "TTS TTFB",
+                        description: "Time-To-First-Byte. How quickly you hear audio. Target: < 100ms."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "timer",
+                        iconColor: .orange,
+                        title: "End-to-End",
+                        description: "Total response time from your speech to hearing the AI. Target: < 500ms median."
+                    )
+                }
+
+                // Understanding Percentiles
+                Section("Median vs P99") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Median: The typical (50th percentile) response time. Half of all responses are faster.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Text("P99: The 99th percentile. 99% of responses are faster than this value. Shows worst-case performance.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Cost Section
+                Section("Cost Breakdown") {
+                    AnalyticsHelpRow(
+                        icon: "mic.fill",
+                        iconColor: .blue,
+                        title: "STT Cost",
+                        description: "Speech recognition charges. On-device STT is free."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "cpu",
+                        iconColor: .purple,
+                        title: "LLM Cost",
+                        description: "AI model usage. Self-hosted and on-device are free."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "speaker.wave.3.fill",
+                        iconColor: .green,
+                        title: "TTS Cost",
+                        description: "Text-to-speech charges. Apple TTS is free."
+                    )
+                }
+
+                // Quality Metrics Section
+                Section("Quality Metrics") {
+                    AnalyticsHelpRow(
+                        icon: "message.fill",
+                        iconColor: .blue,
+                        title: "Turns",
+                        description: "Total conversation exchanges across all sessions."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "hand.raised.fill",
+                        iconColor: .orange,
+                        title: "Interruptions",
+                        description: "Times you spoke while the AI was talking. Natural and expected."
+                    )
+                    AnalyticsHelpRow(
+                        icon: "thermometer.medium",
+                        iconColor: .red,
+                        title: "Throttle Events",
+                        description: "Times the device slowed down due to heat. Rest the device if high."
+                    )
+                }
+
+                // Tips Section
+                Section("Optimization Tips") {
+                    Label("Use on-device STT for zero-cost speech recognition", systemImage: "iphone")
+                        .foregroundStyle(.blue, .primary)
+                    Label("Self-host LLM on your Mac for free AI responses", systemImage: "desktopcomputer")
+                        .foregroundStyle(.purple, .primary)
+                    Label("Use Apple TTS for free voice output", systemImage: "speaker.wave.2")
+                        .foregroundStyle(.green, .primary)
+                }
+            }
+            .navigationTitle("Analytics Help")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// Helper row for analytics help items
+private struct AnalyticsHelpRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     AnalyticsView()
+}
+
+#Preview("Analytics Help") {
+    AnalyticsHelpSheet()
 }

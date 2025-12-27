@@ -9,6 +9,7 @@ import AVFoundation
 /// Settings view for app configuration
 public struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
+    @State private var showingSettingsHelp = false
 
     public init() { }
 
@@ -45,31 +46,58 @@ public struct SettingsView: View {
                 }
 
                 // Audio Settings Section
-                Section("Audio") {
+                Section {
                     Picker("Sample Rate", selection: $viewModel.sampleRate) {
                         Text("16 kHz").tag(16000.0)
                         Text("24 kHz").tag(24000.0)
                         Text("48 kHz").tag(48000.0)
                     }
+                    .accessibilityHint("Audio quality setting. Higher rates sound better but use more data.")
 
                     Toggle("Voice Processing", isOn: $viewModel.enableVoiceProcessing)
+                        .accessibilityHint("Enhances voice clarity using Apple's audio processing")
+
                     Toggle("Echo Cancellation", isOn: $viewModel.enableEchoCancellation)
+                        .accessibilityHint("Prevents the microphone from picking up the AI's voice through speakers")
+
                     Toggle("Noise Suppression", isOn: $viewModel.enableNoiseSuppression)
+                        .accessibilityHint("Filters background noise like fans or traffic")
+                } header: {
+                    HStack {
+                        Text("Audio")
+                        Spacer()
+                        InfoButton(title: "Audio Settings", content: HelpContent.Settings.sampleRate)
+                    }
                 }
 
                 // VAD Settings Section
-                Section("Voice Detection") {
-                    VStack(alignment: .leading) {
-                        Text("Detection Threshold: \(viewModel.vadThreshold, specifier: "%.2f")")
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Detection Threshold: \(viewModel.vadThreshold, specifier: "%.2f")")
+                            InfoButton(title: "Detection Threshold", content: HelpContent.Settings.vadThreshold)
+                        }
                         Slider(value: $viewModel.vadThreshold, in: 0.3...0.9)
+                            .accessibilityLabel("Voice detection threshold")
+                            .accessibilityValue(String(format: "%.2f", viewModel.vadThreshold))
+                            .accessibilityHint("Lower values detect quieter speech but may pick up noise")
                     }
 
-                    VStack(alignment: .leading) {
-                        Text("Interruption Threshold: \(viewModel.bargeInThreshold, specifier: "%.2f")")
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Interruption Threshold: \(viewModel.bargeInThreshold, specifier: "%.2f")")
+                            InfoButton(title: "Interruption Threshold", content: HelpContent.Settings.interruptionThreshold)
+                        }
                         Slider(value: $viewModel.bargeInThreshold, in: 0.5...0.95)
+                            .accessibilityLabel("Interruption threshold")
+                            .accessibilityValue(String(format: "%.2f", viewModel.bargeInThreshold))
+                            .accessibilityHint("How loud you need to speak to interrupt the AI")
                     }
 
                     Toggle("Enable Interruptions", isOn: $viewModel.enableBargeIn)
+                        .accessibilityHint("When enabled, speaking while the AI talks will pause it to listen")
+                } header: {
+                    Text("Voice Detection")
                 }
 
                 // Self-Hosted Server Section
@@ -166,13 +194,14 @@ public struct SettingsView: View {
                 }
 
                 // LLM Settings Section
-                Section("Language Model") {
+                Section {
                     Picker("Provider", selection: $viewModel.llmProvider) {
                         Text("On-Device (llama.cpp)").tag(LLMProvider.localMLX)
                         Text("Anthropic Claude").tag(LLMProvider.anthropic)
                         Text("OpenAI").tag(LLMProvider.openAI)
                         Text("Self-Hosted").tag(LLMProvider.selfHosted)
                     }
+                    .accessibilityHint("Choose where AI processing happens")
 
                     if viewModel.llmProvider != .localMLX {
                         Picker("Model", selection: $viewModel.llmModel) {
@@ -180,14 +209,25 @@ public struct SettingsView: View {
                                 Text(model).tag(model)
                             }
                         }
+                        .accessibilityHint("Larger models are smarter but slower and more expensive")
                     }
 
-                    VStack(alignment: .leading) {
-                        Text("Temperature: \(viewModel.temperature, specifier: "%.1f")")
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Temperature: \(viewModel.temperature, specifier: "%.1f")")
+                            InfoButton(title: "Temperature", content: HelpContent.Settings.temperature)
+                        }
                         Slider(value: $viewModel.temperature, in: 0...1)
+                            .accessibilityLabel("Temperature")
+                            .accessibilityValue(String(format: "%.1f", viewModel.temperature))
+                            .accessibilityHint("Controls response creativity. Lower for factual, higher for creative.")
                     }
 
-                    Stepper("Max Tokens: \(viewModel.maxTokens)", value: $viewModel.maxTokens, in: 256...4096, step: 256)
+                    HStack {
+                        Stepper("Max Tokens: \(viewModel.maxTokens)", value: $viewModel.maxTokens, in: 256...4096, step: 256)
+                            .accessibilityHint("Maximum response length. One token is roughly 4 characters.")
+                        InfoButton(title: "Max Tokens", content: HelpContent.Settings.maxTokens)
+                    }
 
                     if !viewModel.llmProvider.requiresNetwork {
                         HStack {
@@ -198,10 +238,16 @@ public struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                } header: {
+                    HStack {
+                        Text("Language Model")
+                        Spacer()
+                        InfoButton(title: "Language Model", content: HelpContent.Settings.llmProvider)
+                    }
                 }
 
                 // TTS Settings Section
-                Section("Voice") {
+                Section {
                     Picker("Provider", selection: $viewModel.ttsProvider) {
                         Text("Apple TTS (On-Device)").tag(TTSProvider.appleTTS)
                         if viewModel.selfHostedEnabled {
@@ -211,6 +257,7 @@ public struct SettingsView: View {
                         Text("ElevenLabs").tag(TTSProvider.elevenLabsFlash)
                         Text("Deepgram Aura").tag(TTSProvider.deepgramAura2)
                     }
+                    .accessibilityHint("Choose the voice synthesis provider")
 
                     // Voice picker for self-hosted TTS providers
                     if viewModel.ttsProvider == .selfHosted || viewModel.ttsProvider == .vibeVoice {
@@ -221,6 +268,7 @@ public struct SettingsView: View {
                                 Text(viewModel.voiceDisplayName(voice)).tag(voice)
                             }
                         }
+                        .accessibilityHint("Select the AI tutor's voice")
                     }
 
                     // Show TTS provider info
@@ -241,9 +289,15 @@ public struct SettingsView: View {
                         }
                     }
 
-                    VStack(alignment: .leading) {
-                        Text("Speaking Rate: \(viewModel.speakingRate, specifier: "%.1f")x")
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Speaking Rate: \(viewModel.speakingRate, specifier: "%.1f")x")
+                            InfoButton(title: "Speaking Rate", content: HelpContent.Settings.speakingRate)
+                        }
                         Slider(value: $viewModel.speakingRate, in: 0.5...2.0)
+                            .accessibilityLabel("Speaking rate")
+                            .accessibilityValue(String(format: "%.1f times speed", viewModel.speakingRate))
+                            .accessibilityHint("Adjust how fast the AI speaks")
                     }
 
                     if !viewModel.ttsProvider.requiresAPIKey {
@@ -256,6 +310,12 @@ public struct SettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                    }
+                } header: {
+                    HStack {
+                        Text("Voice")
+                        Spacer()
+                        InfoButton(title: "Voice Settings", content: HelpContent.Settings.ttsProvider)
                     }
                 }
 
@@ -401,6 +461,22 @@ public struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            #if os(iOS)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettingsHelp = true
+                    } label: {
+                        Image(systemName: "questionmark.circle")
+                    }
+                    .accessibilityLabel("Settings help")
+                    .accessibilityHint("Learn about all settings and configuration options")
+                }
+            }
+            #endif
+            .sheet(isPresented: $showingSettingsHelp) {
+                SettingsHelpSheet()
+            }
         }
     }
 }
@@ -1888,8 +1964,193 @@ class TTSPlaybackTuningViewModel: ObservableObject {
     }
 }
 
+// MARK: - Settings Help Sheet
+
+/// Comprehensive help for all settings sections
+struct SettingsHelpSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                // Overview
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Configure how the app processes speech, generates AI responses, and speaks to you. Tap the info buttons next to settings for detailed explanations.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // API Providers
+                Section("API Providers") {
+                    SettingsHelpRow(
+                        icon: "key.fill",
+                        iconColor: .orange,
+                        title: "API Keys",
+                        description: "Configure keys for cloud AI services like OpenAI, Anthropic, and ElevenLabs."
+                    )
+                    SettingsHelpRow(
+                        icon: "dollarsign.circle.fill",
+                        iconColor: .green,
+                        title: "Costs",
+                        description: "View estimated costs per session for each provider."
+                    )
+                }
+
+                // Audio Section
+                Section("Audio Settings") {
+                    SettingsHelpRow(
+                        icon: "waveform",
+                        iconColor: .blue,
+                        title: "Sample Rate",
+                        description: "Higher rates (48 kHz) sound better but use more data. 24 kHz is a good balance."
+                    )
+                    SettingsHelpRow(
+                        icon: "speaker.wave.3.fill",
+                        iconColor: .purple,
+                        title: "Voice Processing",
+                        description: "Uses Apple's audio engine to enhance voice clarity."
+                    )
+                    SettingsHelpRow(
+                        icon: "ear.and.waveform",
+                        iconColor: .cyan,
+                        title: "Echo Cancellation",
+                        description: "Prevents the AI's voice from being picked up by the microphone."
+                    )
+                    SettingsHelpRow(
+                        icon: "waveform.badge.minus",
+                        iconColor: .indigo,
+                        title: "Noise Suppression",
+                        description: "Filters out background noise for clearer speech recognition."
+                    )
+                }
+
+                // Voice Detection
+                Section("Voice Detection") {
+                    SettingsHelpRow(
+                        icon: "mic.fill",
+                        iconColor: .green,
+                        title: "Detection Threshold",
+                        description: "How sensitive the app is to your voice. Lower = more sensitive."
+                    )
+                    SettingsHelpRow(
+                        icon: "hand.raised.fill",
+                        iconColor: .orange,
+                        title: "Interruption Threshold",
+                        description: "How loud you need to speak to interrupt the AI."
+                    )
+                }
+
+                // AI Models
+                Section("Language Model") {
+                    SettingsHelpRow(
+                        icon: "cpu",
+                        iconColor: .purple,
+                        title: "Provider",
+                        description: "Choose on-device for free/private, or cloud for more powerful models."
+                    )
+                    SettingsHelpRow(
+                        icon: "thermometer.medium",
+                        iconColor: .red,
+                        title: "Temperature",
+                        description: "0 = factual/consistent, 1 = creative/varied."
+                    )
+                    SettingsHelpRow(
+                        icon: "text.word.spacing",
+                        iconColor: .blue,
+                        title: "Max Tokens",
+                        description: "Maximum response length. 1024 is good for most use cases."
+                    )
+                }
+
+                // Voice Output
+                Section("Voice Output") {
+                    SettingsHelpRow(
+                        icon: "speaker.wave.2.fill",
+                        iconColor: .green,
+                        title: "TTS Provider",
+                        description: "Apple TTS is free. ElevenLabs sounds most natural."
+                    )
+                    SettingsHelpRow(
+                        icon: "speedometer",
+                        iconColor: .orange,
+                        title: "Speaking Rate",
+                        description: "1.0 is normal speed. Lower for complex topics, higher for review."
+                    )
+                }
+
+                // Self-Hosted
+                Section("Self-Hosted Server") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Run AI on your own Mac for free, unlimited usage with complete privacy.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text("Requires: Ollama for LLM, optionally Piper/VibeVoice for TTS.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                // Quick Setup Tips
+                Section("Quick Setup") {
+                    Label("Balanced preset works well for most users", systemImage: "slider.horizontal.3")
+                        .foregroundStyle(.blue, .primary)
+                    Label("Use on-device options for free, private sessions", systemImage: "iphone")
+                        .foregroundStyle(.green, .primary)
+                    Label("Use self-hosted for unlimited free cloud-quality AI", systemImage: "desktopcomputer")
+                        .foregroundStyle(.purple, .primary)
+                }
+            }
+            .navigationTitle("Settings Help")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// Helper row for settings help items
+private struct SettingsHelpRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(iconColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.medium))
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(description)")
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
     SettingsView()
+}
+
+#Preview("Settings Help") {
+    SettingsHelpSheet()
 }

@@ -50,8 +50,8 @@ If your iPhone isn't already set up as a developer device:
 ### Option A: Using Xcode (Recommended)
 
 ```bash
-# Open the project in Xcode
-open /Users/ramerman/dev/voicelearn-ios/Package.swift
+# Open the project in Xcode (from project root)
+open Package.swift
 ```
 
 1. Select your iPhone from the device dropdown (top of Xcode window)
@@ -77,7 +77,7 @@ For device deployment, you need code signing:
 
 1. **In Xcode**: Select UnaMentis target → Signing & Capabilities
 2. **Team**: Select your Apple ID / Developer Team
-3. **Bundle Identifier**: Change to unique ID (e.g., `com.yourname.voicelearn`)
+3. **Bundle Identifier**: Change to unique ID (e.g., `com.yourname.unamentis`)
 4. **Automatically manage signing**: Enable
 
 ---
@@ -124,8 +124,8 @@ For fully on-device speech recognition, you need these model files:
 ### Step 1: Download Models
 
 ```bash
-# Create models directory
-mkdir -p /Users/ramerman/dev/voicelearn-ios/models/glm-asr-nano
+# Create models directory (from project root)
+mkdir -p models/glm-asr-nano
 
 # Download from Hugging Face (example)
 # Visit: https://huggingface.co/zai-org/GLM-ASR-Nano-2512
@@ -278,9 +278,9 @@ Check **Analytics** tab for:
 
 | Item | Path |
 |------|------|
-| Project | `/Users/ramerman/dev/voicelearn-ios/` |
-| Package.swift | `/Users/ramerman/dev/voicelearn-ios/Package.swift` |
-| Models directory | `/Users/ramerman/dev/voicelearn-ios/models/glm-asr-nano/` |
+| Project root | `./` |
+| Package.swift | `./Package.swift` |
+| Models directory | `./models/glm-asr-nano/` |
 | Core Data model | `UnaMentis/UnaMentis.xcdatamodeld` |
 | On-device service | `UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift` |
 

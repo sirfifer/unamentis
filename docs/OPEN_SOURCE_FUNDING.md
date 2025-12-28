@@ -38,7 +38,7 @@ These programs have established application processes with quick turnaround time
 Subject: AWS Open Source Credits Application - UnaMentis
 
 Project: UnaMentis
-Website: https://github.com/[your-org]/voicelearn-ios
+Website: https://github.com/[your-org]/unamentis
 License: [MIT/Apache 2.0/etc.]
 
 Description:

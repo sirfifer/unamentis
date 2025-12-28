@@ -36,8 +36,8 @@ Optional:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/voicelearn-ios.git
-cd voicelearn-ios
+git clone https://github.com/your-org/unamentis.git
+cd unamentis
 
 # Build with Swift Package Manager
 swift build

@@ -42,7 +42,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/sirfifer/voicelearn-ios"
+Repository = "https://github.com/sirfifer/unamentis"
 
 # Entry points for external plugins to register
 # External plugins can add themselves here via their own pyproject.toml

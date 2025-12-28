@@ -168,7 +168,7 @@ model = AutoModelForCausalLM.from_pretrained(
 ### Python Virtual Environment
 
 ```bash
-cd /Users/ramerman/dev/voicelearn-ios
+# From project root
 source .venv/bin/activate
 
 # Key packages:

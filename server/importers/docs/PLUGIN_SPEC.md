@@ -963,7 +963,7 @@ Use this checklist before publishing your plugin:
 
 - **Documentation**: `docs/PLUGIN_ARCHITECTURE.md`
 - **Examples**: `server/importers/sources/mit_ocw.py`
-- **Issues**: https://github.com/sirfifer/voicelearn-ios/issues
+- **Issues**: https://github.com/sirfifer/unamentis/issues
 
 ---
 

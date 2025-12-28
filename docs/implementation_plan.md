@@ -6,15 +6,15 @@ Verify and finalize the Curriculum Management System implementation by enabling/
 ## Proposed Changes
 
 ### Tests
-#### [NEW] [CurriculumEngineTests.swift](file:///Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/CurriculumEngineTests.swift)
+#### [NEW] [CurriculumEngineTests.swift](UnaMentisTests/Unit/CurriculumEngineTests.swift)
 - Create unit tests for `CurriculumEngine` actor.
 - Test context generation, progress updates, and data loading.
 
-#### [NEW] [DocumentProcessorTests.swift](file:///Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/DocumentProcessorTests.swift)
+#### [NEW] [DocumentProcessorTests.swift](UnaMentisTests/Unit/DocumentProcessorTests.swift)
 - Create unit tests for `DocumentProcessor`.
 - Test text extraction and summary generation (mocked LLM if needed).
 
-#### [MODIFY] [ProgressTrackerTests.swift](file:///Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/ProgressTrackerTests.swift.disabled)
+#### [MODIFY] [ProgressTrackerTests.swift](UnaMentisTests/Unit/ProgressTrackerTests.swift.disabled)
 - Rename from `ProgressTrackerTests.swift.disabled` to `ProgressTrackerTests.swift`.
 - Run and fix any failures.
 

@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-Update VoiceLearn Xcode project to replace Stanford BDHG llama.cpp SPM package
+Update UnaMentis Xcode project to replace Stanford BDHG llama.cpp SPM package
 with the local llama.xcframework.
 
 This script:
 1. Removes the Stanford BDHG llama.cpp SPM package reference
 2. Adds the local llama.xcframework as a framework reference
 3. Updates the Frameworks build phase to use the XCFramework
+
+Run from project root: python scripts/update_llama_xcframework.py
 """
 
+import os
 import re
 import uuid
 
@@ -17,7 +20,10 @@ def generate_uuid():
     return uuid.uuid4().hex[:24].upper()
 
 def main():
-    project_path = "/Users/ramerman/dev/voicelearn-ios/VoiceLearn.xcodeproj/project.pbxproj"
+    # Get the project root (parent of scripts directory)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    project_path = os.path.join(project_root, "UnaMentis.xcodeproj", "project.pbxproj")
 
     with open(project_path, 'r') as f:
         content = f.read()

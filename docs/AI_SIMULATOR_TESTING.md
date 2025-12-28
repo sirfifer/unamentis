@@ -63,7 +63,7 @@ The ios-simulator-mcp server is already installed:
 claude mcp add ios-simulator npx ios-simulator-mcp
 ```
 
-Configuration stored in: `/Users/ramerman/.claude.json`
+Configuration stored in: `~/.claude.json`
 
 ### 2.2 Verification
 

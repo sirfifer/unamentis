@@ -36,7 +36,7 @@ Before starting, gather the following:
 |------|---------------|-------|
 | Bundle Identifier | `com.unamentis.app` | Already configured in project |
 | App Name | UnaMentis | Must be unique on App Store |
-| SKU | `voicelearn-ios-001` | Your internal reference (any string) |
+| SKU | `unamentis-001` | Your internal reference (any string) |
 | Primary Language | English (U.S.) | Or your preferred language |
 | App Category | Education | Primary category |
 | Secondary Category | Lifestyle | Optional |
@@ -129,7 +129,7 @@ Go to: https://appstoreconnect.apple.com
 | Name | UnaMentis |
 | Primary Language | English (U.S.) |
 | Bundle ID | com.unamentis.app (select from dropdown after registering) |
-| SKU | voicelearn-ios-001 |
+| SKU | unamentis-001 |
 | User Access | Full Access (or Limited if you want to restrict) |
 
 4. Click **Create**

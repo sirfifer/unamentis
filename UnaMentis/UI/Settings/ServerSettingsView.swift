@@ -343,7 +343,7 @@ struct ServerSetupGuideView: View {
                         .font(.subheadline)
 
                     CodeBlock("""
-                    cd path/to/voicelearn-ios/server
+                    cd path/to/unamentis/server
                     ./setup.sh
                     """)
                 }

@@ -12,40 +12,40 @@ Implement the Curriculum Management System as specified in the TDD (Technical De
 
 Read these files before starting:
 
-1. **Primary Reference:** `/Users/ramerman/dev/voicelearn-ios/docs/UnaMentis_TDD.md`
+1. **Primary Reference:** `docs/UnaMentis_TDD.md`
    - Section 4: Curriculum Management System (lines ~1200-1600)
    - Section 4.2: Data Models (Curriculum, Topic, Document, TopicProgress entities)
    - Section 4.3: CurriculumEngine implementation
    - Section 4.4: Document Processing
 
-2. **Project Structure:** `/Users/ramerman/dev/voicelearn-ios/README.md`
+2. **Project Structure:** `README.md`
 
-3. **Testing Guidelines:** `/Users/ramerman/dev/voicelearn-ios/docs/TESTING.md`
+3. **Testing Guidelines:** `docs/TESTING.md`
    - Follow TDD approach: write tests first, then implement
 
 ## Files to Create
 
 ### Core Data Model
-- `/Users/ramerman/dev/voicelearn-ios/UnaMentis/UnaMentis.xcdatamodeld/` - Core Data model with entities
+- `UnaMentis/UnaMentis.xcdatamodeld/` - Core Data model with entities
 
 ### Curriculum Components
 Create these files:
-1. `/Users/ramerman/dev/voicelearn-ios/UnaMentis/Core/Curriculum/CurriculumEngine.swift`
+1. `UnaMentis/Core/Curriculum/CurriculumEngine.swift`
    - Actor that manages curriculum state and LLM context generation
-   
-2. `/Users/ramerman/dev/voicelearn-ios/UnaMentis/Core/Curriculum/CurriculumModels.swift`
+
+2. `UnaMentis/Core/Curriculum/CurriculumModels.swift`
    - Swift structs/classes matching Core Data entities for in-memory use
 
-3. `/Users/ramerman/dev/voicelearn-ios/UnaMentis/Core/Curriculum/DocumentProcessor.swift`
+3. `UnaMentis/Core/Curriculum/DocumentProcessor.swift`
    - Handles text extraction from PDF/markdown, summarization, embedding generation
 
-4. `/Users/ramerman/dev/voicelearn-ios/UnaMentis/Core/Curriculum/ProgressTracker.swift`
+4. `UnaMentis/Core/Curriculum/ProgressTracker.swift`
    - Tracks mastery levels, time spent, quiz performance per topic
 
 ### Unit Tests (Write FIRST per TDD)
-1. `/Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/CurriculumEngineTests.swift`
-2. `/Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/DocumentProcessorTests.swift`
-3. `/Users/ramerman/dev/voicelearn-ios/UnaMentisTests/Unit/ProgressTrackerTests.swift`
+1. `UnaMentisTests/Unit/CurriculumEngineTests.swift`
+2. `UnaMentisTests/Unit/DocumentProcessorTests.swift`
+3. `UnaMentisTests/Unit/ProgressTrackerTests.swift`
 
 ## Key Requirements from TDD
 
@@ -95,10 +95,10 @@ Use structured JSON format with:
 ## Existing Dependencies
 
 The project already has:
-- Xcode project at `/Users/ramerman/dev/voicelearn-ios/UnaMentis.xcodeproj`
+- Xcode project at `UnaMentis.xcodeproj`
 - SPM dependencies configured (LiveKit, Swift Log, Swift Collections)
-- Provider protocols in `/Users/ramerman/dev/voicelearn-ios/UnaMentis/Services/Protocols/`
-- Test structure in `/Users/ramerman/dev/voicelearn-ios/UnaMentisTests/`
+- Provider protocols in `UnaMentis/Services/Protocols/`
+- Test structure in `UnaMentisTests/`
 
 ## DO NOT MODIFY
 

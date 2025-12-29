@@ -37,7 +37,7 @@ enum VisualAssetType: String {
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     UMLCF Document                          │
+│                     UMCF Document                           │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ ContentNode                                          │   │
 │  │  ├── transcript (segments with text)                 │   │
@@ -49,7 +49,7 @@ enum VisualAssetType: String {
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    UMLCFParser                              │
+│                    UMCFParser                               │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ Parse media → Create VisualAsset entities            │   │
 │  │ Cache images → VisualAssetCache                      │   │
@@ -72,7 +72,7 @@ enum VisualAssetType: String {
 
 ---
 
-## UMLCF Schema Extension
+## UMCF Schema Extension
 
 ### Media Object in ContentNode
 
@@ -381,10 +381,10 @@ For visually complex content, provide audio descriptions:
 
 ### Phase 1: Core Infrastructure (Current)
 - [x] Design document
-- [ ] UMLCF schema extension
+- [ ] UMCF schema extension
 - [ ] Core Data VisualAsset entity
 - [ ] CurriculumModels visual types
-- [ ] UMLCFParser media handling
+- [ ] UMCFParser media handling
 
 ### Phase 2: UI Components
 - [ ] VisualAssetView component

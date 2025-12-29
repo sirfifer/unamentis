@@ -1,10 +1,10 @@
-# Una Mentis Curriculum Format (UMLCF) Specification
+# Una Mentis Curriculum Format (UMCF) Specification
 
 **Version:** 1.0.0
 **Status:** Draft
 **Date:** 2025-12-17
-**MIME Type:** `application/vnd.voicelearn.curriculum+json`
-**File Extension:** `.vlcf`
+**MIME Type:** `application/vnd.unamentis.curriculum+json`
+**File Extension:** `.umcf`
 
 ---
 
@@ -26,7 +26,7 @@
 
 ## Introduction
 
-The Una Mentis Curriculum Format (UMLCF) is a JSON-based specification for educational curriculum designed specifically for conversational AI tutoring. Unlike traditional LMS-oriented formats (SCORM, IMS Common Cartridge), UMLCF is optimized for:
+The Una Mentis Curriculum Format (UMCF) is a JSON-based specification for educational curriculum designed specifically for conversational AI tutoring. Unlike traditional LMS-oriented formats (SCORM, IMS Common Cartridge), UMCF is optimized for:
 
 - **Voice-first learning experiences** - Every text field can have a `spokenText` variant
 - **Conversational AI tutoring** - Native support for transcripts, checkpoints, and branching
@@ -54,7 +54,7 @@ The Una Mentis Curriculum Format (UMLCF) is a JSON-based specification for educa
 
 ### Hub-and-Spoke Model
 
-UMLCF is designed as the "hub" format:
+UMCF is designed as the "hub" format:
 
 ```
                     ┌─────────────┐
@@ -62,7 +62,7 @@ UMLCF is designed as the "hub" format:
                     └──────┬──────┘
                            │ import
 ┌─────────────┐     ┌──────▼──────┐     ┌─────────────┐
-│     QTI     │────►│    UMLCF     │────►│   Export    │
+│     QTI     │────►│    UMCF      │────►│   Export    │
 └─────────────┘     │   (hub)     │     │  (IMSCC)    │
                     └──────▲──────┘     └─────────────┘
                            │ import
@@ -76,7 +76,7 @@ UMLCF is designed as the "hub" format:
 
 ### Tutoring-First Design
 
-Unlike LMS formats that focus on packaging and launching content, UMLCF focuses on:
+Unlike LMS formats that focus on packaging and launching content, UMCF focuses on:
 
 - **Dialogue flow** - How the AI tutor converses with learners
 - **Comprehension verification** - Checkpoints and assessments
@@ -85,7 +85,7 @@ Unlike LMS formats that focus on packaging and launching content, UMLCF focuses 
 
 ### Standards Traceability
 
-Every UMLCF field traces to one or more established standards:
+Every UMCF field traces to one or more established standards:
 
 | Standard | What We Borrow |
 |----------|----------------|
@@ -107,7 +107,7 @@ Every UMLCF field traces to one or more established standards:
 
 ```json
 {
-  "vlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": { "catalog": "UUID", "value": "550e8400-e29b-41d4-a716-446655440000" },
   "title": "Introduction to Python",
   "version": { "number": "1.0.0" },
@@ -125,7 +125,7 @@ Every UMLCF field traces to one or more established standards:
 
 ```json
 {
-  "vlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": { "catalog": "UUID", "value": "550e8400-e29b-41d4-a716-446655440000" },
   "title": "Introduction to Python",
   "version": { "number": "1.0.0" },
@@ -173,7 +173,7 @@ Every UMLCF field traces to one or more established standards:
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `vlcf` | Yes | string | Schema version (always "1.0.0") |
+| `umcf` | Yes | string | Schema version (always "1.0.0") |
 | `id` | Yes | Identifier | Unique curriculum identifier |
 | `title` | Yes | string | Human-readable title |
 | `description` | No | string | Detailed description |
@@ -189,7 +189,7 @@ Every UMLCF field traces to one or more established standards:
 
 ### Identifier
 
-Used throughout UMLCF for stable references:
+Used throughout UMCF for stable references:
 
 ```json
 {
@@ -272,7 +272,7 @@ curriculum/
 
 ## Media and Visual Assets
 
-UMLCF supports rich media content that can be displayed alongside or synchronized with audio content.
+UMCF supports rich media content that can be displayed alongside or synchronized with audio content.
 
 ### Media Collection
 
@@ -443,7 +443,7 @@ All visual content MUST include:
 
 ## Tutoring Elements
 
-These elements are unique to UMLCF, designed for conversational AI tutoring.
+These elements are unique to UMCF, designed for conversational AI tutoring.
 
 ### Transcript
 
@@ -609,7 +609,7 @@ AI behavior settings:
 
 ## Assessments
 
-UMLCF v1.0 supports basic assessment types:
+UMCF v1.0 supports basic assessment types:
 
 ### Assessment Types
 
@@ -762,12 +762,12 @@ For corporate training and certification:
 
 ## Extensions
 
-UMLCF uses namespaced extensions (inspired by xAPI) for custom data:
+UMCF uses namespaced extensions (inspired by xAPI) for custom data:
 
 ```json
 {
   "extensions": {
-    "https://voicelearn.io/extensions/analytics": {
+    "https://unamentis.com/extensions/analytics": {
       "trackingId": "UA-123456",
       "experimentGroup": "A"
     },
@@ -792,24 +792,24 @@ UMLCF uses namespaced extensions (inspired by xAPI) for custom data:
 
 ### JSON Schema
 
-UMLCF uses JSON Schema Draft 2020-12 for validation. The schema is available at:
+UMCF uses JSON Schema Draft 2020-12 for validation. The schema is available at:
 
 ```
-https://voicelearn.io/schemas/vlcf/v1.0.0/curriculum.json
+https://unamentis.com/schemas/umcf/v1.0.0/curriculum.json
 ```
 
 ### Validating a File
 
 ```bash
 # Using ajv-cli
-ajv validate -s vlcf-schema.json -d my-curriculum.vlcf
+ajv validate -s umcf-schema.json -d my-curriculum.umcf
 
 # Using Python jsonschema
 python -c "
 import json
 from jsonschema import validate
-schema = json.load(open('vlcf-schema.json'))
-data = json.load(open('my-curriculum.vlcf'))
+schema = json.load(open('umcf-schema.json'))
+data = json.load(open('my-curriculum.umcf'))
 validate(data, schema)
 print('Valid!')
 "
@@ -817,7 +817,7 @@ print('Valid!')
 
 ### Common Validation Errors
 
-1. **Missing required fields**: `vlcf`, `id`, `title`, `version`, `content`
+1. **Missing required fields**: `umcf`, `id`, `title`, `version`, `content`
 2. **Invalid duration format**: Must be ISO 8601 (e.g., `PT30M`, not `30 minutes`)
 3. **Invalid node type**: Must be one of the defined types
 4. **Empty content array**: At least one content node required

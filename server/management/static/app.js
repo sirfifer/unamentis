@@ -1542,7 +1542,7 @@ function renderCurricula(curricula) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                 </svg>
                 <p class="text-lg font-medium">No curricula found</p>
-                <p class="text-sm mt-1">Add UMLCF files to the curriculum/examples/realistic/ folder</p>
+                <p class="text-sm mt-1">Add UMCF files to the curriculum/examples/realistic/ folder</p>
             </div>
         `;
         return;
@@ -2416,7 +2416,7 @@ function hideImportModal() {
     document.getElementById('import-url-form')?.reset();
     document.getElementById('import-paste-form')?.reset();
     document.getElementById('curriculum-file-input').value = '';
-    document.getElementById('file-upload-text').textContent = 'Click or drag to upload .umlcf file';
+    document.getElementById('file-upload-text').textContent = 'Click or drag to upload .umcf file';
     document.getElementById('file-upload-btn').disabled = true;
     state.selectedFile = null;
 }
@@ -3858,7 +3858,7 @@ async function searchGitHubRepos() {
     `;
 
     try {
-        const searchQuery = encodeURIComponent(`${query} extension:umlcf OR extension:json umlcf`);
+        const searchQuery = encodeURIComponent(`${query} extension:umcf OR extension:json umcf`);
         const response = await fetch(`https://api.github.com/search/code?q=${searchQuery}&per_page=20`, {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
@@ -3960,8 +3960,8 @@ async function browseCustomURL() {
     `;
 
     try {
-        // Check if it's a direct UMLCF file
-        if (url.endsWith('.umlcf') || url.endsWith('.json')) {
+        // Check if it's a direct UMCF file
+        if (url.endsWith('.umcf') || url.endsWith('.json')) {
             container.innerHTML = `
                 <div class="p-4 rounded-lg bg-dark-800/30 border border-dark-700/50">
                     <div class="flex items-center justify-between">
@@ -3984,7 +3984,7 @@ async function browseCustomURL() {
                     <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                     </svg>
-                    <p class="text-lg font-medium">Enter a .umlcf or .json URL</p>
+                    <p class="text-lg font-medium">Enter a .umcf or .json URL</p>
                     <p class="text-sm mt-1">Direct links to curriculum files work best</p>
                 </div>
             `;
@@ -4031,8 +4031,8 @@ async function searchGitHub() {
     `;
 
     try {
-        // Search GitHub for repositories containing UMLCF files
-        const searchQuery = encodeURIComponent(`${query} extension:umlcf OR extension:json umlcf`);
+        // Search GitHub for repositories containing UMCF files
+        const searchQuery = encodeURIComponent(`${query} extension:umcf OR extension:json umcf`);
         const response = await fetch(`https://api.github.com/search/code?q=${searchQuery}&per_page=20`, {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
@@ -4174,7 +4174,7 @@ async function searchHuggingFace() {
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        To import a Hugging Face dataset, download the UMLCF file from the dataset page and use the "Upload File" option in the Import dialog.
+                        To import a Hugging Face dataset, download the UMCF file from the dataset page and use the "Upload File" option in the Import dialog.
                     </p>
                 </div>
             `;
@@ -4217,7 +4217,7 @@ async function browseCustomUrl() {
     `;
 
     try {
-        // Try to fetch the URL - if it's a UMLCF file, offer to import directly
+        // Try to fetch the URL - if it's a UMCF file, offer to import directly
         // If it's a directory listing or JSON array, show the list
         const response = await fetch(url);
         if (!response.ok) {
@@ -4227,12 +4227,12 @@ async function browseCustomUrl() {
         const contentType = response.headers.get('content-type') || '';
         const text = await response.text();
 
-        if (contentType.includes('application/json') || url.endsWith('.umlcf') || url.endsWith('.json')) {
+        if (contentType.includes('application/json') || url.endsWith('.umcf') || url.endsWith('.json')) {
             try {
                 const json = JSON.parse(text);
 
-                // Check if it's a single UMLCF curriculum
-                if (json.formatIdentifier === 'umlcf') {
+                // Check if it's a single UMCF curriculum
+                if (json.formatIdentifier === 'umcf') {
                     resultsContainer.innerHTML = `
                         <div class="p-4 rounded-lg bg-dark-800/30 border border-dark-700/50">
                             <div class="flex items-center justify-between">
@@ -4270,7 +4270,7 @@ async function browseCustomUrl() {
                     resultsContainer.innerHTML = `
                         <div class="text-center text-dark-500 py-12">
                             <p class="text-lg font-medium">Unknown JSON format</p>
-                            <p class="text-sm mt-1">The URL returned JSON but it's not a recognized UMLCF format</p>
+                            <p class="text-sm mt-1">The URL returned JSON but it's not a recognized UMCF format</p>
                         </div>
                     `;
                 }
@@ -4278,11 +4278,11 @@ async function browseCustomUrl() {
                 throw new Error('Invalid JSON at URL');
             }
         } else {
-            // Try to parse as HTML and look for links to .umlcf files
+            // Try to parse as HTML and look for links to .umcf files
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, 'text/html');
             const links = Array.from(doc.querySelectorAll('a[href]'))
-                .filter(a => a.href.endsWith('.umlcf') || a.href.endsWith('.json'))
+                .filter(a => a.href.endsWith('.umcf') || a.href.endsWith('.json'))
                 .map(a => ({
                     href: new URL(a.getAttribute('href'), url).href,
                     text: a.textContent.trim() || a.getAttribute('href')
@@ -4307,7 +4307,7 @@ async function browseCustomUrl() {
                 resultsContainer.innerHTML = `
                     <div class="text-center text-dark-500 py-12">
                         <p class="text-lg font-medium">No curriculum files found</p>
-                        <p class="text-sm mt-1">The URL doesn't appear to contain UMLCF files</p>
+                        <p class="text-sm mt-1">The URL doesn't appear to contain UMCF files</p>
                     </div>
                 `;
             }

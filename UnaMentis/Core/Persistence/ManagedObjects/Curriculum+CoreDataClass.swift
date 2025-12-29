@@ -15,7 +15,7 @@ public class Curriculum: NSManagedObject, Identifiable {
 
     @NSManaged public var id: UUID?
     @NSManaged public var name: String?
-    @NSManaged public var sourceId: String?  // UMLCF identifier for server sync
+    @NSManaged public var sourceId: String?  // UMCF identifier for server sync
     @NSManaged public var summary: String?
     @NSManaged public var createdAt: Date?
     @NSManaged public var updatedAt: Date?

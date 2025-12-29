@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a new feature for VoiceLearn
+about: Suggest a new feature for UnaMentis
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''

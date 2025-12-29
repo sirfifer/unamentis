@@ -93,7 +93,7 @@ def main():
     # Find the main group and add the xcframework file reference to its children
     # Look for the mainGroup section and add to children
 
-    # Find the group that contains VoiceLearn folder and add xcframework there
+    # Find the group that contains UnaMentis folder and add xcframework there
     # Looking for group 447C0C055EDE0CF3C43929BC
     content = re.sub(
         r'(447C0C055EDE0CF3C43929BC /\* = group \*/ = \{\s*isa = PBXGroup;\s*children = \()',

@@ -1,5 +1,5 @@
 // UnaMentis - Curriculum Service
-// Network service for fetching UMLCF curricula from the management server
+// Network service for fetching UMCF curricula from the management server
 //
 // Part of Curriculum Layer (TDD Section 4)
 
@@ -172,7 +172,7 @@ public struct BundledAssetData: Codable, Sendable {
 public struct CurriculumWithAssetsResponse: Codable, Sendable {
     let assetData: [String: BundledAssetData]
 
-    // The rest of the UMLCF fields are decoded separately
+    // The rest of the UMCF fields are decoded separately
 }
 
 // MARK: - Curriculum Service Errors
@@ -306,8 +306,8 @@ public actor CurriculumService {
         }
     }
 
-    /// Fetch full UMLCF curriculum for download
-    public func fetchFullCurriculum(id: String) async throws -> UMLCFDocument {
+    /// Fetch full UMCF curriculum for download
+    public func fetchFullCurriculum(id: String) async throws -> UMCFDocument {
         guard let baseURL = baseURL else {
             throw CurriculumServiceError.noServerConfigured
         }
@@ -329,16 +329,16 @@ public actor CurriculumService {
         }
 
         do {
-            // The response is a UMLCFDocument wrapper
+            // The response is a UMCFDocument wrapper
             struct FullCurriculumResponse: Codable {
-                let curriculum: UMLCFDocument
+                let curriculum: UMCFDocument
             }
             let response = try JSONDecoder().decode(FullCurriculumResponse.self, from: data)
             return response.curriculum
         } catch {
             // Try direct decoding
             do {
-                return try JSONDecoder().decode(UMLCFDocument.self, from: data)
+                return try JSONDecoder().decode(UMCFDocument.self, from: data)
             } catch let decodingError as DecodingError {
                 // Provide detailed decoding error information
                 let errorDetail: String
@@ -365,9 +365,9 @@ public actor CurriculumService {
         }
     }
 
-    /// Fetch full UMLCF curriculum with bundled asset data
-    /// Returns the UMLCF document and a dictionary of asset ID to binary data
-    public func fetchFullCurriculumWithAssets(id: String) async throws -> (UMLCFDocument, [String: Data]) {
+    /// Fetch full UMCF curriculum with bundled asset data
+    /// Returns the UMCF document and a dictionary of asset ID to binary data
+    public func fetchFullCurriculumWithAssets(id: String) async throws -> (UMCFDocument, [String: Data]) {
         guard let baseURL = baseURL else {
             throw CurriculumServiceError.noServerConfigured
         }
@@ -388,10 +388,10 @@ public actor CurriculumService {
             throw CurriculumServiceError.serverError(httpResponse.statusCode, message)
         }
 
-        // First decode the UMLCF document
-        let document: UMLCFDocument
+        // First decode the UMCF document
+        let document: UMCFDocument
         do {
-            document = try JSONDecoder().decode(UMLCFDocument.self, from: data)
+            document = try JSONDecoder().decode(UMCFDocument.self, from: data)
         } catch let decodingError as DecodingError {
             let errorDetail = Self.formatDecodingError(decodingError)
             throw CurriculumServiceError.decodingError(errorDetail)
@@ -492,13 +492,13 @@ public actor CurriculumService {
     @MainActor
     public func downloadAndImport(
         curriculumId: String,
-        parser: UMLCFParser
+        parser: UMCFParser
     ) async throws -> Curriculum {
-        // Fetch full UMLCF document (crosses from MainActor to CurriculumService actor)
-        let umlcfDocument = try await fetchFullCurriculum(id: curriculumId)
+        // Fetch full UMCF document (crosses from MainActor to CurriculumService actor)
+        let umcfDocument = try await fetchFullCurriculum(id: curriculumId)
 
         // Import to Core Data (runs on MainActor)
-        return try await parser.importToCoreData(document: umlcfDocument, replaceExisting: true)
+        return try await parser.importToCoreData(document: umcfDocument, replaceExisting: true)
     }
 
     /// Download and import a curriculum with bundled assets to Core Data
@@ -507,13 +507,13 @@ public actor CurriculumService {
     @MainActor
     public func downloadAndImportWithAssets(
         curriculumId: String,
-        parser: UMLCFParser
+        parser: UMCFParser
     ) async throws -> Curriculum {
-        // Fetch UMLCF document with bundled asset data
-        let (umlcfDocument, assetDataMap) = try await fetchFullCurriculumWithAssets(id: curriculumId)
+        // Fetch UMCF document with bundled asset data
+        let (umcfDocument, assetDataMap) = try await fetchFullCurriculumWithAssets(id: curriculumId)
 
         // Import to Core Data
-        let curriculum = try await parser.importToCoreData(document: umlcfDocument, replaceExisting: true)
+        let curriculum = try await parser.importToCoreData(document: umcfDocument, replaceExisting: true)
 
         // Cache all bundled assets
         let assetCache = VisualAssetCache.shared

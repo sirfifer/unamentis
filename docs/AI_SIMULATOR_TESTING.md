@@ -243,7 +243,7 @@ xcrun simctl launch booted com.unamentis.UnaMentis
 xcrun simctl io booted screenshot screenshot.png
 
 # Open URL in app
-xcrun simctl openurl booted "voicelearn://curriculum/topic1"
+xcrun simctl openurl booted "unamentis://curriculum/topic1"
 ```
 
 ### 5.3 Finding UI Elements

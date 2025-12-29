@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in VoiceLearn, please report it responsibly.
+If you discover a security vulnerability in UnaMentis, please report it responsibly.
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
@@ -34,6 +34,6 @@ Instead, please email richard@amerman.net with:
 
 ## Scope
 
-This security policy applies to the VoiceLearn iOS application and its associated components in this repository.
+This security policy applies to the UnaMentis iOS application and its associated components in this repository.
 
 Third-party dependencies have their own security policies. Please report vulnerabilities in those projects to their respective maintainers.

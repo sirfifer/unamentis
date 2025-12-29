@@ -28,7 +28,7 @@
 
 ## Overview
 
-The AI Enrichment Pipeline transforms **sparse curriculum content** (plain text, simple outlines, flat documents) into **richly structured UMLCF** with all tutoring-specific elements required for effective conversational AI tutoring.
+The AI Enrichment Pipeline transforms **sparse curriculum content** (plain text, simple outlines, flat documents) into **richly structured UMCF** with all tutoring-specific elements required for effective conversational AI tutoring.
 
 ### What "Sparse" Content Lacks
 
@@ -72,7 +72,7 @@ The AI Enrichment Pipeline transforms **sparse curriculum content** (plain text,
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      RICH UMLCF OUTPUT                          │
+│                      RICH UMCF OUTPUT                           │
 │  • Hierarchical content (modules → topics → subtopics)         │
 │  • Transcript segments with stopping points                    │
 │  • Learning objectives (Bloom-aligned)                         │
@@ -1949,7 +1949,7 @@ class ReviewManifest:
 
 ### Editor Interface (Web-Based)
 
-The enrichment pipeline produces UMLCF that can be reviewed and edited:
+The enrichment pipeline produces UMCF that can be reviewed and edited:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -2000,7 +2000,7 @@ The enrichment pipeline produces UMLCF that can be reviewed and edited:
 │  │  ⬜ Atoms → Molecules (confidence: 0.72) [Confirm?]     │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                                                                 │
-│  [Save Draft]  [Export UMLCF]  [Publish]                       │
+│  [Save Draft]  [Export UMCF]  [Publish]                        │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

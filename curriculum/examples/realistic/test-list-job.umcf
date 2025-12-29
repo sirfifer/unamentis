@@ -1,8 +1,8 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UnaMentis",
-    "value": "test-course-123"
+    "value": "test-list-job"
   },
   "title": "Test Course",
   "description": "A test course for unit testing",
@@ -153,8 +153,8 @@
   },
   "_import_metadata": {
     "source": "mock_source",
-    "course_id": "test-course-123",
-    "imported_at": "2025-12-28T07:25:57.610178",
+    "course_id": "test-list-job",
+    "imported_at": "2025-12-28T07:25:57.500275",
     "attribution": "Test attribution text",
     "stats": {
       "lectures": 3,

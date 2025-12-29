@@ -46,7 +46,7 @@ LXC containers are lightweight and efficient for Proxmox.
 ```bash
 # On Proxmox host
 pct create 200 local:vztmpl/debian-12-standard_12.2-1_amd64.tar.zst \
-  --hostname voicelearn-ai \
+  --hostname unamentis-ai \
   --cores 16 \
   --memory 65536 \
   --swap 8192 \
@@ -88,7 +88,7 @@ For more isolation or specific CPU feature requirements.
 
 ```bash
 qm create 201 \
-  --name voicelearn-ai-vm \
+  --name unamentis-ai-vm \
   --cores 16 \
   --memory 65536 \
   --scsihw virtio-scsi-pci \
@@ -123,8 +123,8 @@ apt install -y \
   libsndfile1
 
 # Create service directory
-mkdir -p /opt/voicelearn
-cd /opt/voicelearn
+mkdir -p /opt/unamentis
+cd /opt/unamentis
 ```
 
 ---
@@ -140,7 +140,7 @@ cd /opt/voicelearn
 ### Installation
 
 ```bash
-cd /opt/voicelearn
+cd /opt/unamentis
 git clone https://github.com/ggerganov/whisper.cpp.git
 cd whisper.cpp
 
@@ -203,9 +203,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/voicelearn/whisper.cpp
-ExecStart=/opt/voicelearn/whisper.cpp/build/bin/whisper-server \
-  --model /opt/voicelearn/whisper.cpp/models/ggml-small.bin \
+WorkingDirectory=/opt/unamentis/whisper.cpp
+ExecStart=/opt/unamentis/whisper.cpp/build/bin/whisper-server \
+  --model /opt/unamentis/whisper.cpp/models/ggml-small.bin \
   --host 0.0.0.0 \
   --port 8081 \
   --threads 8
@@ -240,8 +240,8 @@ Faster-Whisper uses CTranslate2 for better CPU performance.
 ### Installation
 
 ```bash
-python3 -m venv /opt/voicelearn/faster-whisper-env
-source /opt/voicelearn/faster-whisper-env/bin/activate
+python3 -m venv /opt/unamentis/faster-whisper-env
+source /opt/unamentis/faster-whisper-env/bin/activate
 
 pip install faster-whisper
 ```
@@ -250,7 +250,7 @@ pip install faster-whisper
 
 ```python
 #!/usr/bin/env python3
-# /opt/voicelearn/faster-whisper-server.py
+# /opt/unamentis/faster-whisper-server.py
 
 from faster_whisper import WhisperModel
 from flask import Flask, request, jsonify
@@ -300,8 +300,8 @@ Vosk is designed for CPU inference and has very low latency.
 pip install vosk
 
 # Download model
-mkdir -p /opt/voicelearn/vosk-models
-cd /opt/voicelearn/vosk-models
+mkdir -p /opt/unamentis/vosk-models
+cd /opt/unamentis/vosk-models
 
 # Small English model (~50MB)
 wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
@@ -377,7 +377,7 @@ ollama pull gemma2:2b         # Very fast
 Create a Modelfile for CPU optimization:
 
 ```
-# /opt/voicelearn/Modelfile.cpu-optimized
+# /opt/unamentis/Modelfile.cpu-optimized
 FROM qwen2.5:3b
 
 # Reduce context for faster inference
@@ -396,7 +396,7 @@ Keep responses concise and conversational."""
 ```
 
 ```bash
-ollama create voicelearn-tutor -f /opt/voicelearn/Modelfile.cpu-optimized
+ollama create unamentis-tutor -f /opt/unamentis/Modelfile.cpu-optimized
 ```
 
 ### Expected Performance
@@ -418,7 +418,7 @@ For more control over inference parameters.
 ### Installation
 
 ```bash
-cd /opt/voicelearn
+cd /opt/unamentis
 git clone https://github.com/ggerganov/llama.cpp.git
 cd llama.cpp
 
@@ -435,7 +435,7 @@ cmake --build build --config Release -j$(nproc)
 
 ```bash
 # From Hugging Face (example: Qwen 2.5 3B)
-cd /opt/voicelearn/models
+cd /opt/unamentis/models
 
 # Install huggingface-cli
 pip install huggingface_hub
@@ -451,7 +451,7 @@ huggingface-cli download \
 
 ```bash
 ./build/bin/llama-server \
-  --model /opt/voicelearn/models/qwen2.5-3b-instruct-q4_k_m.gguf \
+  --model /opt/unamentis/models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --host 0.0.0.0 \
   --port 8080 \
   --threads 16 \
@@ -469,16 +469,16 @@ Piper is specifically designed for fast CPU inference.
 ### Installation
 
 ```bash
-cd /opt/voicelearn
+cd /opt/unamentis
 
 # Download Piper release
 wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_linux_x86_64.tar.gz
 tar -xzf piper_linux_x86_64.tar.gz
-mv piper /opt/voicelearn/piper
+mv piper /opt/unamentis/piper
 
 # Download voices
-mkdir -p /opt/voicelearn/piper-voices
-cd /opt/voicelearn/piper-voices
+mkdir -p /opt/unamentis/piper-voices
+cd /opt/unamentis/piper-voices
 
 # Amy - Natural US English female voice
 wget https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/medium/en_US-amy-medium.onnx
@@ -503,7 +503,7 @@ wget https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/danny/l
 
 ```python
 #!/usr/bin/env python3
-# /opt/voicelearn/piper-server.py
+# /opt/unamentis/piper-server.py
 
 from flask import Flask, request, Response
 import subprocess
@@ -512,8 +512,8 @@ import os
 
 app = Flask(__name__)
 
-PIPER_PATH = "/opt/voicelearn/piper/piper"
-VOICE_PATH = "/opt/voicelearn/piper-voices/en_US-amy-medium.onnx"
+PIPER_PATH = "/opt/unamentis/piper/piper"
+VOICE_PATH = "/opt/unamentis/piper-voices/en_US-amy-medium.onnx"
 
 @app.route('/v1/audio/speech', methods=['POST'])
 def synthesize():
@@ -557,7 +557,7 @@ pip install piper-tts
 
 # Run server
 piper_http_server \
-  --model /opt/voicelearn/piper-voices/en_US-amy-medium.onnx \
+  --model /opt/unamentis/piper-voices/en_US-amy-medium.onnx \
   --host 0.0.0.0 \
   --port 8082
 ```
@@ -571,7 +571,7 @@ OpenAI-compatible TTS API using Piper voices.
 ### Installation
 
 ```bash
-cd /opt/voicelearn
+cd /opt/unamentis
 git clone https://github.com/matatonic/openedai-speech.git
 cd openedai-speech
 
@@ -612,7 +612,7 @@ Create a unified gateway that combines all services.
 ### Using Nginx
 
 ```nginx
-# /etc/nginx/sites-available/voicelearn-api
+# /etc/nginx/sites-available/unamentis-api
 
 upstream llm_backend {
     server 127.0.0.1:11434;
@@ -711,7 +711,7 @@ numactl --cpunodebind=0 --membind=0 ollama serve
 For easier deployment and management:
 
 ```yaml
-# /opt/voicelearn/docker-compose.yml
+# /opt/unamentis/docker-compose.yml
 version: '3.8'
 
 services:
@@ -823,10 +823,10 @@ wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudfla
 chmod +x cloudflared-linux-amd64
 
 # Create tunnel
-./cloudflared-linux-amd64 tunnel create voicelearn
+./cloudflared-linux-amd64 tunnel create unamentis
 
 # Configure tunnel
-# Map voicelearn.yourdomain.com -> localhost:8000
+# Map unamentis.yourdomain.com -> localhost:8000
 ```
 
 ### Option 3: Port Forwarding

@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://unamentis.io/schemas/umlcf/v1.0.0/curriculum.json",
-  "title": "Una Mentis Learning Curriculum Format (UMLCF)",
+  "$id": "https://unamentis.com/schemas/umcf/v1.0.0/curriculum.json",
+  "title": "Una Mentis Curriculum Format (UMCF)",
   "description": "A JSON schema for conversational AI tutoring curricula with standards traceability. Optimized for voice-first learning experiences.",
   "type": "object",
   "required": ["formatIdentifier", "id", "title", "version", "content"],
   "properties": {
     "formatIdentifier": {
-      "description": "UMLCF schema format identifier. Source: JSON Schema convention.",
+      "description": "UMCF schema format identifier. Source: JSON Schema convention.",
       "type": "string",
-      "const": "umlcf"
+      "const": "umcf"
     },
     "schemaVersion": {
-      "description": "UMLCF schema version. Source: Semantic Versioning.",
+      "description": "UMCF schema version. Source: Semantic Versioning.",
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "default": "1.0.0"
@@ -60,7 +60,7 @@
       "$ref": "#/$defs/complianceRequirements"
     },
     "content": {
-      "description": "Hierarchical content structure (recursive). Source: SCORM organization, VLCF native.",
+      "description": "Hierarchical content structure (recursive). Source: SCORM organization, UMCF native.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/contentNode"
@@ -323,7 +323,7 @@
           }
         },
         "audienceProfile": {
-          "description": "Detailed audience description. Source: LRMI audience, VLCF native.",
+          "description": "Detailed audience description. Source: LRMI audience, UMCF native.",
           "$ref": "#/$defs/audienceProfile"
         }
       }
@@ -369,7 +369,7 @@
     },
 
     "audienceProfile": {
-      "description": "Detailed audience characteristics. Source: LRMI audience, VLCF native.",
+      "description": "Detailed audience characteristics. Source: LRMI audience, UMCF native.",
       "type": "object",
       "properties": {
         "educationLevel": {
@@ -526,7 +526,7 @@
               "type": "string"
             },
             "originalFormat": {
-              "description": "Original format before conversion to UMLCF.",
+              "description": "Original format before conversion to UMCF.",
               "type": "string",
               "examples": ["scorm", "xapi", "pdf", "video", "markdown", "html"]
             },
@@ -976,7 +976,7 @@
     },
 
     "contentNode": {
-      "description": "A content node in the curriculum hierarchy (recursive). Source: SCORM item, VLCF native.",
+      "description": "A content node in the curriculum hierarchy (recursive). Source: SCORM item, UMCF native.",
       "type": "object",
       "required": ["id", "title", "type"],
       "properties": {
@@ -989,7 +989,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Node type in hierarchy. Source: VLCF native (tutoring-specific).",
+          "description": "Node type in hierarchy. Source: UMCF native (tutoring-specific).",
           "type": "string",
           "enum": ["curriculum", "unit", "module", "topic", "subtopic", "lesson", "section", "segment"]
         },
@@ -1017,15 +1017,15 @@
           }
         },
         "timeEstimates": {
-          "description": "Time estimates by depth level. Source: LOM Educational.TypicalLearningTime, VLCF native.",
+          "description": "Time estimates by depth level. Source: LOM Educational.TypicalLearningTime, UMCF native.",
           "$ref": "#/$defs/timeEstimates"
         },
         "transcript": {
-          "description": "Full tutoring transcript. Source: VLCF native (conversational AI tutoring).",
+          "description": "Full tutoring transcript. Source: UMCF native (conversational AI tutoring).",
           "$ref": "#/$defs/transcript"
         },
         "examples": {
-          "description": "Examples at this node. Source: VLCF native, common in educational materials.",
+          "description": "Examples at this node. Source: UMCF native, common in educational materials.",
           "type": "array",
           "items": {
             "$ref": "#/$defs/example"
@@ -1046,7 +1046,7 @@
           }
         },
         "misconceptions": {
-          "description": "Common misconceptions with remediation. Source: VLCF native (pedagogical best practice).",
+          "description": "Common misconceptions with remediation. Source: UMCF native (pedagogical best practice).",
           "type": "array",
           "items": {
             "$ref": "#/$defs/misconception"
@@ -1060,14 +1060,14 @@
           }
         },
         "children": {
-          "description": "Nested child nodes (recursive). Source: VLCF native (unlimited hierarchy).",
+          "description": "Nested child nodes (recursive). Source: UMCF native (unlimited hierarchy).",
           "type": "array",
           "items": {
             "$ref": "#/$defs/contentNode"
           }
         },
         "tutoringConfig": {
-          "description": "AI tutoring configuration. Source: VLCF native.",
+          "description": "AI tutoring configuration. Source: UMCF native.",
           "$ref": "#/$defs/tutoringConfig"
         },
         "compliance": {
@@ -1111,7 +1111,7 @@
           }
         },
         "verificationCriteria": {
-          "description": "How to verify mastery. Source: VLCF native.",
+          "description": "How to verify mastery. Source: UMCF native.",
           "type": "string"
         },
         "assessmentIds": {
@@ -1125,7 +1125,7 @@
     },
 
     "prerequisite": {
-      "description": "A prerequisite specification. Source: SCORM sequencing, VLCF native.",
+      "description": "A prerequisite specification. Source: SCORM sequencing, UMCF native.",
       "type": "object",
       "properties": {
         "nodeId": {
@@ -1155,7 +1155,7 @@
     },
 
     "timeEstimates": {
-      "description": "Time estimates by content depth level. Source: LOM Educational.TypicalLearningTime, VLCF native.",
+      "description": "Time estimates by content depth level. Source: LOM Educational.TypicalLearningTime, UMCF native.",
       "type": "object",
       "properties": {
         "overview": {
@@ -1198,7 +1198,7 @@
     },
 
     "transcript": {
-      "description": "Full tutoring transcript with segments. Source: VLCF native (conversational AI).",
+      "description": "Full tutoring transcript with segments. Source: UMCF native (conversational AI).",
       "type": "object",
       "properties": {
         "segments": {
@@ -1214,7 +1214,7 @@
           "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?$"
         },
         "pronunciationGuide": {
-          "description": "Pronunciation hints for terms in this transcript. Maps term text (as it appears in content) to IPA pronunciation. TTS services should use SSML <phoneme> tags with ipa alphabet. Source: VLCF native, W3C SSML phoneme.",
+          "description": "Pronunciation hints for terms in this transcript. Maps term text (as it appears in content) to IPA pronunciation. TTS services should use SSML <phoneme> tags with ipa alphabet. Source: UMCF native, W3C SSML phoneme.",
           "type": "object",
           "additionalProperties": {
             "type": "object",
@@ -1257,7 +1257,7 @@
           ]
         },
         "voiceProfile": {
-          "description": "Suggested TTS voice characteristics. Source: VLCF native.",
+          "description": "Suggested TTS voice characteristics. Source: UMCF native.",
           "type": "object",
           "properties": {
             "tone": {
@@ -1277,7 +1277,7 @@
     },
 
     "transcriptSegment": {
-      "description": "A segment of tutoring transcript. Source: VLCF native.",
+      "description": "A segment of tutoring transcript. Source: UMCF native.",
       "type": "object",
       "required": ["id", "type", "content"],
       "properties": {
@@ -1286,7 +1286,7 @@
           "type": "string"
         },
         "type": {
-          "description": "Segment type. Source: VLCF native.",
+          "description": "Segment type. Source: UMCF native.",
           "type": "string",
           "enum": ["lecture", "explanation", "example", "checkpoint", "transition", "summary", "introduction", "conclusion"]
         },
@@ -1295,15 +1295,15 @@
           "type": "string"
         },
         "speakingNotes": {
-          "description": "TTS delivery instructions. Source: VLCF native.",
+          "description": "TTS delivery instructions. Source: UMCF native.",
           "$ref": "#/$defs/speakingNotes"
         },
         "checkpoint": {
-          "description": "Interactive checkpoint after segment. Source: VLCF native.",
+          "description": "Interactive checkpoint after segment. Source: UMCF native.",
           "$ref": "#/$defs/checkpoint"
         },
         "stoppingPoint": {
-          "description": "Natural pause configuration. Source: VLCF native.",
+          "description": "Natural pause configuration. Source: UMCF native.",
           "type": "object",
           "properties": {
             "type": {
@@ -1326,7 +1326,7 @@
           }
         },
         "alternativeExplanations": {
-          "description": "Alternative ways to explain same concept. Source: VLCF native (rephrasing).",
+          "description": "Alternative ways to explain same concept. Source: UMCF native (rephrasing).",
           "type": "array",
           "items": {
             "type": "object",
@@ -1350,7 +1350,7 @@
     },
 
     "speakingNotes": {
-      "description": "TTS delivery instructions. Source: VLCF native.",
+      "description": "TTS delivery instructions. Source: UMCF native.",
       "type": "object",
       "properties": {
         "pace": {
@@ -1380,7 +1380,7 @@
     },
 
     "checkpoint": {
-      "description": "Interactive verification checkpoint. Source: VLCF native, inspired by QTI.",
+      "description": "Interactive verification checkpoint. Source: UMCF native, inspired by QTI.",
       "type": "object",
       "required": ["type", "prompt"],
       "properties": {
@@ -1400,7 +1400,7 @@
           }
         },
         "transitions": {
-          "description": "Response-based transitions. Source: VLCF native.",
+          "description": "Response-based transitions. Source: UMCF native.",
           "type": "object",
           "additionalProperties": {
             "type": "object",
@@ -1426,7 +1426,7 @@
     },
 
     "example": {
-      "description": "An instructional example. Source: VLCF native, common in educational materials.",
+      "description": "An instructional example. Source: UMCF native, common in educational materials.",
       "type": "object",
       "required": ["id", "type"],
       "properties": {
@@ -1448,7 +1448,7 @@
           "type": "string"
         },
         "spokenContent": {
-          "description": "Voice-optimized version. Source: VLCF native.",
+          "description": "Voice-optimized version. Source: UMCF native.",
           "type": "string"
         },
         "complexity": {
@@ -1460,7 +1460,7 @@
           "type": "string"
         },
         "codeExplanation": {
-          "description": "Line-by-line explanation for voice. Source: VLCF native.",
+          "description": "Line-by-line explanation for voice. Source: UMCF native.",
           "type": "array",
           "items": {
             "type": "object",
@@ -1475,7 +1475,7 @@
           }
         },
         "walkthrough": {
-          "description": "Step-by-step walkthrough for voice tutoring. Source: VLCF native.",
+          "description": "Step-by-step walkthrough for voice tutoring. Source: UMCF native.",
           "type": "array",
           "items": {
             "type": "object",
@@ -1518,7 +1518,7 @@
           "type": "string"
         },
         "spokenPrompt": {
-          "description": "Voice-optimized version of prompt. Source: VLCF native.",
+          "description": "Voice-optimized version of prompt. Source: UMCF native.",
           "type": "string"
         },
         "choices": {
@@ -1649,7 +1649,7 @@
     },
 
     "glossaryTerm": {
-      "description": "A glossary term definition. Source: VLCF native.",
+      "description": "A glossary term definition. Source: UMCF native.",
       "type": "object",
       "required": ["term", "definition"],
       "properties": {
@@ -1660,18 +1660,18 @@
           "type": "string"
         },
         "pronunciation": {
-          "description": "IPA or phonetic pronunciation. Source: VLCF native (TTS).",
+          "description": "IPA or phonetic pronunciation. Source: UMCF native (TTS).",
           "type": "string"
         },
         "definition": {
           "type": "string"
         },
         "spokenDefinition": {
-          "description": "Voice-optimized definition. Source: VLCF native.",
+          "description": "Voice-optimized definition. Source: UMCF native.",
           "type": "string"
         },
         "simpleDefinition": {
-          "description": "Simplified definition for younger audiences. Source: VLCF native.",
+          "description": "Simplified definition for younger audiences. Source: UMCF native.",
           "type": "string"
         },
         "synonyms": {
@@ -1696,7 +1696,7 @@
     },
 
     "misconception": {
-      "description": "Common misconception with remediation. Source: VLCF native (pedagogical best practice).",
+      "description": "Common misconception with remediation. Source: UMCF native (pedagogical best practice).",
       "type": "object",
       "required": ["id", "misconception", "correction"],
       "properties": {
@@ -1708,7 +1708,7 @@
           "type": "string"
         },
         "triggerPhrases": {
-          "description": "Phrases that indicate this misconception. Source: VLCF native (detection).",
+          "description": "Phrases that indicate this misconception. Source: UMCF native (detection).",
           "type": "array",
           "items": {
             "type": "string"
@@ -1719,7 +1719,7 @@
           "type": "string"
         },
         "spokenCorrection": {
-          "description": "Voice-optimized correction. Source: VLCF native.",
+          "description": "Voice-optimized correction. Source: UMCF native.",
           "type": "string"
         },
         "explanation": {
@@ -1727,7 +1727,7 @@
           "type": "string"
         },
         "remediationPath": {
-          "description": "Suggested remediation content. Source: VLCF native.",
+          "description": "Suggested remediation content. Source: UMCF native.",
           "type": "object",
           "properties": {
             "reviewTopics": {
@@ -1803,11 +1803,11 @@
     },
 
     "tutoringConfig": {
-      "description": "AI tutoring configuration. Source: VLCF native.",
+      "description": "AI tutoring configuration. Source: UMCF native.",
       "type": "object",
       "properties": {
         "contentDepth": {
-          "description": "Default content depth. Source: VLCF native (VoiceLearn ContentDepth).",
+          "description": "Default content depth. Source: UMCF native (UnaMentis ContentDepth).",
           "type": "string",
           "enum": ["overview", "introductory", "intermediate", "advanced", "graduate", "research"]
         },
@@ -1843,7 +1843,7 @@
     },
 
     "nodeCompliance": {
-      "description": "Node-level compliance requirements. Source: VLCF native.",
+      "description": "Node-level compliance requirements. Source: UMCF native.",
       "type": "object",
       "properties": {
         "mandatory": {
@@ -1891,7 +1891,7 @@
       },
       "examples": [
         {
-          "https://voicelearn.io/extensions/analytics": {
+          "https://unamentis.com/extensions/analytics": {
             "trackingId": "UA-12345",
             "customDimensions": {}
           },

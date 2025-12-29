@@ -203,7 +203,7 @@ mockVAD.nextResult = VADResult(isSpeech: true, confidence: 0.8, ...)
 
 1. **Audio prefetch depth** - Currently segments are fetched as needed. Could prefetch N segments ahead for seamless playback on slow connections.
 
-2. **Checkpoint questions** - UMLCF format supports checkpoint questions. When these appear, playback should pause and wait for user response.
+2. **Checkpoint questions** - UMCF format supports checkpoint questions. When these appear, playback should pause and wait for user response.
 
 3. **Resume from position** - If user stops mid-topic and returns later, should resume from last completed segment.
 

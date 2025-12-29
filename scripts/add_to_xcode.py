@@ -9,7 +9,7 @@ import re
 import uuid
 import sys
 
-PROJECT_FILE = "VoiceLearn.xcodeproj/project.pbxproj"
+PROJECT_FILE = "UnaMentis.xcodeproj/project.pbxproj"
 
 def generate_uuid():
     """Generate a 24-character hex UUID like Xcode uses."""
@@ -32,14 +32,14 @@ def find_stt_group_id(content):
     return None
 
 def find_main_target_id(content):
-    """Find the VoiceLearn target UUID."""
-    match = re.search(r'([A-F0-9]{24})\s*/\*\s*VoiceLearn\s*\*/\s*=\s*\{[^}]*isa\s*=\s*PBXNativeTarget', content)
+    """Find the UnaMentis target UUID."""
+    match = re.search(r'([A-F0-9]{24})\s*/\*\s*UnaMentis\s*\*/\s*=\s*\{[^}]*isa\s*=\s*PBXNativeTarget', content)
     if match:
         return match.group(1)
     return None
 
 def find_sources_build_phase(content):
-    """Find the Sources build phase UUID for VoiceLearn target."""
+    """Find the Sources build phase UUID for UnaMentis target."""
     # Look for PBXSourcesBuildPhase
     match = re.search(r'([A-F0-9]{24})\s*/\*\s*Sources\s*\*/\s*=\s*\{[^}]*isa\s*=\s*PBXSourcesBuildPhase', content)
     if match:
@@ -47,7 +47,7 @@ def find_sources_build_phase(content):
     return None
 
 def find_resources_build_phase(content):
-    """Find the Resources build phase UUID for VoiceLearn target."""
+    """Find the Resources build phase UUID for UnaMentis target."""
     match = re.search(r'([A-F0-9]{24})\s*/\*\s*Resources\s*\*/\s*=\s*\{[^}]*isa\s*=\s*PBXResourcesBuildPhase', content)
     if match:
         return match.group(1)
@@ -118,18 +118,18 @@ def main():
     print("MANUAL STEPS REQUIRED:")
     print("="*60)
     print("""
-1. Open VoiceLearn.xcodeproj in Xcode
+1. Open UnaMentis.xcodeproj in Xcode
 
 2. Add GLMASROnDeviceSTTService.swift:
-   - Right-click on VoiceLearn/Services/STT folder
-   - Select "Add Files to VoiceLearn..."
-   - Navigate to: VoiceLearn/Services/STT/GLMASROnDeviceSTTService.swift
-   - Ensure "VoiceLearn" target is checked
+   - Right-click on UnaMentis/Services/STT folder
+   - Select "Add Files to UnaMentis..."
+   - Navigate to: UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift
+   - Ensure "UnaMentis" target is checked
    - Click Add
 
 3. Add model files to Copy Bundle Resources:
-   - Right-click on VoiceLearn folder (or create a "Models" group)
-   - Select "Add Files to VoiceLearn..."
+   - Right-click on UnaMentis folder (or create a "Models" group)
+   - Select "Add Files to UnaMentis..."
    - Navigate to: models/glm-asr-nano/
    - Select these files:
      * GLMASRWhisperEncoder.mlpackage
@@ -138,11 +138,11 @@ def main():
      * GLMASRConvEncoder.mlpackage
      * glm-asr-nano-q4km.gguf
    - Check "Copy items if needed"
-   - Ensure "VoiceLearn" target is checked
+   - Ensure "UnaMentis" target is checked
    - Click Add
 
 4. Verify LLAMA_AVAILABLE flag:
-   - Select VoiceLearn target
+   - Select UnaMentis target
    - Go to Build Settings
    - Search for "Other Swift Flags"
    - Ensure "-DLLAMA_AVAILABLE" is present

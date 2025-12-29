@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# VoiceLearn Web Management Server
+# UnaMentis Web Management Server
 # Run this script to start the management interface
 #
 
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}"
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║       VoiceLearn Web Management Server                       ║"
+echo "║       UnaMentis Web Management Server                         ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -35,8 +35,8 @@ python3 -c "import aiohttp" 2>/dev/null || {
 }
 
 # Set default port
-PORT="${VOICELEARN_MGMT_PORT:-8766}"
-HOST="${VOICELEARN_MGMT_HOST:-0.0.0.0}"
+PORT="${UNAMENTIS_MGMT_PORT:-8766}"
+HOST="${UNAMENTIS_MGMT_HOST:-0.0.0.0}"
 
 echo ""
 echo -e "${GREEN}Starting server on http://${HOST}:${PORT}${NC}"

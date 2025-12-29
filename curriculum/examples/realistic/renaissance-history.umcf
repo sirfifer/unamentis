@@ -1,5 +1,5 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UUID",
     "value": "e5f6a7b8-c9d0-1234-ef56-789012345678"
@@ -15,14 +15,14 @@
     "status": "final",
     "contributors": [
       {
-        "name": "VoiceLearn Curriculum Team",
+        "name": "UnaMentis Curriculum Team",
         "role": "author",
-        "organization": "VoiceLearn"
+        "organization": "UnaMentis"
       },
       {
         "name": "History Education Specialists",
         "role": "educational validator",
-        "organization": "VoiceLearn"
+        "organization": "UnaMentis"
       }
     ],
     "created": "2025-12-20T00:00:00Z"
@@ -108,7 +108,7 @@
       "type": "CC-BY-4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/"
     },
-    "holder": "VoiceLearn Inc."
+    "holder": "UnaMentis Inc."
   },
   "glossary": {
     "terms": [
@@ -531,7 +531,7 @@
           "assessments": [
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-medieval-1"
               },
               "type": "choice",
@@ -567,7 +567,7 @@
             },
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-medieval-2"
               },
               "type": "choice",
@@ -603,7 +603,7 @@
             },
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-medieval-3"
               },
               "type": "choice",
@@ -1214,7 +1214,7 @@
           "assessments": [
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-italy-1"
               },
               "type": "choice",
@@ -1250,7 +1250,7 @@
             },
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-italy-2"
               },
               "type": "choice",
@@ -1286,7 +1286,7 @@
             },
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-italy-3"
               },
               "type": "choice",
@@ -1322,7 +1322,7 @@
             },
             {
               "id": {
-                "catalog": "umlcf",
+                "catalog": "umcf",
                 "value": "assess-italy-4"
               },
               "type": "choice",
@@ -3103,7 +3103,7 @@
     }
   ],
   "extensions": {
-    "https://voicelearn.io/extensions/elementary": {
+    "https://unamentis.com/extensions/elementary": {
       "celebrationPhrases": [
         "Excellent work! You're becoming a Renaissance scholar!",
         "Great job! Leonardo would be impressed!",

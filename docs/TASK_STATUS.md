@@ -97,15 +97,15 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 7.1 | iOS Simulator MCP | completed | ~/.claude.json | ios-simulator-mcp installed |
 | 7.2 | Documentation update | completed | docs/*.md | New GLM-ASR and AI testing guides |
 
-### 8. Curriculum Format (UMLCF) Specification
+### 8. Curriculum Format (UMCF) Specification
 
 | ID | Task | Status | File(s) | Notes |
 |----|------|--------|---------|-------|
-| 8.1 | Create UMLCF JSON Schema | completed | curriculum/spec/umlcf-schema.json | Draft 2020-12, 1,847 lines |
-| 8.2 | Write UMLCF Specification doc | completed | curriculum/spec/VLCF_SPECIFICATION.md | Human-readable spec |
+| 8.1 | Create UMCF JSON Schema | completed | curriculum/spec/umcf-schema.json | Draft 2020-12, 1,847 lines |
+| 8.2 | Write UMCF Specification doc | completed | curriculum/spec/UMCF_SPECIFICATION.md | Human-readable spec |
 | 8.3 | Write Standards Traceability | completed | curriculum/spec/STANDARDS_TRACEABILITY.md | 152 fields, 10 standards |
-| 8.4 | Create minimal examples | completed | curriculum/examples/minimal/*.umlcf | 3 validation examples |
-| 8.5 | Create realistic examples | completed | curriculum/examples/realistic/*.umlcf | 3 full curricula |
+| 8.4 | Create minimal examples | completed | curriculum/examples/minimal/*.umcf | 3 validation examples |
+| 8.5 | Create realistic examples | completed | curriculum/examples/realistic/*.umcf | 3 full curricula |
 | 8.6 | Design import architecture | completed | curriculum/importers/IMPORTER_ARCHITECTURE.md | Plugin system spec |
 | 8.7 | Write CK-12 importer spec | completed | curriculum/importers/CK12_IMPORTER_SPEC.md | K-12 (8th grade) |
 | 8.8 | Write Fast.ai importer spec | completed | curriculum/importers/FASTAI_IMPORTER_SPEC.md | AI/ML collegiate |
@@ -182,7 +182,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 14.3 | Test OpenStax API | pending | 11.x | Online resource integration |
 | 14.4 | Test Wikipedia API | pending | - | Online resource integration |
 
-### 15. UMLCF Implementation (Future)
+### 15. UMCF Implementation (Future)
 
 | ID | Task | Status | Depends On | Notes |
 |----|------|--------|------------|-------|
@@ -191,7 +191,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 15.3 | Build Fast.ai importer | pending | 15.1 | Jupyter notebook import |
 | 15.4 | Build AI enrichment pipeline | pending | 15.1 | Sparse → rich transformation |
 | 15.5 | Create web-based editor | pending | 15.1-15.4 | Human-in-the-loop review |
-| 15.6 | Integrate UMLCF with iOS app | pending | 15.1 | Replace current curriculum format |
+| 15.6 | Integrate UMCF with iOS app | pending | 15.1 | Replace current curriculum format |
 
 ### 16. Final Polish
 
@@ -219,7 +219,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 1.5 | Fix macOS API compatibility | Claude Code | 2025-12-16 | #if os(iOS) guards |
 | 6.1-6.5 | GLM-ASR implementation | Claude Code | 2025-12-16 | Server + on-device STT |
 | 7.1-7.2 | Infrastructure & docs | Claude Code | 2025-12-16 | MCP setup, documentation |
-| 8.1-8.10 | UMLCF specification complete | Claude Code | 2025-12-17 | Schema, spec, examples, importers, AI pipeline |
+| 8.1-8.10 | UMCF specification complete | Claude Code | 2025-12-17 | Schema, spec, examples, importers, AI pipeline |
 | 9.1-9.10 | Apple Intelligence integration | Claude Code | 2025-12-24 | Siri voice commands, App Intents, deep links, 23 tests |
 | 10.1-10.5 | Graceful degradation architecture | Claude Code | 2025-12-24 | STT/TTS/LLM fallbacks to built-in services |
 
@@ -260,7 +260,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 - [x] GLM-ASR on-device implementation
 - [x] iOS Simulator MCP installed
 - [x] Documentation updated
-- [x] **UMLCF specification complete** (JSON Schema, human-readable spec, standards traceability)
+- [x] **UMCF specification complete** (JSON Schema, human-readable spec, standards traceability)
 - [x] **Import system designed** (CK-12, Fast.ai, AI enrichment pipeline)
 - [x] **Apple Intelligence integration** (Siri voice commands, App Intents, deep links)
 - [ ] Full voice conversation works on device (requires API keys)
@@ -285,12 +285,12 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | (Updated) SETUP.md | Model setup instructions |
 | (Updated) PROJECT_OVERVIEW.md | Added Intents architecture, Graceful Degradation |
 
-### Curriculum Format (UMLCF) Documentation
+### Curriculum Format (UMCF) Documentation
 | Document | Purpose |
 |----------|---------|
-| [curriculum/README.md](../curriculum/README.md) | **Comprehensive UMLCF overview** |
-| [curriculum/spec/VLCF_SPECIFICATION.md](../curriculum/spec/VLCF_SPECIFICATION.md) | Human-readable format spec |
-| [curriculum/spec/umlcf-schema.json](../curriculum/spec/umlcf-schema.json) | JSON Schema (Draft 2020-12) |
+| [curriculum/README.md](../curriculum/README.md) | **Comprehensive UMCF overview** |
+| [curriculum/spec/UMCF_SPECIFICATION.md](../curriculum/spec/UMCF_SPECIFICATION.md) | Human-readable format spec |
+| [curriculum/spec/umcf-schema.json](../curriculum/spec/umcf-schema.json) | JSON Schema (Draft 2020-12) |
 | [curriculum/spec/STANDARDS_TRACEABILITY.md](../curriculum/spec/STANDARDS_TRACEABILITY.md) | Field-by-field standards mapping |
 | [curriculum/importers/IMPORTER_ARCHITECTURE.md](../curriculum/importers/IMPORTER_ARCHITECTURE.md) | Import system design |
 | [curriculum/importers/CK12_IMPORTER_SPEC.md](../curriculum/importers/CK12_IMPORTER_SPEC.md) | K-12 curriculum importer |
@@ -367,7 +367,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 09-settings-scrolled.png | Settings scrolled |
 | 10-analytics-view.png | Analytics final view |
 
-**Screenshots location**: `/tmp/voicelearn-screenshots/`
+**Screenshots location**: `/tmp/unamentis-screenshots/`
 
 ### AI Testing Capability Assessment
 

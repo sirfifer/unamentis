@@ -337,7 +337,7 @@ export interface MetricsHistorySummary {
 // These type definitions are retained for reference but all curriculum UI has been removed.
 // The Operations Console focuses exclusively on DevOps tasks.
 
-/** Types of visual assets supported in UMLCF */
+/** Types of visual assets supported in UMCF */
 export type VisualAssetType =
   | 'image'
   | 'diagram'
@@ -367,7 +367,7 @@ export interface SegmentTiming {
   displayMode: VisualDisplayMode;
 }
 
-/** Visual asset definition in UMLCF format */
+/** Visual asset definition in UMCF format */
 export interface VisualAsset {
   id: string;
   type: VisualAssetType;
@@ -591,9 +591,9 @@ export interface GlossaryTerm {
   relatedTerms?: string[];
 }
 
-/** Full UMLCF curriculum document */
-export interface UMLCFDocument {
-  umlcf: string;  // Version string
+/** Full UMCF curriculum document */
+export interface UMCFDocument {
+  umcf: string;  // Version string
   id: { catalog?: string; value: string };
   title: string;
   description?: string;
@@ -644,7 +644,7 @@ export interface CurriculumSummary {
 
 /** Curriculum detail for editor */
 export interface CurriculumDetail extends CurriculumSummary {
-  document: UMLCFDocument;
+  document: UMCFDocument;
   topics: CurriculumTopic[];
 }
 
@@ -685,7 +685,7 @@ export interface AssetUploadResponse {
 /** Curriculum save request */
 export interface CurriculumSaveRequest {
   curriculumId: string;
-  document: UMLCFDocument;
+  document: UMCFDocument;
 }
 
 /** Curriculum save response */

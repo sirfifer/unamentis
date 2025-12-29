@@ -1,11 +1,11 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UUID",
     "value": "00000000-0000-0000-0000-000000000001"
   },
   "title": "Minimal Topic Example",
-  "description": "The simplest valid VLCF curriculum - demonstrates required fields only.",
+  "description": "The simplest valid UMCF curriculum - demonstrates required fields only.",
   "version": {
     "number": "1.0.0",
     "date": "2025-12-17T00:00:00Z"

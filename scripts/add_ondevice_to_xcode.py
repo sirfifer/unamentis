@@ -8,7 +8,7 @@ import re
 import random
 import string
 
-PROJECT_FILE = "VoiceLearn.xcodeproj/project.pbxproj"
+PROJECT_FILE = "UnaMentis.xcodeproj/project.pbxproj"
 
 def generate_uuid():
     """Generate a 24-character hex UUID like Xcode uses."""
@@ -104,7 +104,7 @@ def add_resource_folder(content, folder_name, folder_path):
     content = re.sub(resources_pattern, add_to_resources, content, count=1)
 
     # Add to main group children
-    # Find the VoiceLearn group and add the reference
+    # Find the UnaMentis group and add the reference
     # This is trickier - let's add it to the root project group
     main_group_pattern = r'(mainGroup = [A-F0-9]{24}[^;]*;)'
 
@@ -124,7 +124,7 @@ def main():
     content = add_source_file(
         content,
         "GLMASROnDeviceSTTService.swift",
-        "VoiceLearn/Services/STT/GLMASROnDeviceSTTService.swift"
+        "UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift"
     )
 
     # Add model files

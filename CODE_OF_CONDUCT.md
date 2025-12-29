@@ -2,7 +2,7 @@
 
 ## Our Commitment
 
-VoiceLearn is committed to providing a welcoming and inclusive environment for everyone. We expect all participants to treat each other with respect and professionalism.
+UnaMentis is committed to providing a welcoming and inclusive environment for everyone. We expect all participants to treat each other with respect and professionalism.
 
 ## Expected Behavior
 

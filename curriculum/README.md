@@ -1,4 +1,4 @@
-# UnaMentis Curriculum Format (VLCF)
+# Una Mentis Curriculum Format (UMCF)
 
 **A Standards-Based Curriculum Format for Conversational AI Tutoring**
 
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-The UnaMentis Curriculum Format (VLCF) is a JSON-based specification for representing educational content optimized for **conversational AI tutoring**. Unlike traditional e-learning formats designed for Learning Management Systems (LMS), VLCF is purpose-built for voice-first, real-time tutoring interactions.
+The Una Mentis Curriculum Format (UMCF) is a JSON-based specification for representing educational content optimized for **conversational AI tutoring**. Unlike traditional e-learning formats designed for Learning Management Systems (LMS), UMCF is purpose-built for voice-first, real-time tutoring interactions.
 
 **Key Differentiators:**
 - **Voice-native**: Every text field has optional `spokenText` variants optimized for TTS
@@ -25,7 +25,7 @@ The UnaMentis Curriculum Format (VLCF) is a JSON-based specification for represe
 
 1. [Vision & Philosophy](#vision--philosophy)
 2. [Who This Is For](#who-this-is-for)
-3. [What Makes VLCF Different](#what-makes-vlcf-different)
+3. [What Makes UMCF Different](#what-makes-umcf-different)
 4. [Standards Foundation](#standards-foundation)
 5. [Specification Overview](#specification-overview)
 6. [Import System](#import-system)
@@ -56,7 +56,7 @@ Modern AI tutors need:
 
 ### The Solution: Hub-and-Spoke Architecture
 
-VLCF serves as the **canonical internal format** for tutoring systems, with established standards as import/export "spokes":
+UMCF serves as the **canonical internal format** for tutoring systems, with established standards as import/export "spokes":
 
 ```
                     ┌─────────────┐
@@ -67,7 +67,7 @@ VLCF serves as the **canonical internal format** for tutoring systems, with esta
                            │ Import
                            ▼
 ┌─────────────────────────────────────────────────────┐
-│                       VLCF                           │
+│                       UMCF                           │
 │              (Canonical Format)                      │
 │                                                      │
 │  • Conversational AI optimized                      │
@@ -118,11 +118,11 @@ The [Standards Traceability Document](spec/STANDARDS_TRACEABILITY.md) provides f
 
 ---
 
-## What Makes VLCF Different
+## What Makes UMCF Different
 
 ### Comparison with Existing Standards
 
-| Feature | SCORM | xAPI | IMSCC | **VLCF** |
+| Feature | SCORM | xAPI | IMSCC | **UMCF** |
 |---------|-------|------|-------|----------|
 | **Primary use** | LMS delivery | Activity tracking | Content exchange | **Conversational tutoring** |
 | **Content depth** | 3-4 levels | N/A | 2-3 levels | **Unlimited** |
@@ -132,7 +132,7 @@ The [Standards Traceability Document](spec/STANDARDS_TRACEABILITY.md) provides f
 | **Alternative explanations** | None | None | None | **Multiple variants** |
 | **AI enrichment** | N/A | N/A | N/A | **Purpose-built** |
 
-### Novel Elements in VLCF
+### Novel Elements in UMCF
 
 These elements are **not borrowed from any standard**—they are innovations for conversational tutoring:
 
@@ -194,9 +194,9 @@ These elements are **not borrowed from any standard**—they are innovations for
 
 ## Standards Foundation
 
-VLCF is built on a foundation of established educational standards:
+UMCF is built on a foundation of established educational standards:
 
-| Standard | What We Borrow | VLCF Usage |
+| Standard | What We Borrow | UMCF Usage |
 |----------|----------------|------------|
 | **IEEE LOM** (1484.12.1) | Metadata categories, lifecycle | Core metadata structure |
 | **LRMI** (Schema.org) | Educational alignment, audience | `educational` block |
@@ -215,7 +215,7 @@ From the [Standards Traceability Document](spec/STANDARDS_TRACEABILITY.md):
 
 - **Total fields**: 152
 - **Standards-derived**: 82 (54%)
-- **VLCF-native**: 70 (46%)
+- **UMCF-native**: 70 (46%)
 
 The native fields are specifically designed for conversational tutoring—capabilities that don't exist in traditional standards.
 
@@ -226,9 +226,9 @@ The native fields are specifically designed for conversational tutoring—capabi
 ### Document Structure
 
 ```
-VLCF Document
+UMCF Document
 │
-├── vlcf: "1.0.0"              # Format version
+├── umcf: "1.0.0"              # Format version
 ├── id                          # Unique identifier (UUID/ISBN/DOI)
 ├── title                       # Human-readable title
 ├── description                 # Overview
@@ -269,15 +269,15 @@ VLCF Document
 
 | File | Description |
 |------|-------------|
-| [spec/vlcf-schema.json](spec/vlcf-schema.json) | JSON Schema (Draft 2020-12) |
-| [spec/VLCF_SPECIFICATION.md](spec/VLCF_SPECIFICATION.md) | Human-readable specification |
+| [spec/umcf-schema.json](spec/umcf-schema.json) | JSON Schema (Draft 2020-12) |
+| [spec/UMCF_SPECIFICATION.md](spec/UMCF_SPECIFICATION.md) | Human-readable specification |
 | [spec/STANDARDS_TRACEABILITY.md](spec/STANDARDS_TRACEABILITY.md) | Field-by-field standards mapping |
 
 ---
 
 ## Import System
 
-VLCF includes a pluggable import system for converting external formats:
+UMCF includes a pluggable import system for converting external formats:
 
 ### Architecture
 
@@ -290,8 +290,8 @@ VLCF includes a pluggable import system for converting external formats:
 │   ─────────────              ───────────────           ──────  │
 │                                                                 │
 │   CK-12 FlexBook  ──────►   CK12Importer   ──────►            │
-│   (EPUB)                                              VLCF     │
-│                                                       (.vlcf)  │
+│   (EPUB)                                              UMCF     │
+│                                                       (.umcf)  │
 │   Fast.ai Course  ──────►   FastaiImporter ──────►            │
 │   (Jupyter)                                                    │
 │                                                                 │
@@ -315,9 +315,9 @@ Importers are discovered via Python entry points (PEP 621):
 
 ```toml
 # pyproject.toml
-[project.entry-points."vlcf.importers"]
-ck12 = "vlcf_importer.importers.ck12:CK12Importer"
-fastai = "vlcf_importer.importers.fastai:FastaiImporter"
+[project.entry-points."umcf.importers"]
+ck12 = "umcf_importer.importers.ck12:CK12Importer"
+fastai = "umcf_importer.importers.fastai:FastaiImporter"
 ```
 
 ### Key Files
@@ -332,7 +332,7 @@ fastai = "vlcf_importer.importers.fastai:FastaiImporter"
 
 ## AI Enrichment Pipeline
 
-The most innovative aspect of VLCF is the **AI-powered enrichment pipeline** that transforms sparse content into rich, tutoring-ready curriculum:
+The most innovative aspect of UMCF is the **AI-powered enrichment pipeline** that transforms sparse content into rich, tutoring-ready curriculum:
 
 ### The Problem
 
@@ -350,7 +350,7 @@ Most curriculum content is **sparse**:
 │                   AI ENRICHMENT PIPELINE                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Sparse Input                     Rich VLCF Output             │
+│  Sparse Input                     Rich UMCF Output             │
 │  ────────────                     ────────────────             │
 │                                                                 │
 │  "Plain text         Stage 1: Content Analysis                 │
@@ -363,7 +363,7 @@ Most curriculum content is **sparse**:
 │                                                                 │
 │                      ↓                                         │
 │                                                                 │
-│                   Fully enriched VLCF with:                    │
+│                   Fully enriched UMCF with:                    │
 │                   • Hierarchical structure                     │
 │                   • Transcript segments                        │
 │                   • Stopping points                            │
@@ -426,19 +426,19 @@ curriculum/
 ├── README.md                              # This document
 │
 ├── spec/                                  # Core specification
-│   ├── vlcf-schema.json                  # JSON Schema (1,847 lines)
-│   ├── VLCF_SPECIFICATION.md             # Human-readable spec
+│   ├── umcf-schema.json                  # JSON Schema (1,847 lines)
+│   ├── UMCF_SPECIFICATION.md             # Human-readable spec
 │   └── STANDARDS_TRACEABILITY.md         # Standards mapping
 │
 ├── examples/                              # Example curricula
 │   ├── minimal/                          # Schema validation examples
-│   │   ├── minimal-topic.vlcf
-│   │   ├── minimal-assessment.vlcf
-│   │   └── minimal-compliance.vlcf
+│   │   ├── minimal-topic.umcf
+│   │   ├── minimal-assessment.umcf
+│   │   └── minimal-compliance.umcf
 │   └── realistic/                        # Full tutoring examples
-│       ├── elementary-math.vlcf          # 3rd-4th grade
-│       ├── corporate-security.vlcf       # Compliance training
-│       └── pytorch-fundamentals.vlcf     # Technical/collegiate
+│       ├── elementary-math.umcf          # 3rd-4th grade
+│       ├── corporate-security.umcf       # Compliance training
+│       └── pytorch-fundamentals.umcf     # Technical/collegiate
 │
 ├── importers/                             # Import system specs
 │   ├── IMPORTER_ARCHITECTURE.md          # Plugin architecture
@@ -457,7 +457,7 @@ curriculum/
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| **VLCF Schema** | Draft 1.0.0 | Complete, ready for review |
+| **UMCF Schema** | Draft 1.0.0 | Complete, ready for review |
 | **Specification Doc** | Draft 1.0.0 | Complete |
 | **Standards Traceability** | Complete | 152 fields mapped |
 | **Minimal Examples** | Complete | 3 examples |
@@ -482,7 +482,7 @@ curriculum/
 
 ### Potential Standalone Project
 
-VLCF may be spun off into its own repository to enable:
+UMCF may be spun off into its own repository to enable:
 
 1. **Community adoption**: Other tutoring systems could adopt the format
 2. **Independent governance**: Standards evolution separate from UnaMentis
@@ -517,14 +517,14 @@ VLCF may be spun off into its own repository to enable:
 
 ### For Reviewers
 
-1. **Start with the specification**: [VLCF_SPECIFICATION.md](spec/VLCF_SPECIFICATION.md)
+1. **Start with the specification**: [UMCF_SPECIFICATION.md](spec/UMCF_SPECIFICATION.md)
 2. **Review standards mapping**: [STANDARDS_TRACEABILITY.md](spec/STANDARDS_TRACEABILITY.md)
 3. **Examine examples**: [examples/realistic/](examples/realistic/)
-4. **Validate schema**: Use any JSON Schema validator with [vlcf-schema.json](spec/vlcf-schema.json)
+4. **Validate schema**: Use any JSON Schema validator with [umcf-schema.json](spec/umcf-schema.json)
 
 ### For Developers
 
-1. **Read the schema**: [vlcf-schema.json](spec/vlcf-schema.json)
+1. **Read the schema**: [umcf-schema.json](spec/umcf-schema.json)
 2. **Study the import architecture**: [IMPORTER_ARCHITECTURE.md](importers/IMPORTER_ARCHITECTURE.md)
 3. **Review importer specs**: CK12 and Fast.ai specs show implementation patterns
 4. **Understand enrichment**: [AI_ENRICHMENT_PIPELINE.md](importers/AI_ENRICHMENT_PIPELINE.md)
@@ -533,13 +533,13 @@ VLCF may be spun off into its own repository to enable:
 
 1. **Start with minimal examples**: [examples/minimal/](examples/minimal/)
 2. **Progress to realistic examples**: [examples/realistic/](examples/realistic/)
-3. **Reference the specification**: [VLCF_SPECIFICATION.md](spec/VLCF_SPECIFICATION.md)
+3. **Reference the specification**: [UMCF_SPECIFICATION.md](spec/UMCF_SPECIFICATION.md)
 
 ---
 
 ## Contributing
 
-VLCF is currently part of the UnaMentis project. Contributions are welcome:
+UMCF is currently part of the UnaMentis project. Contributions are welcome:
 
 1. **Schema improvements**: Propose changes via issues
 2. **Example content**: Submit new curriculum examples
@@ -589,10 +589,10 @@ Copyright (c) 2025 Richard Amerman
 
 ## Contact
 
-For questions about VLCF:
+For questions about UMCF:
 - Open an issue on the UnaMentis GitHub repository
 - See the main project README for contact information
 
 ---
 
-*VLCF: Bringing educational content into the age of conversational AI.*
+*UMCF: Bringing educational content into the age of conversational AI.*

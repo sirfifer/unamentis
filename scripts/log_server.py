@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VoiceLearn Remote Log Server with Web Interface
+UnaMentis Remote Log Server with Web Interface
 
 A simple HTTP server that receives logs from the iOS app and provides:
 - Real-time terminal output with color-coded formatting
@@ -93,7 +93,7 @@ WEB_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoiceLearn Log Viewer</title>
+    <title>UnaMentis Log Viewer</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -239,7 +239,7 @@ WEB_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
     <div class="header">
-        <h1>VoiceLearn Log Viewer</h1>
+        <h1>UnaMentis Log Viewer</h1>
         <div class="header-info">
             <span>Server: <span class="value" id="server-ip">{{SERVER_IP}}</span></span>
             <span>Port: <span class="value">{{PORT}}</span></span>
@@ -369,7 +369,7 @@ WEB_TEMPLATE = """<!DOCTYPE html>
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `voicelearn-logs-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+            a.download = `unamentis-logs-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
             a.click();
         }
 
@@ -552,7 +552,7 @@ def print_banner(host: str, port: int, local_ip: str):
     """Print startup banner with connection info."""
     print(f"""
 {Colors.BOLD}╔══════════════════════════════════════════════════════════════╗
-║           VoiceLearn Remote Log Server v2.0                   ║
+║           UnaMentis Remote Log Server v2.0                    ║
 ╚══════════════════════════════════════════════════════════════╝{Colors.RESET}
 
 {Colors.INFO}Server running on:{Colors.RESET}
@@ -572,7 +572,7 @@ def print_banner(host: str, port: int, local_ip: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="VoiceLearn Remote Log Server")
+    parser = argparse.ArgumentParser(description="UnaMentis Remote Log Server")
     parser.add_argument("--port", "-p", type=int, default=8765, help="Port to listen on")
     parser.add_argument("--bind", "-b", default="0.0.0.0", help="Address to bind to")
     parser.add_argument("--output", "-o", help="File to save logs to")

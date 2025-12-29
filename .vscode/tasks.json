@@ -7,7 +7,7 @@
       "command": "xcodebuild",
       "args": [
         "-scheme",
-        "VoiceLearn",
+        "UnaMentis",
         "-destination",
         "platform=iOS Simulator,name=iPhone 16 Pro Max",
         "build"

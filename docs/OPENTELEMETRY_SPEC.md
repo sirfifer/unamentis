@@ -85,7 +85,7 @@ Both options support the same OpenTelemetry protocols from the iOS app.
 │  │                     (for remote AI agent access)                         │  │
 │  │                                                                          │  │
 │  │  Local:   http://localhost:3301                                          │  │
-│  │  Remote:  https://voicelearn-otel.your-tunnel.com                        │  │
+│  │  Remote:  https://unamentis-otel.your-tunnel.com                        │  │
 │  └─────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                │
 └────────────────────────────────────────────────────────────────────────────────┘
@@ -100,51 +100,51 @@ Both options support the same OpenTelemetry protocols from the iOS app.
 #### Latency Metrics (Histograms)
 | Metric Name | Unit | Description |
 |-------------|------|-------------|
-| `voicelearn.stt.latency` | ms | Speech-to-text emission time |
-| `voicelearn.llm.first_token_latency` | ms | Time to first LLM token |
-| `voicelearn.tts.ttfb` | ms | TTS time to first byte |
-| `voicelearn.turn.e2e_latency` | ms | End-to-end turn latency |
-| `voicelearn.audio.processing_latency` | ms | Audio buffer processing time |
+| `unamentis.stt.latency` | ms | Speech-to-text emission time |
+| `unamentis.llm.first_token_latency` | ms | Time to first LLM token |
+| `unamentis.tts.ttfb` | ms | TTS time to first byte |
+| `unamentis.turn.e2e_latency` | ms | End-to-end turn latency |
+| `unamentis.audio.processing_latency` | ms | Audio buffer processing time |
 
 #### Cost Metrics (Counters)
 | Metric Name | Unit | Description |
 |-------------|------|-------------|
-| `voicelearn.cost.stt` | USD | Cumulative STT cost |
-| `voicelearn.cost.tts` | USD | Cumulative TTS cost |
-| `voicelearn.cost.llm` | USD | Cumulative LLM cost |
-| `voicelearn.cost.total` | USD | Total session cost |
+| `unamentis.cost.stt` | USD | Cumulative STT cost |
+| `unamentis.cost.tts` | USD | Cumulative TTS cost |
+| `unamentis.cost.llm` | USD | Cumulative LLM cost |
+| `unamentis.cost.total` | USD | Total session cost |
 
 #### Session Metrics (Gauges/Counters)
 | Metric Name | Type | Description |
 |-------------|------|-------------|
-| `voicelearn.session.duration` | gauge | Current session duration (seconds) |
-| `voicelearn.session.turns` | counter | Total conversation turns |
-| `voicelearn.session.interruptions` | counter | User interruption count |
-| `voicelearn.session.thermal_throttle_events` | counter | Thermal throttling occurrences |
+| `unamentis.session.duration` | gauge | Current session duration (seconds) |
+| `unamentis.session.turns` | counter | Total conversation turns |
+| `unamentis.session.interruptions` | counter | User interruption count |
+| `unamentis.session.thermal_throttle_events` | counter | Thermal throttling occurrences |
 
 #### Device Metrics (Gauges)
 | Metric Name | Type | Description |
 |-------------|------|-------------|
-| `voicelearn.device.memory_available` | gauge | Available memory (MB) |
-| `voicelearn.device.thermal_state` | gauge | 0=nominal, 1=fair, 2=serious, 3=critical |
-| `voicelearn.device.battery_level` | gauge | Battery percentage (0-1) |
+| `unamentis.device.memory_available` | gauge | Available memory (MB) |
+| `unamentis.device.thermal_state` | gauge | 0=nominal, 1=fair, 2=serious, 3=critical |
+| `unamentis.device.battery_level` | gauge | Battery percentage (0-1) |
 
 ### Proposed Additional Metrics
 
 #### Model Performance
 | Metric Name | Type | Description |
 |-------------|------|-------------|
-| `voicelearn.model.load_time` | histogram | On-device model load time |
-| `voicelearn.model.inference_time` | histogram | Per-inference latency |
-| `voicelearn.model.tokens_per_second` | gauge | Generation throughput |
-| `voicelearn.model.memory_usage` | gauge | Model memory footprint (MB) |
+| `unamentis.model.load_time` | histogram | On-device model load time |
+| `unamentis.model.inference_time` | histogram | Per-inference latency |
+| `unamentis.model.tokens_per_second` | gauge | Generation throughput |
+| `unamentis.model.memory_usage` | gauge | Model memory footprint (MB) |
 
 #### Network Quality
 | Metric Name | Type | Description |
 |-------------|------|-------------|
-| `voicelearn.network.type` | gauge | 0=none, 1=wifi, 2=cellular |
-| `voicelearn.network.latency` | histogram | Network round-trip time |
-| `voicelearn.network.failures` | counter | Request failures |
+| `unamentis.network.type` | gauge | 0=none, 1=wifi, 2=cellular |
+| `unamentis.network.latency` | histogram | Network round-trip time |
+| `unamentis.network.failures` | counter | Request failures |
 
 ---
 
@@ -228,7 +228,7 @@ public actor OTelExporter {
 
     /// Export latency as histogram
     func exportLatency(_ type: LatencyType, _ value: TimeInterval) {
-        let histogram = meter.createDoubleHistogram(name: "voicelearn.\(type.rawValue)")
+        let histogram = meter.createDoubleHistogram(name: "unamentis.\(type.rawValue)")
         histogram.record(value: value * 1000) // Convert to ms
     }
 

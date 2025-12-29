@@ -1,10 +1,10 @@
 # Curriculum Importer Framework
 
-Python framework for importing external curriculum sources into UMLCF format.
+Python framework for importing external curriculum sources into UMCF format.
 
 ## Purpose
 
-Ingest curriculum from external sources (MIT OCW, CK-12, and future sources) and convert to the UnaMentis Curriculum Format (UMLCF).
+Ingest curriculum from external sources (MIT OCW, CK-12, and future sources) and convert to the Una Mentis Curriculum Format (UMCF).
 
 ## Plugin Architecture
 
@@ -103,7 +103,7 @@ python -m pytest tests/test_orchestrator.py        # Orchestrator tests
 
 ## Output Format
 
-All importers produce UMLCF-compliant JSON. See `curriculum/spec/` for the full specification.
+All importers produce UMCF-compliant JSON. See `curriculum/spec/` for the full specification.
 
 ## Writing Style
 

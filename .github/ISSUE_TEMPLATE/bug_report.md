@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve VoiceLearn
+about: Report a bug to help us improve UnaMentis
 title: '[BUG] '
 labels: bug
 assignees: ''

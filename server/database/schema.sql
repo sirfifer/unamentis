@@ -1,12 +1,12 @@
 -- ============================================================================
--- UMLCF (Una Mentis Learning Curriculum Format) Normalized Database Schema
+-- UMCF (Una Mentis Curriculum Format) Normalized Database Schema
 -- PostgreSQL 15+ with pg_trgm and pg_search (ParadeDB) extensions
 -- ============================================================================
 --
 -- Architecture: Normalized tables with JSON export capability
 -- - Granular editing: Each piece of content in its own table
 -- - Fast queries: Indexed metadata columns
--- - JSON export: Rebuild full UMLCF documents on demand
+-- - JSON export: Rebuild full UMCF documents on demand
 -- - Full-text search: Using pg_trgm for fuzzy matching
 --
 -- ============================================================================
@@ -22,8 +22,8 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- Curricula: Top-level container for a learning curriculum
 CREATE TABLE curricula (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    external_id VARCHAR(255) UNIQUE,  -- The UMLCF id.value field
-    catalog VARCHAR(100),              -- The UMLCF id.catalog field
+    external_id VARCHAR(255) UNIQUE,  -- The UMCF id.value field
+    catalog VARCHAR(100),              -- The UMCF id.catalog field
 
     -- Core metadata
     title VARCHAR(500) NOT NULL,
@@ -112,7 +112,7 @@ CREATE INDEX idx_prerequisites_curriculum ON curriculum_prerequisites(curriculum
 -- Topics: Main content units within a curriculum (can be nested)
 CREATE TABLE topics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    external_id VARCHAR(255),         -- The UMLCF id.value field
+    external_id VARCHAR(255),         -- The UMCF id.value field
     curriculum_id UUID NOT NULL REFERENCES curricula(id) ON DELETE CASCADE,
     parent_id UUID REFERENCES topics(id) ON DELETE CASCADE,  -- For nested topics
 
@@ -174,7 +174,7 @@ CREATE INDEX idx_objectives_topic ON learning_objectives(topic_id);
 -- Transcript segments: Individual speakable content pieces
 CREATE TABLE transcript_segments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    segment_id VARCHAR(255),          -- The original segment ID from UMLCF
+    segment_id VARCHAR(255),          -- The original segment ID from UMCF
     topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
 
     -- Content
@@ -241,7 +241,7 @@ CREATE INDEX idx_alternatives_segment ON alternative_explanations(segment_id);
 -- Glossary terms: Vocabulary definitions
 CREATE TABLE glossary_terms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    term_id VARCHAR(255),             -- The original term ID from UMLCF
+    term_id VARCHAR(255),             -- The original term ID from UMCF
     curriculum_id UUID NOT NULL REFERENCES curricula(id) ON DELETE CASCADE,
 
     term VARCHAR(255) NOT NULL,
@@ -343,8 +343,8 @@ CREATE INDEX idx_options_assessment ON assessment_options(assessment_id);
 -- FUNCTIONS FOR JSON EXPORT
 -- ============================================================================
 
--- Function to build full UMLCF JSON for a curriculum
-CREATE OR REPLACE FUNCTION build_umlcf_json(p_curriculum_id UUID)
+-- Function to build full UMCF JSON for a curriculum
+CREATE OR REPLACE FUNCTION build_umcf_json(p_curriculum_id UUID)
 RETURNS JSONB AS $$
 DECLARE
     v_result JSONB;
@@ -524,9 +524,9 @@ BEGIN
     FROM glossary_terms gt
     WHERE gt.curriculum_id = p_curriculum_id;
 
-    -- Build full UMLCF document
+    -- Build full UMCF document
     v_result := jsonb_build_object(
-        'umlcf', '1.0.0',
+        'umcf', '1.0.0',
         'id', jsonb_build_object(
             'catalog', v_curriculum.catalog,
             'value', v_curriculum.external_id
@@ -602,7 +602,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     -- Update the curriculum's JSON cache
     UPDATE curricula
-    SET json_cache = build_umlcf_json(NEW.curriculum_id),
+    SET json_cache = build_umcf_json(NEW.curriculum_id),
         json_cache_updated_at = NOW()
     WHERE id = NEW.curriculum_id;
 
@@ -673,11 +673,11 @@ FROM topics t;
 -- ============================================================================
 
 -- Insert a sample curriculum for testing
--- (This would be populated by importing existing UMLCF files)
+-- (This would be populated by importing existing UMCF files)
 
-COMMENT ON TABLE curricula IS 'Top-level curriculum containers for UMLCF documents';
+COMMENT ON TABLE curricula IS 'Top-level curriculum containers for UMCF documents';
 COMMENT ON TABLE topics IS 'Hierarchical content units within a curriculum';
 COMMENT ON TABLE transcript_segments IS 'Individual speakable content pieces with TTS metadata';
 COMMENT ON TABLE glossary_terms IS 'Vocabulary definitions for a curriculum';
 COMMENT ON TABLE assessments IS 'Questions and quizzes for learner assessment';
-COMMENT ON FUNCTION build_umlcf_json IS 'Reconstructs full UMLCF JSON from normalized tables';
+COMMENT ON FUNCTION build_umcf_json IS 'Reconstructs full UMCF JSON from normalized tables';

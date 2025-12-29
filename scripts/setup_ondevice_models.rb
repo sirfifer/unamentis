@@ -4,8 +4,8 @@
 
 require 'xcodeproj'
 
-PROJECT_PATH = 'VoiceLearn.xcodeproj'
-TARGET_NAME = 'VoiceLearn'
+PROJECT_PATH = 'UnaMentis.xcodeproj'
+TARGET_NAME = 'UnaMentis'
 
 # Model files to add to Copy Bundle Resources
 MODEL_FILES = [
@@ -18,7 +18,7 @@ MODEL_FILES = [
 
 # Source files to add
 SOURCE_FILES = [
-  'VoiceLearn/Services/STT/GLMASROnDeviceSTTService.swift'
+  'UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift'
 ]
 
 def main

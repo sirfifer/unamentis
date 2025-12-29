@@ -10,7 +10,7 @@
 
 UnaMentis includes a pronunciation guide system that enables TTS (Text-to-Speech) services to correctly pronounce proper nouns, foreign terms, technical vocabulary, and other words that might be mispronounced by default TTS engines.
 
-The pronunciation system is curriculum-integrated, meaning pronunciation hints are defined in UMLCF curriculum files and automatically applied during TTS synthesis for curriculum-based sessions.
+The pronunciation system is curriculum-integrated, meaning pronunciation hints are defined in UMCF curriculum files and automatically applied during TTS synthesis for curriculum-based sessions.
 
 ---
 
@@ -21,11 +21,11 @@ The pronunciation system is curriculum-integrated, meaning pronunciation hints a
 │                     Pronunciation Pipeline                          │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  UMLCF Curriculum File                                             │
+│  UMCF Curriculum File                                              │
 │  ├── pronunciationGuide: { "Medici": { "ipa": "/ˈmɛdɪtʃi/", ... }}│
 │  │                                                                 │
 │  ▼                                                                 │
-│  UMLCFParser                                                       │
+│  UMCFParser                                                        │
 │  ├── Parses curriculum JSON                                        │
 │  ├── Converts to TranscriptData.PronunciationEntry                │
 │  │                                                                 │
@@ -108,7 +108,7 @@ let processed = text.withPronunciationHints(
 
 ### 2. TranscriptData
 
-**Location:** `UnaMentis/Core/Curriculum/UMLCFParser.swift`
+**Location:** `UnaMentis/Core/Curriculum/UMCFParser.swift`
 
 The `TranscriptData` struct stores parsed transcript data including the pronunciation guide.
 
@@ -126,11 +126,11 @@ public struct TranscriptData: Codable, Sendable {
 }
 ```
 
-### 3. UMLCF Curriculum Format
+### 3. UMCF Curriculum Format
 
-**Location:** `curriculum/spec/umlcf-schema.json`
+**Location:** `curriculum/spec/umcf-schema.json`
 
-Pronunciation guides are defined at the transcript level in UMLCF curriculum files:
+Pronunciation guides are defined at the transcript level in UMCF curriculum files:
 
 ```json
 {
@@ -305,6 +305,6 @@ Self-hosted Piper TTS has limited SSML support. Test pronunciation hints and fal
 
 ## Related Documentation
 
-- [UMLCF Specification](../curriculum/spec/VLCF_SPECIFICATION.md) - Full curriculum format specification
+- [UMCF Specification](../curriculum/spec/UMCF_SPECIFICATION.md) - Full curriculum format specification
 - [TTS Services](./PROJECT_OVERVIEW.md#voice-pipeline) - TTS provider integrations
 - [Curriculum System](../curriculum/README.md) - Curriculum format overview

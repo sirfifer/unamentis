@@ -119,9 +119,9 @@ UnaMentis supports BOTH OIDC/OAuth2 AND SAML2 through an identity broker pattern
 **Required Claims in ID Token:**
 ```json
 {
-  "iss": "https://auth.voicelearn.com/realms/main",
+  "iss": "https://auth.unamentis.com/realms/main",
   "sub": "user-uuid-here",
-  "aud": "voicelearn-client",
+  "aud": "unamentis-client",
   "exp": 1704067200,
   "iat": 1704063600,
   "email": "user@example.com",
@@ -252,7 +252,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
             token,
             settings.jwt_public_key,
             algorithms=["RS256"],
-            audience="voicelearn-api"
+            audience="unamentis-api"
         )
 
         # Check expiration with clock skew tolerance
@@ -314,7 +314,7 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
-      KC_HOSTNAME: auth.voicelearn.com
+      KC_HOSTNAME: auth.unamentis.com
       KC_FEATURES: token-exchange,admin-fine-grained-authz
     ports:
       - "8080:8080"
@@ -591,7 +591,7 @@ async def delete_curriculum(
 
 **OPA Policy Example (Rego):**
 ```rego
-package voicelearn.authz
+package unamentis.authz
 
 import future.keywords.if
 import future.keywords.in
@@ -819,14 +819,14 @@ class VaultClient:
     def __init__(self):
         self.client = hvac.Client(url=settings.vault_addr)
         self.client.auth.kubernetes.login(
-            role="voicelearn-api",
+            role="unamentis-api",
             jwt=self._get_service_account_token()
         )
 
     async def get_db_credentials(self) -> tuple[str, str]:
         """Get short-lived database credentials."""
         secret = self.client.secrets.database.generate_credentials(
-            name="voicelearn-readonly"  # or "voicelearn-readwrite"
+            name="unamentis-readonly"  # or "unamentis-readwrite"
         )
         return (
             secret["data"]["username"],
@@ -1138,7 +1138,7 @@ class TenantQuotas(BaseModel):
 
 ```yaml
 # config/base.yaml - Shared defaults
-voicelearn:
+unamentis:
   version: "1.0.0"
 
   defaults:
@@ -1151,7 +1151,7 @@ voicelearn:
 
 ---
 # config/saas.yaml - SaaS overlay
-voicelearn:
+unamentis:
   deployment:
     mode: "saas"
     region: "us-west-2"
@@ -1159,27 +1159,27 @@ voicelearn:
   database:
     host: "${DB_HOST}"  # From secrets
     port: 5432
-    name: voicelearn
+    name: unamentis
     rls_enabled: true  # Row-Level Security
 
   identity:
     provider: "keycloak"
-    issuer: "https://auth.voicelearn.com/realms/main"
+    issuer: "https://auth.unamentis.com/realms/main"
 
   observability:
-    otel_endpoint: "https://otel.voicelearn.com"
+    otel_endpoint: "https://otel.unamentis.com"
     log_level: "INFO"
 
 ---
 # config/onprem.yaml - On-premise overlay
-voicelearn:
+unamentis:
   deployment:
     mode: "onprem"
 
   database:
     host: "${CUSTOMER_DB_HOST}"
     port: 5432
-    name: voicelearn
+    name: unamentis
     rls_enabled: false  # Physical isolation
 
   identity:
@@ -1477,7 +1477,7 @@ app.add_middleware(TenantMiddleware)
 app.add_middleware(AuthMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://app.voicelearn.com"],
+    allow_origins=["https://app.unamentis.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

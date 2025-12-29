@@ -1,10 +1,10 @@
 # Curriculum System
 
-This directory contains the UnaMentis Curriculum Format (UMLCF) specification and related documentation.
+This directory contains the Una Mentis Curriculum Format (UMCF) specification and related documentation.
 
-## What is UMLCF?
+## What is UMCF?
 
-UMLCF (UnaMentis Learning Curriculum Format) is a voice-native, conversational AI-optimized curriculum format. It is:
+UMCF (Una Mentis Curriculum Format) is a voice-native, conversational AI-optimized curriculum format. It is:
 
 - JSON-based with standards traceability
 - Optimized for voice-first learning experiences
@@ -15,8 +15,8 @@ UMLCF (UnaMentis Learning Curriculum Format) is a voice-native, conversational A
 ```
 curriculum/
 ├── spec/                          # Format specification
-│   ├── UMLCF_SPECIFICATION.md     # Full specification document
-│   ├── umlcf-schema.json          # JSON schema for validation
+│   ├── UMCF_SPECIFICATION.md      # Full specification document
+│   ├── umcf-schema.json           # JSON schema for validation
 │   └── STANDARDS_TRACEABILITY.md  # Standards mapping
 ├── importers/                     # Importer specifications
 │   ├── MIT_OCW_IMPORTER_SPEC.md
@@ -35,8 +35,8 @@ curriculum/
 
 | Document | Purpose |
 |----------|---------|
-| `spec/UMLCF_SPECIFICATION.md` | Full format specification |
-| `spec/umlcf-schema.json` | JSON schema for validation |
+| `spec/UMCF_SPECIFICATION.md` | Full format specification |
+| `spec/umcf-schema.json` | JSON schema for validation |
 | `README.md` | Quick format overview |
 | `importers/IMPORTER_ARCHITECTURE.md` | How importers work |
 | `importers/AI_ENRICHMENT_PIPELINE.md` | AI enhancement process |
@@ -47,7 +47,7 @@ The actual importer implementations are in `server/importers/`. This directory c
 
 ## Creating Curriculum
 
-1. Follow the UMLCF specification in `spec/`
-2. Validate against `umlcf-schema.json`
+1. Follow the UMCF specification in `spec/`
+2. Validate against `umcf-schema.json`
 3. Use examples in `examples/` as reference
 4. Store visual assets in `assets/`

@@ -220,10 +220,10 @@ public final class CurriculumDownloadManager: ObservableObject {
         progress.state = .downloading(progress: 0.3)
         updateProgress(progress)
 
-        // Decode the UMLCF document
-        let document: UMLCFDocument
+        // Decode the UMCF document
+        let document: UMCFDocument
         do {
-            document = try JSONDecoder().decode(UMLCFDocument.self, from: data)
+            document = try JSONDecoder().decode(UMCFDocument.self, from: data)
         } catch let decodingError as DecodingError {
             let errorDetail = formatDecodingError(decodingError)
             progress.state = .failed(errorDetail)
@@ -232,7 +232,7 @@ public final class CurriculumDownloadManager: ObservableObject {
         }
 
         // Filter topics if not downloading all
-        let filteredDocument: UMLCFDocument
+        let filteredDocument: UMCFDocument
         let totalTopics = document.content.first?.children?.count ?? 0
         if !selectedTopicIds.isEmpty && selectedTopicIds.count < totalTopics {
             filteredDocument = filterDocument(document, keepingTopicIds: selectedTopicIds)
@@ -247,7 +247,7 @@ public final class CurriculumDownloadManager: ObservableObject {
 
         // Import to Core Data using static method (avoids actor isolation issues)
         // Pass selectedTopicIds to filter which topics get imported
-        let curriculum = try UMLCFParser.importDocument(filteredDocument, replaceExisting: true, selectedTopicIds: selectedTopicIds)
+        let curriculum = try UMCFParser.importDocument(filteredDocument, replaceExisting: true, selectedTopicIds: selectedTopicIds)
 
         // Extract and cache assets
         progress.currentTopicTitle = "Caching visual assets..."
@@ -331,8 +331,8 @@ public final class CurriculumDownloadManager: ObservableObject {
         activeDownloads[progress.curriculumId] = progress
     }
 
-    /// Filter a UMLCF document to only include selected topics
-    private func filterDocument(_ document: UMLCFDocument, keepingTopicIds: Set<String>) -> UMLCFDocument {
+    /// Filter a UMCF document to only include selected topics
+    private func filterDocument(_ document: UMCFDocument, keepingTopicIds: Set<String>) -> UMCFDocument {
         // For now, return the full document since filtering requires reconstructing
         // the entire document structure. The server already supports filtering.
         // TODO: Implement topic-level filtering if needed for bandwidth optimization
@@ -340,7 +340,7 @@ public final class CurriculumDownloadManager: ObservableObject {
     }
 
     /// Get asset IDs for specific topics
-    private func getAssetIdsForTopics(document: UMLCFDocument, topicIds: Set<String>) -> Set<String> {
+    private func getAssetIdsForTopics(document: UMCFDocument, topicIds: Set<String>) -> Set<String> {
         var assetIds = Set<String>()
 
         guard let root = document.content.first,

@@ -145,7 +145,7 @@ This document outlines the implementation plan for importing MIT OpenCourseWare 
 3. **Implement IMS manifest parser** (MIT OCW)
    - Parse `imsmanifest.xml`
    - Extract navigation hierarchy
-   - Map to UMLCF structure
+   - Map to UMCF structure
 
 #### Deliverables
 
@@ -282,7 +282,7 @@ This is the core of making these sources useful for tutoring.
 
 **Tasks:**
 1. Use existing structure from sources as template
-2. Validate hierarchy against UMLCF requirements
+2. Validate hierarchy against UMCF requirements
 3. Fill gaps with LLM inference
 4. Map to standard content types
 
@@ -356,7 +356,7 @@ SEGMENTATION_CONFIG = {
 **Assessment Transformation Pipeline:**
 ```
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
-│  Problem Set PDF │ ──▶ │  Parsed Problems │ ──▶ │ UMLCF Assessments│
+│  Problem Set PDF │ ──▶ │  Parsed Problems │ ──▶ │ UMCF Assessments │
 │  - Problem text  │     │  - Number        │     │  - prompt        │
 │  - Parts (a,b,c) │     │  - Text          │     │  - type          │
 │  - Point values  │     │  - Parts[]       │     │  - choices[]     │
@@ -594,7 +594,7 @@ LLM_RATE_LIMITS = {
 - JSON files for intermediate results
 
 **Final Output:**
-- UMLCF JSON files
+- UMCF JSON files
 - Resource files in structured directories
 - Metadata index for quick lookup
 
@@ -634,7 +634,7 @@ LLM_RATE_LIMITS = {
 - [ ] Resources are correctly cataloged
 
 ### Phase 3 Complete When:
-- [ ] Enrichment pipeline produces valid UMLCF
+- [ ] Enrichment pipeline produces valid UMCF
 - [ ] Objectives are Bloom-aligned
 - [ ] Assessments have hints and feedback
 - [ ] Spoken text is TTS-ready

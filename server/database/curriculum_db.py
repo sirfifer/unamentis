@@ -1,5 +1,5 @@
 """
-UMLCF Curriculum Database Module
+UMCF Curriculum Database Module
 Provides PostgreSQL storage for curricula with normalized tables and JSON export.
 
 This module supports both file-based storage (for development/simple deployments)
@@ -76,7 +76,7 @@ class CurriculumStorage:
         raise NotImplementedError
 
     async def get_curriculum_full(self, curriculum_id: str) -> Optional[Dict[str, Any]]:
-        """Get full UMLCF JSON document."""
+        """Get full UMCF JSON document."""
         raise NotImplementedError
 
     async def get_topic_transcript(
@@ -106,7 +106,7 @@ class CurriculumStorage:
 
 class FileBasedStorage(CurriculumStorage):
     """
-    File-based curriculum storage using UMLCF JSON files.
+    File-based curriculum storage using UMCF JSON files.
     Suitable for development and simple deployments.
     """
 
@@ -116,7 +116,7 @@ class FileBasedStorage(CurriculumStorage):
         self.curriculum_raw: Dict[str, Dict[str, Any]] = {}
 
     async def reload(self) -> int:
-        """Load all UMLCF files from the curriculum directory."""
+        """Load all UMCF files from the curriculum directory."""
         self.curricula.clear()
         self.curriculum_raw.clear()
 
@@ -124,27 +124,27 @@ class FileBasedStorage(CurriculumStorage):
             logger.warning(f"Curriculum directory not found: {self.curriculum_dir}")
             return 0
 
-        for umlcf_file in self.curriculum_dir.glob("*.umlcf"):
+        for umcf_file in self.curriculum_dir.glob("*.umcf"):
             try:
-                self._load_file(umlcf_file)
+                self._load_file(umcf_file)
             except Exception as e:
-                logger.error(f"Failed to load curriculum {umlcf_file}: {e}")
+                logger.error(f"Failed to load curriculum {umcf_file}: {e}")
 
         logger.info(f"Loaded {len(self.curricula)} curricula from files")
         return len(self.curricula)
 
     def _load_file(self, file_path: Path):
-        """Load a single UMLCF file."""
+        """Load a single UMCF file."""
         with open(file_path, 'r', encoding='utf-8') as f:
-            umlcf = json.load(f)
+            umcf = json.load(f)
 
-        umlcf_id = umlcf.get("id", {}).get("value", file_path.stem)
-        educational = umlcf.get("educational", {})
-        version_info = umlcf.get("version", {})
-        lifecycle = umlcf.get("lifecycle", {})
+        umcf_id = umcf.get("id", {}).get("value", file_path.stem)
+        educational = umcf.get("educational", {})
+        version_info = umcf.get("version", {})
+        lifecycle = umcf.get("lifecycle", {})
 
         # Count topics
-        content = umlcf.get("content", [])
+        content = umcf.get("content", [])
         topic_count = 0
         if content and isinstance(content, list):
             root = content[0]
@@ -152,20 +152,20 @@ class FileBasedStorage(CurriculumStorage):
             topic_count = len(children)
 
         summary = CurriculumSummary(
-            id=umlcf_id,
-            title=umlcf.get("title", "Untitled"),
-            description=umlcf.get("description", ""),
+            id=umcf_id,
+            title=umcf.get("title", "Untitled"),
+            description=umcf.get("description", ""),
             version=version_info.get("number", "1.0.0"),
             topic_count=topic_count,
             total_duration=educational.get("typicalLearningTime", "PT4H"),
             difficulty=educational.get("difficulty", "medium"),
             age_range=educational.get("typicalAgeRange", "18+"),
-            keywords=umlcf.get("metadata", {}).get("keywords", []),
+            keywords=umcf.get("metadata", {}).get("keywords", []),
             status=lifecycle.get("status", "draft"),
         )
 
-        self.curricula[umlcf_id] = summary
-        self.curriculum_raw[umlcf_id] = umlcf
+        self.curricula[umcf_id] = summary
+        self.curriculum_raw[umcf_id] = umcf
 
     async def list_curricula(
         self,
@@ -200,11 +200,11 @@ class FileBasedStorage(CurriculumStorage):
         if curriculum_id not in self.curriculum_raw:
             return None
 
-        umlcf = self.curriculum_raw[curriculum_id]
+        umcf = self.curriculum_raw[curriculum_id]
         summary = self.curricula[curriculum_id]
 
         # Extract topics
-        content = umlcf.get("content", [])
+        content = umcf.get("content", [])
         topics = []
         if content and isinstance(content, list):
             root = content[0]
@@ -228,7 +228,7 @@ class FileBasedStorage(CurriculumStorage):
                 ))
 
         # Extract glossary and learning objectives
-        glossary = umlcf.get("glossary", {}).get("terms", [])
+        glossary = umcf.get("glossary", {}).get("terms", [])
         learning_objectives = []
         if content and isinstance(content, list):
             root = content[0]
@@ -249,7 +249,7 @@ class FileBasedStorage(CurriculumStorage):
         }
 
     async def get_curriculum_full(self, curriculum_id: str) -> Optional[Dict[str, Any]]:
-        """Get full UMLCF JSON document."""
+        """Get full UMCF JSON document."""
         return self.curriculum_raw.get(curriculum_id)
 
     async def get_topic_transcript(
@@ -261,8 +261,8 @@ class FileBasedStorage(CurriculumStorage):
         if curriculum_id not in self.curriculum_raw:
             return None
 
-        umlcf = self.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = self.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if not content:
             return None
@@ -294,18 +294,18 @@ class FileBasedStorage(CurriculumStorage):
         # Determine file path
         if curriculum_id in self.curricula:
             # Find existing file
-            for umlcf_file in self.curriculum_dir.glob("*.umlcf"):
-                with open(umlcf_file, 'r', encoding='utf-8') as f:
+            for umcf_file in self.curriculum_dir.glob("*.umcf"):
+                with open(umcf_file, 'r', encoding='utf-8') as f:
                     existing = json.load(f)
                 if existing.get("id", {}).get("value") == curriculum_id:
-                    file_path = umlcf_file
+                    file_path = umcf_file
                     break
             else:
                 safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in data["title"].lower())
-                file_path = self.curriculum_dir / f"{safe_name}.umlcf"
+                file_path = self.curriculum_dir / f"{safe_name}.umcf"
         else:
             safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in data["title"].lower())
-            file_path = self.curriculum_dir / f"{safe_name}.umlcf"
+            file_path = self.curriculum_dir / f"{safe_name}.umcf"
 
         # Write the file
         with open(file_path, 'w', encoding='utf-8') as f:
@@ -322,11 +322,11 @@ class FileBasedStorage(CurriculumStorage):
             return False
 
         # Find and delete file
-        for umlcf_file in self.curriculum_dir.glob("*.umlcf"):
-            with open(umlcf_file, 'r', encoding='utf-8') as f:
+        for umcf_file in self.curriculum_dir.glob("*.umcf"):
+            with open(umcf_file, 'r', encoding='utf-8') as f:
                 existing = json.load(f)
             if existing.get("id", {}).get("value") == curriculum_id:
-                umlcf_file.unlink()
+                umcf_file.unlink()
                 del self.curricula[curriculum_id]
                 del self.curriculum_raw[curriculum_id]
                 return True
@@ -367,7 +367,7 @@ class PostgreSQLStorage(CurriculumStorage):
             # Rebuild all JSON caches
             await conn.execute("""
                 UPDATE curricula
-                SET json_cache = build_umlcf_json(id),
+                SET json_cache = build_umcf_json(id),
                     json_cache_updated_at = NOW()
             """)
 
@@ -498,7 +498,7 @@ class PostgreSQLStorage(CurriculumStorage):
             }
 
     async def get_curriculum_full(self, curriculum_id: str) -> Optional[Dict[str, Any]]:
-        """Get full UMLCF JSON document from cache or rebuild."""
+        """Get full UMCF JSON document from cache or rebuild."""
         async with self.pool.acquire() as conn:
             # Try to get from cache first
             row = await conn.fetchrow("""
@@ -521,7 +521,7 @@ class PostgreSQLStorage(CurriculumStorage):
             """, curriculum_id)
 
             json_data = await conn.fetchval(
-                "SELECT build_umlcf_json($1)",
+                "SELECT build_umcf_json($1)",
                 curriculum_uuid
             )
 
@@ -631,7 +631,7 @@ class PostgreSQLStorage(CurriculumStorage):
         curriculum_id: str,
         data: Dict[str, Any]
     ) -> str:
-        """Save or update a curriculum from UMLCF JSON."""
+        """Save or update a curriculum from UMCF JSON."""
         async with self.pool.acquire() as conn:
             async with conn.transaction():
                 # Check if curriculum exists
@@ -645,7 +645,7 @@ class PostgreSQLStorage(CurriculumStorage):
                     await conn.execute("DELETE FROM curricula WHERE id = $1", existing_id)
 
                 # Insert new curriculum
-                umlcf_id = data.get("id", {}).get("value", str(uuid.uuid4()))
+                umcf_id = data.get("id", {}).get("value", str(uuid.uuid4()))
                 educational = data.get("educational", {})
                 version_info = data.get("version", {})
                 lifecycle = data.get("lifecycle", {})
@@ -660,7 +660,7 @@ class PostgreSQLStorage(CurriculumStorage):
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
                     RETURNING id
                 """,
-                    umlcf_id,
+                    umcf_id,
                     data.get("id", {}).get("catalog"),
                     data.get("title"),
                     data.get("description"),
@@ -707,12 +707,12 @@ class PostgreSQLStorage(CurriculumStorage):
                 # Rebuild JSON cache
                 await conn.execute("""
                     UPDATE curricula
-                    SET json_cache = build_umlcf_json(id),
+                    SET json_cache = build_umcf_json(id),
                         json_cache_updated_at = NOW()
                     WHERE id = $1
                 """, curriculum_uuid)
 
-                return umlcf_id
+                return umcf_id
 
     async def _insert_content_node(
         self,
@@ -889,7 +889,7 @@ def create_storage(
     if storage_type == "postgresql":
         if not connection_string:
             connection_string = os.environ.get(
-                "UMLCF_DATABASE_URL",
+                "UMCF_DATABASE_URL",
                 "postgresql://localhost/unamentis"
             )
         return PostgreSQLStorage(connection_string)

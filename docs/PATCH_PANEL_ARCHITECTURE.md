@@ -1064,7 +1064,7 @@ struct DeveloperModeGate {
         // Implementation
     }
 
-    // Or via URL scheme: voicelearn://developer
+    // Or via URL scheme: unamentis://developer
     static func handleURL(_ url: URL) {
         if url.host == "developer" {
             // Enable developer mode

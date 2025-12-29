@@ -2,7 +2,7 @@
 """
 Asset Migration Script for UnaMentis Curricula
 
-This script downloads all remote visual assets for UMLCF curricula and
+This script downloads all remote visual assets for UMCF curricula and
 updates the files with local paths. Run this once to populate the asset cache.
 
 Usage:
@@ -114,10 +114,10 @@ async def migrate_curriculum(file_path: Path, dry_run: bool = False) -> dict:
     print(f"{'='*60}")
 
     with open(file_path, 'r', encoding='utf-8') as f:
-        umlcf = json.load(f)
+        umcf = json.load(f)
 
-    curriculum_id = umlcf.get("id", {}).get("value", file_path.stem)
-    content = umlcf.get("content", [])
+    curriculum_id = umcf.get("id", {}).get("value", file_path.stem)
+    content = umcf.get("content", [])
 
     if not content:
         print("  No content found")
@@ -188,7 +188,7 @@ async def migrate_curriculum(file_path: Path, dry_run: bool = False) -> dict:
     # Save updated file
     if stats["updated"] and not dry_run:
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(umlcf, f, indent=2, ensure_ascii=False)
+            json.dump(umcf, f, indent=2, ensure_ascii=False)
         print(f"\n  [SAVED] Updated {file_path.name}")
 
     return stats
@@ -209,12 +209,12 @@ async def main():
         files = []
         for name in args:
             # Try exact match first
-            path = CURRICULUM_DIR / f"{name}.umlcf"
+            path = CURRICULUM_DIR / f"{name}.umcf"
             if path.exists():
                 files.append(path)
             else:
                 # Try partial match
-                matches = list(CURRICULUM_DIR.glob(f"*{name}*.umlcf"))
+                matches = list(CURRICULUM_DIR.glob(f"*{name}*.umcf"))
                 files.extend(matches)
 
         if not files:
@@ -222,10 +222,10 @@ async def main():
             sys.exit(1)
     else:
         # All curricula
-        files = list(CURRICULUM_DIR.glob("*.umlcf"))
+        files = list(CURRICULUM_DIR.glob("*.umcf"))
 
     if not files:
-        print(f"No .umlcf files found in {CURRICULUM_DIR}")
+        print(f"No .umcf files found in {CURRICULUM_DIR}")
         sys.exit(1)
 
     print(f"Found {len(files)} curriculum file(s) to process")

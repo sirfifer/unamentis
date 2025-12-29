@@ -20,7 +20,7 @@
 		2353C0717E17DDE868F4FFDC /* STTProviderRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D215C843AA2A1228353BAB /* STTProviderRouterTests.swift */; };
 		2677ACF9A194F6325F5EB743 /* GLMASRHealthMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D34530F07B6AA9C486B3014 /* GLMASRHealthMonitor.swift */; };
 		27CDEC09CE80D2E32B4366D6 /* DebugConversationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E28C6E637C06E56B4C0174B /* DebugConversationViewModel.swift */; };
-		29012F189AC2785CB321A91E /* UMLCFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C4E8E331A66D6116FCE2C2 /* UMLCFParser.swift */; };
+		29012F189AC2785CB321A91E /* UMCFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C4E8E331A66D6116FCE2C2 /* UMCFParser.swift */; };
 		291BD2E24D18E30DC6DAEE24 /* CurriculumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6A16CA0F313B0BA5AF32CB /* CurriculumView.swift */; };
 		2B0FE7F5315642E09C6D3A93 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ECBCC9B85EC9E804D03C3AE /* OnboardingView.swift */; };
 		2EEEEB5DB12A23BDB9B21EFE /* PronunciationProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0B5CEA1C6A76F74C78EE9C5 /* PronunciationProcessor.swift */; };
@@ -233,7 +233,7 @@
 		EF7213E60620156AEDEFCE8C /* VoiceSessionIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSessionIntegrationTests.swift; sourceTree = "<group>"; };
 		F0B5CEA1C6A76F74C78EE9C5 /* PronunciationProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationProcessor.swift; sourceTree = "<group>"; };
 		F2D4F5137436528F550AF0A1 /* RoutingCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingCondition.swift; sourceTree = "<group>"; };
-		F4C4E8E331A66D6116FCE2C2 /* UMLCFParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UMLCFParser.swift; sourceTree = "<group>"; };
+		F4C4E8E331A66D6116FCE2C2 /* UMCFParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UMCFParser.swift; sourceTree = "<group>"; };
 		F67D31AC52E12378D29C55C7 /* UnaMentisApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnaMentisApp.swift; sourceTree = "<group>"; };
 		F7CFA41056359E384BDAB5DE /* ElevenLabsTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElevenLabsTTSService.swift; sourceTree = "<group>"; };
 		F8871565D2C900334E4BB57B /* DebugConversationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugConversationTestView.swift; sourceTree = "<group>"; };
@@ -477,7 +477,7 @@
 				C7939543C761675CCC470CB6 /* DocumentProcessor.swift */,
 				E0B842F50989F4AED5568E96 /* ProgressTracker.swift */,
 				EDDB5A62C7C40A99571DBF01 /* SampleCurriculumSeeder.swift */,
-				F4C4E8E331A66D6116FCE2C2 /* UMLCFParser.swift */,
+				F4C4E8E331A66D6116FCE2C2 /* UMCFParser.swift */,
 			);
 			path = Curriculum;
 			sourceTree = "<group>";
@@ -864,7 +864,7 @@
 				AA1217EE9DD3410A51349971 /* TopicSelectionView.swift in Sources */,
 				314C1C9B84E3FDC93EE9993D /* TranscriptEntry+CoreDataClass.swift in Sources */,
 				A14C6A493861A1F912262F4D /* TranscriptStreamingService.swift in Sources */,
-				29012F189AC2785CB321A91E /* UMLCFParser.swift in Sources */,
+				29012F189AC2785CB321A91E /* UMCFParser.swift in Sources */,
 				943088FD68891AF893C994A8 /* UnaMentis.xcdatamodeld in Sources */,
 				BB3BA8D9AF549F365E6162EB /* UnaMentisApp.swift in Sources */,
 				FFF26AE98F6DDE371CA0B169 /* VADService.swift in Sources */,

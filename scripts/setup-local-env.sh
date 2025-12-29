@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🧪 VoiceLearn - Local Test Environment Setup"
+echo "🧪 UnaMentis - Local Test Environment Setup"
 echo "============================================"
 echo ""
 

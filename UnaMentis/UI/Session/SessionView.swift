@@ -989,8 +989,8 @@ class SessionViewModel: ObservableObject {
     /// Full conversation history for display
     @Published var conversationHistory: [ConversationMessage] = []
 
-    /// UMLCF transcript data for this topic (if available)
-    @Published var umlcfTranscript: TopicTranscriptResponse?
+    /// UMCF transcript data for this topic (if available)
+    @Published var umcfTranscript: TopicTranscriptResponse?
     @Published var currentSegmentIndex: Int = 0
 
     /// Track last known transcripts to detect changes
@@ -1116,9 +1116,9 @@ class SessionViewModel: ObservableObject {
         topic != nil
     }
 
-    /// Whether we have UMLCF transcript data to use
+    /// Whether we have UMCF transcript data to use
     var hasTranscript: Bool {
-        umlcfTranscript?.segments.isEmpty == false
+        umcfTranscript?.segments.isEmpty == false
     }
 
     init(topic: Topic? = nil) {
@@ -1139,7 +1139,7 @@ class SessionViewModel: ObservableObject {
         if let document = topic.documentSet.first(where: { $0.documentType == .transcript }),
            let transcriptData = document.decodedTranscript() {
             // Convert local TranscriptData to TopicTranscriptResponse format
-            umlcfTranscript = TopicTranscriptResponse(
+            umcfTranscript = TopicTranscriptResponse(
                 topicId: topicId.uuidString,
                 topicTitle: topic.title,
                 segments: transcriptData.segments.map { segment in
@@ -1173,11 +1173,11 @@ class SessionViewModel: ObservableObject {
                 let host = serverIP.isEmpty ? "localhost" : serverIP
                 try await CurriculumService.shared.configure(host: host, port: 8766)
 
-                umlcfTranscript = try await CurriculumService.shared.fetchTopicTranscript(
+                umcfTranscript = try await CurriculumService.shared.fetchTopicTranscript(
                     curriculumId: curriculumId.uuidString,
                     topicId: topicId.uuidString
                 )
-                logger.info("Fetched transcript from server: \(umlcfTranscript?.segments.count ?? 0) segments")
+                logger.info("Fetched transcript from server: \(umcfTranscript?.segments.count ?? 0) segments")
             } catch {
                 logger.warning("Could not fetch transcript from server: \(error)")
                 // Not fatal - we'll fall back to AI-generated content
@@ -1200,8 +1200,8 @@ class SessionViewModel: ObservableObject {
         let depth = topic.depthLevel
         let objectives = topic.objectives ?? []
 
-        // If we have UMLCF transcript data, use it as the primary source
-        if let transcript = umlcfTranscript, !transcript.segments.isEmpty {
+        // If we have UMCF transcript data, use it as the primary source
+        if let transcript = umcfTranscript, !transcript.segments.isEmpty {
             return generateTranscriptBasedPrompt(topic: topic, transcript: transcript)
         }
 
@@ -1247,7 +1247,7 @@ class SessionViewModel: ObservableObject {
         return prompt
     }
 
-    /// Generate system prompt that uses UMLCF transcript content
+    /// Generate system prompt that uses UMCF transcript content
     private func generateTranscriptBasedPrompt(topic: Topic, transcript: TopicTranscriptResponse) -> String {
         let topicTitle = topic.title ?? "the topic"
         let depth = topic.depthLevel
@@ -1307,7 +1307,7 @@ class SessionViewModel: ObservableObject {
 
     /// Get the current segment to deliver (for progressive transcript delivery)
     func getCurrentSegment() -> TranscriptSegmentInfo? {
-        guard let transcript = umlcfTranscript,
+        guard let transcript = umcfTranscript,
               currentSegmentIndex < transcript.segments.count else {
             return nil
         }
@@ -1316,7 +1316,7 @@ class SessionViewModel: ObservableObject {
 
     /// Advance to the next transcript segment
     func advanceToNextSegment() -> Bool {
-        guard let transcript = umlcfTranscript else { return false }
+        guard let transcript = umcfTranscript else { return false }
         if currentSegmentIndex < transcript.segments.count - 1 {
             currentSegmentIndex += 1
             return true
@@ -1426,7 +1426,7 @@ class SessionViewModel: ObservableObject {
         let serverIP = UserDefaults.standard.string(forKey: "primaryServerIP") ?? ""
 
         // Check if we should use direct transcript streaming (bypasses LLM for pre-written content)
-        // Use sourceId (UMLCF ID) for server communication, not the Core Data UUID
+        // Use sourceId (UMCF ID) for server communication, not the Core Data UUID
         if let topic = topic,
            let topicSourceId = topic.sourceId,
            let curriculum = topic.curriculum,

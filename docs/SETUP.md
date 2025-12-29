@@ -368,15 +368,15 @@ After restarting Claude Code, simulator tools become available. See [AI_SIMULATO
 
 ## Curriculum Format Setup
 
-UnaMentis uses the **UnaMentis Curriculum Format (VLCF)** for educational content. The specification and tooling are in the `curriculum/` directory.
+UnaMentis uses the **Una Mentis Curriculum Format (UMCF)** for educational content. The specification and tooling are in the `curriculum/` directory.
 
 ### Curriculum Structure
 
 ```
 curriculum/
-├── spec/                           # VLCF specification
-│   ├── vlcf-schema.json           # JSON Schema for validation
-│   ├── VLCF_SPECIFICATION.md      # Human-readable spec
+├── spec/                           # UMCF specification
+│   ├── umcf-schema.json           # JSON Schema for validation
+│   ├── UMCF_SPECIFICATION.md      # Human-readable spec
 │   └── STANDARDS_TRACEABILITY.md  # Standards mapping
 ├── examples/                       # Example curricula
 │   ├── minimal/                   # Schema validation examples
@@ -389,16 +389,16 @@ curriculum/
 └── README.md                       # Comprehensive overview
 ```
 
-### Validating VLCF Files
+### Validating UMCF Files
 
-Use any JSON Schema validator with `curriculum/spec/vlcf-schema.json`:
+Use any JSON Schema validator with `curriculum/spec/umcf-schema.json`:
 
 ```bash
 # Using ajv-cli (npm install -g ajv-cli)
-ajv validate -s curriculum/spec/vlcf-schema.json -d your-curriculum.vlcf
+ajv validate -s curriculum/spec/umcf-schema.json -d your-curriculum.umcf
 
 # Using jsonschema (pip install jsonschema)
-jsonschema -i your-curriculum.vlcf curriculum/spec/vlcf-schema.json
+jsonschema -i your-curriculum.umcf curriculum/spec/umcf-schema.json
 ```
 
 ### Future: Import Tooling

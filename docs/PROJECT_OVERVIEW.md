@@ -106,14 +106,14 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 
 ---
 
-## Curriculum System (UMLCF)
+## Curriculum System (UMCF)
 
-**UnaMentis Markup Language Curriculum Format** - A JSON-based specification designed for conversational AI tutoring.
+**Una Mentis Curriculum Format** - A JSON-based specification designed for conversational AI tutoring.
 
 ### Specification Status: Complete (v1.0.0)
 - JSON Schema: 1,905 lines, 152 fields
 - Standards alignment: IEEE LOM, LRMI, Dublin Core, SCORM, xAPI, CASE, QTI, Open Badges
-- UMLCF-native fields: 70 (46%) for tutoring-specific needs
+- UMCF-native fields: 70 (46%) for tutoring-specific needs
 
 ### Structure
 ```
@@ -156,7 +156,7 @@ Curriculum
 | **Fast.ai** | Jupyter notebooks | Collegiate, AI/ML | Spec complete |
 | **MIT OpenCourseWare** | ZIP packages (HTML, PDF, video) | Collegiate | Spec + implementation started |
 | **Stanford SEE** | PDF, transcripts | Engineering | Spec complete |
-| **Raw JSON/YAML** | Native UMLCF | Any | Ready |
+| **Raw JSON/YAML** | Native UMCF | Any | Ready |
 | **IMSCC** | IMS Common Cartridge | LMS interop | Planned |
 
 **MIT OCW Implementation:**
@@ -228,7 +228,7 @@ Curriculum
 2. Validate - Check completeness and format
 3. Extract - Parse into intermediate structure
 4. Enrich - AI processing (optional)
-5. Generate - Transform to UMLCF
+5. Generate - Transform to UMCF
 6. Store - Save to curriculum database
 
 **Storage Backends:**
@@ -246,7 +246,7 @@ UnaMentis/
 +-- Core/
 |   +-- Audio/           # AudioEngine, VAD integration, thermal management
 |   +-- Config/          # APIKeyManager (Keychain), ServerConfigManager
-|   +-- Curriculum/      # CurriculumEngine, ProgressTracker, UMLCFParser
+|   +-- Curriculum/      # CurriculumEngine, ProgressTracker, UMCFParser
 |   +-- Logging/         # RemoteLogHandler
 |   +-- Persistence/     # PersistenceController, 7 Core Data entities
 |   +-- Routing/         # PatchPanelService, LLMEndpoint, RoutingTable
@@ -290,7 +290,7 @@ UnaMentis/
 ### Complete
 - All iOS services implemented (STT, TTS, LLM, VAD, Embeddings)
 - Full UI (Session, Curriculum, History, Analytics, Settings, Debug)
-- UMLCF 1.0 specification with JSON Schema (1,905 lines)
+- UMCF 1.0 specification with JSON Schema (1,905 lines)
 - 103+ unit tests, 16+ integration tests passing
 - Telemetry, cost tracking, thermal management
 - Self-hosted server discovery and health monitoring
@@ -329,8 +329,8 @@ UnaMentis/
 | `UnaMentis/Services/STT/STTProviderRouter.swift` | STT failover routing |
 | `UnaMentis/Services/LLM/SelfHostedLLMService.swift` | Ollama/llama.cpp integration |
 | `UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift` | On-device speech recognition |
-| `curriculum/spec/umlcf-schema.json` | UMLCF JSON Schema (1,905 lines) |
-| `curriculum/spec/UMLCF_SPECIFICATION.md` | Human-readable format spec |
+| `curriculum/spec/umcf-schema.json` | UMCF JSON Schema (1,905 lines) |
+| `curriculum/spec/UMCF_SPECIFICATION.md` | Human-readable format spec |
 | `curriculum/importers/IMPORTER_ARCHITECTURE.md` | Import system design |
 | `curriculum/importers/AI_ENRICHMENT_PIPELINE.md` | 7-stage AI processing |
 | `server/management/server.py` | Management Console backend |
@@ -388,8 +388,8 @@ UnaMentis/
 ### Curriculum Documentation
 | Document | Purpose |
 |----------|---------|
-| [curriculum/README.md](../curriculum/README.md) | Comprehensive UMLCF overview |
-| [UMLCF_SPECIFICATION.md](../curriculum/spec/UMLCF_SPECIFICATION.md) | Format specification |
+| [curriculum/README.md](../curriculum/README.md) | Comprehensive UMCF overview |
+| [UMCF_SPECIFICATION.md](../curriculum/spec/UMCF_SPECIFICATION.md) | Format specification |
 | [STANDARDS_TRACEABILITY.md](../curriculum/spec/STANDARDS_TRACEABILITY.md) | Standards field mapping |
 | [IMPORTER_ARCHITECTURE.md](../curriculum/importers/IMPORTER_ARCHITECTURE.md) | Import system design |
 | [AI_ENRICHMENT_PIPELINE.md](../curriculum/importers/AI_ENRICHMENT_PIPELINE.md) | 7-stage AI processing |

@@ -1,8 +1,8 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UnaMentis",
-    "value": "test-course-assessments"
+    "value": "test-counts"
   },
   "title": "Test Course",
   "description": "A test course for unit testing",
@@ -153,8 +153,8 @@
   },
   "_import_metadata": {
     "source": "mock_source",
-    "course_id": "test-course-assessments",
-    "imported_at": "2025-12-28T07:25:56.973852",
+    "course_id": "test-counts",
+    "imported_at": "2025-12-28T07:25:57.395031",
     "attribution": "Test attribution text",
     "stats": {
       "lectures": 3,

@@ -24,7 +24,7 @@
 
 ## Overview
 
-The Stanford SEE importer converts Stanford Engineering Everywhere course packages into UMLCF format for use with UnaMentis's conversational AI tutoring system. SEE provides complete Stanford engineering courses including video lectures, handouts, assignments, and exams.
+The Stanford SEE importer converts Stanford Engineering Everywhere course packages into UMCF format for use with UnaMentis's conversational AI tutoring system. SEE provides complete Stanford engineering courses including video lectures, handouts, assignments, and exams.
 
 ### Why Stanford SEE?
 
@@ -35,7 +35,7 @@ The Stanford SEE importer converts Stanford Engineering Everywhere course packag
 | **Quality** | Stanford University courses, world-class instructors (Andrew Ng, Stephen Boyd) |
 | **Formats** | MP4 video, PDF documents, ZIP archives |
 | **Coverage** | 10 courses in CS, AI/ML, Math, EE |
-| **Structure** | Course → Lectures → Materials (maps to UMLCF hierarchy) |
+| **Structure** | Course → Lectures → Materials (maps to UMCF hierarchy) |
 | **Transcripts** | HTML and PDF transcripts for all video lectures |
 
 ### Import Scope
@@ -216,7 +216,7 @@ class StanfordSEELicenseValidator:
 
     def build_rights_block(self, course_id: str) -> Dict:
         """
-        Build UMLCF rights block with full license preservation.
+        Build UMCF rights block with full license preservation.
 
         This block MUST be included in all imported content.
         """
@@ -285,7 +285,7 @@ For courses without ZIP downloads or for metadata extraction:
 
 ### Metadata Mapping
 
-| Stanford SEE Element | UMLCF Field | Notes |
+| Stanford SEE Element | UMCF Field | Notes |
 |----------------------|-------------|-------|
 | Course Number (CS229) | `id.value` | Prefixed with "STANFORD-SEE-" |
 | Course Title | `title` | Full course title |
@@ -298,7 +298,7 @@ For courses without ZIP downloads or for metadata extraction:
 
 ### Content Hierarchy Mapping
 
-| Stanford SEE Level | UMLCF Type | Example |
+| Stanford SEE Level | UMCF Type | Example |
 |--------------------|------------|---------|
 | Course | Root curriculum | "CS229 Machine Learning" |
 | Lecture Set | `module` | "Supervised Learning" |
@@ -308,7 +308,7 @@ For courses without ZIP downloads or for metadata extraction:
 
 ### Assessment Mapping
 
-| Stanford SEE Assessment | UMLCF Type | Transformation |
+| Stanford SEE Assessment | UMCF Type | Transformation |
 |------------------------|------------|----------------|
 | Problem Set Problem | `assessment` (text-entry) | Extract problem, add hints |
 | Multiple Choice | `assessment` (choice) | Map choices directly |
@@ -593,7 +593,7 @@ class StanfordSEEImporter(CurriculumImporter):
 
     async def extract(self, content: bytes, course_id: str) -> Dict[str, Any]:
         """
-        Extract raw Stanford SEE structure before UMLCF transformation.
+        Extract raw Stanford SEE structure before UMCF transformation.
 
         Args:
             content: Raw ZIP file bytes
@@ -681,14 +681,14 @@ class StanfordSEEImporter(CurriculumImporter):
 
     async def parse(self, content: bytes, course_id: str) -> CurriculumData:
         """
-        Parse Stanford SEE content and transform to UMLCF format.
+        Parse Stanford SEE content and transform to UMCF format.
 
         IMPORTANT: This method ALWAYS includes proper licensing information.
 
         Full pipeline:
         1. Validate license (mandatory, cannot be skipped)
         2. Extract raw structure
-        3. Map metadata to UMLCF
+        3. Map metadata to UMCF
         4. Convert lectures to content nodes
         5. Process transcripts for segments
         6. Extract and map assessments
@@ -702,7 +702,7 @@ class StanfordSEEImporter(CurriculumImporter):
         # Step 2: Extract
         raw = await self.extract(content, course_id)
 
-        # Step 3: Build UMLCF structure with MANDATORY licensing
+        # Step 3: Build UMCF structure with MANDATORY licensing
         umlcf = {
             "umlcf": "1.0.0",
             "id": self._generate_id(course_id),
@@ -738,7 +738,7 @@ class StanfordSEEImporter(CurriculumImporter):
         return CurriculumData(**umlcf)
 
     def _generate_id(self, course_id: str) -> Dict:
-        """Generate UMLCF ID from course identifier"""
+        """Generate UMCF ID from course identifier"""
         return {
             "catalog": "STANFORD-SEE",
             "value": course_id.upper()
@@ -752,7 +752,7 @@ class StanfordSEEImporter(CurriculumImporter):
         )
 
     def _build_lifecycle(self, metadata: Dict) -> Dict:
-        """Build UMLCF lifecycle from Stanford SEE metadata"""
+        """Build UMCF lifecycle from Stanford SEE metadata"""
         return {
             "status": "published",
             "contributors": [
@@ -770,7 +770,7 @@ class StanfordSEEImporter(CurriculumImporter):
         }
 
     def _build_metadata(self, metadata: Dict) -> Dict:
-        """Build UMLCF metadata from Stanford SEE metadata"""
+        """Build UMCF metadata from Stanford SEE metadata"""
         keywords = [
             "Stanford",
             "Engineering",
@@ -785,7 +785,7 @@ class StanfordSEEImporter(CurriculumImporter):
         }
 
     def _build_educational(self, metadata: Dict) -> Dict:
-        """Build UMLCF educational context from Stanford SEE metadata"""
+        """Build UMCF educational context from Stanford SEE metadata"""
         level_mapping = {
             "introductory": "undergraduate",
             "intermediate": "undergraduate",

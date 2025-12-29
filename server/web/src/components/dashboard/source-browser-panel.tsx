@@ -98,7 +98,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
  * Source Browser Panel
  *
  * First-class browsing experience for curriculum sources like MIT OCW.
- * Allows browsing courses, viewing details, and importing into UMLCF format.
+ * Allows browsing courses, viewing details, and importing into UMCF format.
  */
 export function SourceBrowserPanel() {
   // View state
@@ -933,7 +933,7 @@ export function SourceBrowserPanel() {
                   ) : (
                     <>
                       <Play className="w-5 h-5" />
-                      Import to UMLCF
+                      Import to UMCF
                     </>
                   )}
                 </button>

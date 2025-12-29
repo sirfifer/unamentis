@@ -15,7 +15,7 @@ This repository contains multiple components, each with its own AGENTS.md:
 | Management Console | `server/management/` | Python/aiohttp content admin (port 8766) |
 | Operations Console | `server/web/` | Next.js/React DevOps monitoring (port 3000) |
 | Importers | `server/importers/` | Curriculum import framework |
-| Curriculum | `curriculum/` | UMLCF format specification |
+| Curriculum | `curriculum/` | UMCF format specification |
 
 See the AGENTS.md in each directory for component-specific instructions.
 

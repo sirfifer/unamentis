@@ -1,6 +1,6 @@
-# VoiceLearn Management Console
+# UnaMentis Management Console
 
-A Next.js web application for monitoring and managing VoiceLearn services.
+A Next.js web application for monitoring and managing UnaMentis services.
 
 ## Features
 

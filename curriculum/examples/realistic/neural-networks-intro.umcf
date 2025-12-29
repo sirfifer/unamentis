@@ -1,5 +1,5 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UUID",
     "value": "d4e5f6a7-b8c9-0123-def4-567890123456"
@@ -15,14 +15,14 @@
     "status": "final",
     "contributors": [
       {
-        "name": "VoiceLearn Curriculum Team",
+        "name": "UnaMentis Curriculum Team",
         "role": "author",
-        "organization": "VoiceLearn"
+        "organization": "UnaMentis"
       },
       {
         "name": "AI Education Specialists",
         "role": "subject matter expert",
-        "organization": "VoiceLearn"
+        "organization": "UnaMentis"
       }
     ],
     "created": "2025-12-20T00:00:00Z"
@@ -84,7 +84,7 @@
       "type": "CC-BY-4.0",
       "url": "https://creativecommons.org/licenses/by/4.0/"
     },
-    "holder": "VoiceLearn Inc."
+    "holder": "UnaMentis Inc."
   },
   "glossary": {
     "terms": [
@@ -1144,11 +1144,11 @@
     }
   ],
   "extensions": {
-    "https://voicelearn.io/extensions/technical": {
+    "https://unamentis.com/extensions/technical": {
       "codeExecutionEnabled": false,
       "mathematicalNotation": true,
       "recommendedVisualizationTools": ["3Blue1Brown videos", "TensorFlow Playground", "CNN Explainer"],
-      "suggestedFollowUp": ["pytorch-fundamentals.vlcf", "deep-learning-applications.vlcf"]
+      "suggestedFollowUp": ["pytorch-fundamentals.umcf", "deep-learning-applications.umcf"]
     }
   }
 }

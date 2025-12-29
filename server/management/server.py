@@ -228,7 +228,7 @@ class CurriculumDetail:
     topics: List[TopicSummary]
     glossary_terms: List[Dict[str, Any]]
     learning_objectives: List[Dict[str, Any]]
-    raw_umlcf: Dict[str, Any] = field(default_factory=dict)
+    raw_umcf: Dict[str, Any] = field(default_factory=dict)
 
 
 class ManagementState:
@@ -245,7 +245,7 @@ class ManagementState:
         # Curriculum storage
         self.curriculums: Dict[str, CurriculumSummary] = {}
         self.curriculum_details: Dict[str, CurriculumDetail] = {}
-        self.curriculum_raw: Dict[str, Dict[str, Any]] = {}  # Full UMLCF data by ID
+        self.curriculum_raw: Dict[str, Dict[str, Any]] = {}  # Full UMCF data by ID
         self.stats = {
             "total_logs_received": 0,
             "total_metrics_received": 0,
@@ -314,34 +314,34 @@ class ManagementState:
             )
 
     def _load_curricula(self):
-        """Load all UMLCF curriculum files from the curriculum directory."""
+        """Load all UMCF curriculum files from the curriculum directory."""
         curriculum_dir = PROJECT_ROOT / "curriculum" / "examples" / "realistic"
         if not curriculum_dir.exists():
             logger.warning(f"Curriculum directory not found: {curriculum_dir}")
             return
 
-        for umlcf_file in curriculum_dir.glob("*.umlcf"):
+        for umcf_file in curriculum_dir.glob("*.umcf"):
             try:
-                self._load_curriculum_file(umlcf_file)
+                self._load_curriculum_file(umcf_file)
             except Exception as e:
-                logger.error(f"Failed to load curriculum {umlcf_file}: {e}")
+                logger.error(f"Failed to load curriculum {umcf_file}: {e}")
 
         logger.info(f"Loaded {len(self.curriculums)} curricula")
 
     def _load_curriculum_file(self, file_path: Path):
-        """Load a single UMLCF file and extract summary/details."""
+        """Load a single UMCF file and extract summary/details."""
         with open(file_path, 'r', encoding='utf-8') as f:
-            umlcf = json.load(f)
+            umcf = json.load(f)
 
-        # Extract ID from the UMLCF or generate from filename
-        umlcf_id = umlcf.get("id", {}).get("value", file_path.stem)
+        # Extract ID from the UMCF or generate from filename
+        umcf_id = umcf.get("id", {}).get("value", file_path.stem)
 
         # Extract educational metadata
-        educational = umlcf.get("educational", {})
-        version_info = umlcf.get("version", {})
+        educational = umcf.get("educational", {})
+        version_info = umcf.get("version", {})
 
         # Count topics and calculate duration
-        content = umlcf.get("content", [])
+        content = umcf.get("content", [])
         topic_count = 0
         topics = []
         total_visual_assets = 0
@@ -377,7 +377,7 @@ class ManagementState:
                 ))
 
         # Extract glossary
-        glossary = umlcf.get("glossary", {}).get("terms", [])
+        glossary = umcf.get("glossary", {}).get("terms", [])
 
         # Extract learning objectives from root content
         learning_objectives = []
@@ -387,15 +387,15 @@ class ManagementState:
 
         # Create summary for listing
         summary = CurriculumSummary(
-            id=umlcf_id,
-            title=umlcf.get("title", "Untitled"),
-            description=umlcf.get("description", ""),
+            id=umcf_id,
+            title=umcf.get("title", "Untitled"),
+            description=umcf.get("description", ""),
             version=version_info.get("number", "1.0.0"),
             topic_count=topic_count,
             total_duration=educational.get("typicalLearningTime", "PT4H"),
             difficulty=educational.get("difficulty", "medium"),
             age_range=educational.get("typicalAgeRange", "18+"),
-            keywords=umlcf.get("metadata", {}).get("keywords", []),
+            keywords=umcf.get("metadata", {}).get("keywords", []),
             file_path=str(file_path),
             visual_asset_count=total_visual_assets,
             has_visual_assets=total_visual_assets > 0
@@ -403,23 +403,23 @@ class ManagementState:
 
         # Create detailed view
         detail = CurriculumDetail(
-            id=umlcf_id,
-            title=umlcf.get("title", "Untitled"),
-            description=umlcf.get("description", ""),
+            id=umcf_id,
+            title=umcf.get("title", "Untitled"),
+            description=umcf.get("description", ""),
             version=version_info.get("number", "1.0.0"),
             difficulty=educational.get("difficulty", "medium"),
             age_range=educational.get("typicalAgeRange", "18+"),
             duration=educational.get("typicalLearningTime", "PT4H"),
-            keywords=umlcf.get("metadata", {}).get("keywords", []),
+            keywords=umcf.get("metadata", {}).get("keywords", []),
             topics=[asdict(t) for t in topics],
             glossary_terms=glossary,
             learning_objectives=learning_objectives,
-            raw_umlcf=umlcf
+            raw_umcf=umcf
         )
 
-        self.curriculums[umlcf_id] = summary
-        self.curriculum_details[umlcf_id] = detail
-        self.curriculum_raw[umlcf_id] = umlcf
+        self.curriculums[umcf_id] = summary
+        self.curriculum_details[umcf_id] = detail
+        self.curriculum_raw[umcf_id] = umcf
 
     def reload_curricula(self):
         """Reload all curricula from disk."""
@@ -1653,9 +1653,9 @@ async def handle_get_curriculum_detail(request: web.Request) -> web.Response:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
         detail = state.curriculum_details[curriculum_id]
-        # Don't include raw_umlcf in detail response (it's huge)
+        # Don't include raw_umcf in detail response (it's huge)
         result = asdict(detail)
-        del result["raw_umlcf"]
+        del result["raw_umcf"]
 
         return web.json_response(result)
 
@@ -1665,7 +1665,7 @@ async def handle_get_curriculum_detail(request: web.Request) -> web.Response:
 
 
 async def handle_get_curriculum_full(request: web.Request) -> web.Response:
-    """Get full UMLCF data for a curriculum (for iOS download)."""
+    """Get full UMCF data for a curriculum (for iOS download)."""
     try:
         curriculum_id = request.match_info.get("curriculum_id")
 
@@ -1688,8 +1688,8 @@ async def handle_get_topic_transcript(request: web.Request) -> web.Response:
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if not content:
             return web.json_response({"error": "No content in curriculum"}, status=404)
@@ -1764,8 +1764,8 @@ async def handle_stream_topic_audio(request: web.Request) -> web.StreamResponse:
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if not content:
             return web.json_response({"error": "No content in curriculum"}, status=404)
@@ -2042,29 +2042,29 @@ async def handle_get_archived_curricula(_request: web.Request) -> web.Response:
             })
 
         archived = []
-        for umlcf_file in archived_dir.glob("*.umlcf"):
+        for umcf_file in archived_dir.glob("*.umcf"):
             try:
-                with open(umlcf_file, 'r', encoding='utf-8') as f:
-                    umlcf = json.load(f)
+                with open(umcf_file, 'r', encoding='utf-8') as f:
+                    umcf = json.load(f)
 
-                umlcf_id = umlcf.get("id", {}).get("value", umlcf_file.stem)
-                content = umlcf.get("content", [])
+                umcf_id = umcf.get("id", {}).get("value", umcf_file.stem)
+                content = umcf.get("content", [])
                 topic_count = 0
                 if content and isinstance(content, list):
                     root = content[0]
                     topic_count = len(root.get("children", []))
 
                 archived.append({
-                    "id": umlcf_id,
-                    "title": umlcf.get("title", "Untitled"),
-                    "description": umlcf.get("description", ""),
-                    "file_path": str(umlcf_file),
-                    "file_name": umlcf_file.name,
+                    "id": umcf_id,
+                    "title": umcf.get("title", "Untitled"),
+                    "description": umcf.get("description", ""),
+                    "file_path": str(umcf_file),
+                    "file_name": umcf_file.name,
                     "topic_count": topic_count,
-                    "archived_at": umlcf_file.stat().st_mtime,
+                    "archived_at": umcf_file.stat().st_mtime,
                 })
             except Exception as e:
-                logger.warning(f"Failed to read archived curriculum {umlcf_file}: {e}")
+                logger.warning(f"Failed to read archived curriculum {umcf_file}: {e}")
 
         # Sort by archived date (newest first)
         archived.sort(key=lambda x: x["archived_at"], reverse=True)
@@ -2113,18 +2113,18 @@ async def handle_unarchive_curriculum(request: web.Request) -> web.Response:
 
         # Get the curriculum info
         with open(active_path, 'r', encoding='utf-8') as f:
-            umlcf = json.load(f)
-        curriculum_id = umlcf.get("id", {}).get("value", active_path.stem)
+            umcf = json.load(f)
+        curriculum_id = umcf.get("id", {}).get("value", active_path.stem)
 
         await broadcast_message("curriculum_unarchived", {
             "id": curriculum_id,
-            "title": umlcf.get("title", "Untitled"),
+            "title": umcf.get("title", "Untitled"),
         })
 
         return web.json_response({
             "status": "unarchived",
             "id": curriculum_id,
-            "title": umlcf.get("title", "Untitled"),
+            "title": umcf.get("title", "Untitled"),
             "file_path": str(active_path),
         })
 
@@ -2153,9 +2153,9 @@ async def handle_delete_archived_curriculum(request: web.Request) -> web.Respons
 
         # Read info for response
         with open(archived_path, 'r', encoding='utf-8') as f:
-            umlcf = json.load(f)
-        curriculum_id = umlcf.get("id", {}).get("value", archived_path.stem)
-        title = umlcf.get("title", "Untitled")
+            umcf = json.load(f)
+        curriculum_id = umcf.get("id", {}).get("value", archived_path.stem)
+        title = umcf.get("title", "Untitled")
 
         if not confirm:
             return web.json_response({
@@ -2184,14 +2184,14 @@ async def handle_delete_archived_curriculum(request: web.Request) -> web.Respons
 
 
 async def handle_save_curriculum(request: web.Request) -> web.Response:
-    """Save/update a curriculum VLCF file."""
+    """Save/update a curriculum UMCF file."""
     try:
         curriculum_id = request.match_info.get("curriculum_id")
         data = await request.json()
 
-        # Validate it's valid UMLCF (basic check)
-        if "umlcf" not in data or "title" not in data:
-            return web.json_response({"error": "Invalid UMLCF data"}, status=400)
+        # Validate it's valid UMCF (basic check)
+        if "umcf" not in data or "title" not in data:
+            return web.json_response({"error": "Invalid UMCF data"}, status=400)
 
         # Determine file path
         if curriculum_id in state.curriculums:
@@ -2199,7 +2199,7 @@ async def handle_save_curriculum(request: web.Request) -> web.Response:
         else:
             # New curriculum - create filename from title
             safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in data["title"].lower())
-            file_path = PROJECT_ROOT / "curriculum" / "examples" / "realistic" / f"{safe_name}.umlcf"
+            file_path = PROJECT_ROOT / "curriculum" / "examples" / "realistic" / f"{safe_name}.umcf"
 
         # Write the file
         with open(file_path, 'w', encoding='utf-8') as f:
@@ -2228,7 +2228,7 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
     """Import a curriculum from URL or direct content."""
     try:
         data = await request.json()
-        umlcf_data = None
+        umcf_data = None
         source_url = None
 
         # Import from URL
@@ -2246,7 +2246,7 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
                         )
                     content = await response.text()
                     try:
-                        umlcf_data = json.loads(content)
+                        umcf_data = json.loads(content)
                     except json.JSONDecodeError as e:
                         return web.json_response(
                             {"error": f"Invalid JSON at URL: {str(e)}"},
@@ -2255,7 +2255,7 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
 
         # Import from direct content
         elif "content" in data:
-            umlcf_data = data["content"]
+            umcf_data = data["content"]
             logger.info("Importing curriculum from direct content")
 
         else:
@@ -2264,20 +2264,20 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
                 status=400
             )
 
-        # Validate UMLCF format
-        if not isinstance(umlcf_data, dict):
+        # Validate UMCF format
+        if not isinstance(umcf_data, dict):
             return web.json_response({"error": "Content must be a JSON object"}, status=400)
 
-        if umlcf_data.get("formatIdentifier") != "umlcf":
+        if umcf_data.get("formatIdentifier") != "umcf":
             return web.json_response(
-                {"error": "Invalid format: formatIdentifier must be 'umlcf'"},
+                {"error": "Invalid format: formatIdentifier must be 'umcf'"},
                 status=400
             )
 
         # Extract title for filename
-        metadata = umlcf_data.get("metadata", {})
+        metadata = umcf_data.get("metadata", {})
         title = metadata.get("title", "Imported Curriculum")
-        curriculum_id = umlcf_data.get("id", {}).get("value", "")
+        curriculum_id = umcf_data.get("id", {}).get("value", "")
 
         # Create safe filename
         safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in title.lower())
@@ -2288,17 +2288,17 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
         curriculum_dir = PROJECT_ROOT / "curriculum" / "examples" / "realistic"
         curriculum_dir.mkdir(parents=True, exist_ok=True)
 
-        file_path = curriculum_dir / f"{safe_name}.umlcf"
+        file_path = curriculum_dir / f"{safe_name}.umcf"
 
         # Handle duplicate filenames
         counter = 1
         while file_path.exists():
-            file_path = curriculum_dir / f"{safe_name}-{counter}.umlcf"
+            file_path = curriculum_dir / f"{safe_name}-{counter}.umcf"
             counter += 1
 
         # Write the file
         with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(umlcf_data, f, indent=2, ensure_ascii=False)
+            json.dump(umcf_data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved imported curriculum to: {file_path}")
 
@@ -2407,8 +2407,8 @@ async def handle_upload_visual_asset(request: web.Request) -> web.Response:
             asset["keywords"] = metadata.get("keywords", [])
 
         # Update the curriculum file
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if content:
             root = content[0]
@@ -2433,7 +2433,7 @@ async def handle_upload_visual_asset(request: web.Request) -> web.Response:
             if curriculum_id in state.curriculums:
                 file_path = Path(state.curriculums[curriculum_id].file_path)
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(umlcf, f, indent=2, ensure_ascii=False)
+                    json.dump(umcf, f, indent=2, ensure_ascii=False)
 
                 # Reload to update state
                 state._load_curriculum_file(file_path)
@@ -2461,8 +2461,8 @@ async def handle_delete_visual_asset(request: web.Request) -> web.Response:
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if content:
             root = content[0]
@@ -2487,7 +2487,7 @@ async def handle_delete_visual_asset(request: web.Request) -> web.Response:
             if curriculum_id in state.curriculums:
                 file_path = Path(state.curriculums[curriculum_id].file_path)
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(umlcf, f, indent=2, ensure_ascii=False)
+                    json.dump(umcf, f, indent=2, ensure_ascii=False)
 
                 state._load_curriculum_file(file_path)
 
@@ -2509,8 +2509,8 @@ async def handle_update_visual_asset(request: web.Request) -> web.Response:
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
         updated_asset = None
 
         if content:
@@ -2543,7 +2543,7 @@ async def handle_update_visual_asset(request: web.Request) -> web.Response:
             if updated_asset and curriculum_id in state.curriculums:
                 file_path = Path(state.curriculums[curriculum_id].file_path)
                 with open(file_path, 'w', encoding='utf-8') as f:
-                    json.dump(umlcf, f, indent=2, ensure_ascii=False)
+                    json.dump(umcf, f, indent=2, ensure_ascii=False)
 
                 state._load_curriculum_file(file_path)
 
@@ -2650,14 +2650,14 @@ async def download_and_save_asset(
 
 async def handle_preload_curriculum_assets(request: web.Request) -> web.Response:
     """
-    Pre-download all remote assets for a curriculum and update UMLCF with localPath.
+    Pre-download all remote assets for a curriculum and update UMCF with localPath.
 
     POST /api/curricula/{curriculum_id}/preload-assets
 
     This endpoint:
     1. Iterates all topics in the curriculum
     2. For each media asset with a URL but no localPath, downloads the asset
-    3. Updates the UMLCF file with localPath references
+    3. Updates the UMCF file with localPath references
     4. Returns a summary of downloaded/failed assets
     """
     try:
@@ -2666,8 +2666,8 @@ async def handle_preload_curriculum_assets(request: web.Request) -> web.Response
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        umlcf = state.curriculum_raw[curriculum_id]
-        content = umlcf.get("content", [])
+        umcf = state.curriculum_raw[curriculum_id]
+        content = umcf.get("content", [])
 
         if not content:
             return web.json_response({"error": "No content in curriculum"}, status=404)
@@ -2729,7 +2729,7 @@ async def handle_preload_curriculum_assets(request: web.Request) -> web.Response
         if downloaded and curriculum_id in state.curriculums:
             file_path = Path(state.curriculums[curriculum_id].file_path)
             with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(umlcf, f, indent=2, ensure_ascii=False)
+                json.dump(umcf, f, indent=2, ensure_ascii=False)
 
             # Reload to update state
             state._load_curriculum_file(file_path)
@@ -2756,16 +2756,16 @@ async def handle_preload_curriculum_assets(request: web.Request) -> web.Response
 
 async def handle_get_curriculum_with_assets(request: web.Request) -> web.Response:
     """
-    Get full UMLCF data with base64-encoded asset data bundled.
+    Get full UMCF data with base64-encoded asset data bundled.
 
     GET /api/curricula/{curriculum_id}/full-with-assets
 
-    Returns the UMLCF JSON with an additional 'assetData' field containing
+    Returns the UMCF JSON with an additional 'assetData' field containing
     base64-encoded binary data for all assets that have localPath set.
 
     Response format:
     {
-        ...umlcf fields...,
+        ...umcf fields...,
         "assetData": {
             "asset-id-1": {
                 "data": "base64-encoded-data",
@@ -2782,13 +2782,13 @@ async def handle_get_curriculum_with_assets(request: web.Request) -> web.Respons
         if curriculum_id not in state.curriculum_raw:
             return web.json_response({"error": "Curriculum not found"}, status=404)
 
-        # Deep copy the UMLCF to avoid modifying the cached version
+        # Deep copy the UMCF to avoid modifying the cached version
         import copy
-        umlcf = copy.deepcopy(state.curriculum_raw[curriculum_id])
+        umcf = copy.deepcopy(state.curriculum_raw[curriculum_id])
 
-        content = umlcf.get("content", [])
+        content = umcf.get("content", [])
         if not content:
-            return web.json_response(umlcf)
+            return web.json_response(umcf)
 
         root = content[0]
         children = root.get("children", [])
@@ -2842,11 +2842,11 @@ async def handle_get_curriculum_with_assets(request: web.Request) -> web.Respons
                         logger.error(f"Error reading asset {asset_id}: {e}")
 
         # Add asset data to response
-        umlcf["assetData"] = asset_data
+        umcf["assetData"] = asset_data
 
         logger.info(f"Returning curriculum with {len(asset_data)} bundled assets")
 
-        return web.json_response(umlcf)
+        return web.json_response(umcf)
 
     except Exception as e:
         logger.error(f"Error getting curriculum with assets: {e}")
@@ -3632,7 +3632,7 @@ def create_app() -> web.Application:
     # Startup hook to detect existing services and load curricula
     async def on_startup(app):
         await detect_existing_processes()
-        state._load_curricula()  # Load all UMLCF curricula on startup
+        state._load_curricula()  # Load all UMCF curricula on startup
 
         # Start resource monitoring and idle management
         await resource_monitor.start()

@@ -1,5 +1,5 @@
 #!/bin/bash
-# VoiceLearn Server Stack Startup Script
+# UnaMentis Server Stack Startup Script
 # Starts all three services: Management Console, VibeVoice TTS, and Next.js Dashboard
 
 set -e
@@ -27,7 +27,7 @@ echo "║   ╚██╗ ██╔╝██║   ██║██║██║    
 echo "║    ╚████╔╝ ╚██████╔╝██║╚██████╗███████╗                     ║"
 echo "║     ╚═══╝   ╚═════╝ ╚═╝ ╚═════╝╚══════╝                     ║"
 echo "║                                                              ║"
-echo "║           VoiceLearn Server Stack Launcher                   ║"
+echo "║           UnaMentis Server Stack Launcher                     ║"
 echo "║                                                              ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"

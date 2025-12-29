@@ -368,7 +368,7 @@ class ImporterHookSpec:
         Get list of export formats this exporter supports.
 
         Returns:
-            List of format identifiers (e.g., ["umlcf", "scorm"])
+            List of format identifiers (e.g., ["umcf", "scorm"])
         """
         pass
 

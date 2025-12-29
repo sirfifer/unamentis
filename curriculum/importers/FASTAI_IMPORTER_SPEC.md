@@ -24,7 +24,7 @@
 
 ## Overview
 
-The Fast.ai importer converts Fast.ai course materials (Jupyter notebooks) into UMLCF format for use with UnaMentis's conversational AI tutoring system. Fast.ai is a leading AI/ML education platform known for its practical, top-down teaching approach and high-quality free courses.
+The Fast.ai importer converts Fast.ai course materials (Jupyter notebooks) into UMCF format for use with UnaMentis's conversational AI tutoring system. Fast.ai is a leading AI/ML education platform known for its practical, top-down teaching approach and high-quality free courses.
 
 ### Why Fast.ai?
 
@@ -77,7 +77,7 @@ fastbook/
 
 ### Notebook Cell Types
 
-| Cell Type | Content | UMLCFMapping |
+| Cell Type | Content | UMCF Mapping |
 |-----------|---------|--------------|
 | **Markdown** | Explanatory text, headings, lists | `transcript.segments[]` |
 | **Code** | Python code, fastai library calls | `examples[].content` |
@@ -101,7 +101,7 @@ Fast.ai uses a unique "whole game" approach:
 3. **Repeat concepts with variations**
 4. **Encourage experimentation**
 
-This maps well to UMLCF's `tutoringConfig.depth` levels:
+This maps well to UMCF's `tutoringConfig.depth` levels:
 - `surface`: Show working code, explain what it does
 - `standard`: Explain why each part works
 - `deep`: Dig into implementation details
@@ -140,7 +140,7 @@ Some supplementary content in markdown:
 
 ### Metadata Mapping
 
-| Jupyter Element | UMLCFField | Notes |
+| Jupyter Element | UMCF Field | Notes |
 |-----------------|------------|-------|
 | `metadata.title` | `title` | Notebook title |
 | `metadata.authors` | `lifecycle.contributors[]` | Authors |
@@ -150,7 +150,7 @@ Some supplementary content in markdown:
 
 ### Content Hierarchy Mapping
 
-| Notebook Element | UMLCFType | Detection Method |
+| Notebook Element | UMCF Type | Detection Method |
 |------------------|-----------|------------------|
 | Notebook file | Root curriculum or `module` | File boundary |
 | H1 heading (# ) | `module` | Markdown parsing |
@@ -161,7 +161,7 @@ Some supplementary content in markdown:
 
 ### Code Example Mapping
 
-| Code Element | UMLCFField | Notes |
+| Code Element | UMCF Field | Notes |
 |--------------|------------|-------|
 | Code cell source | `examples[].content` | Python code |
 | Cell output | `examples[].output` | Execution result |
@@ -172,7 +172,7 @@ Some supplementary content in markdown:
 
 Fast.ai doesn't have formal quizzes, but we can infer assessments from:
 
-| Pattern | UMLCFAssessment | Example |
+| Pattern | UMCF Assessment | Example |
 |---------|-----------------|---------|
 | "**Questionnaire**" section | Multiple `choice` | "What does a CNN do?" |
 | `#hide` comment questions | `text-entry` | "Complete this function" |
@@ -210,7 +210,7 @@ class FastaiImporter(CurriculumImporter):
     """
     Importer for Fast.ai course materials (Jupyter notebooks).
 
-    Converts fastbook and course notebooks to UMLCFformat,
+    Converts fastbook and course notebooks to UMCF format,
     preserving code examples, outputs, and questionnaires.
     """
 
@@ -472,7 +472,7 @@ class FastaiImporter(CurriculumImporter):
 
     async def parse(self, content: bytes) -> CurriculumData:
         """
-        Parse Jupyter notebook and transform to UMLCFformat.
+        Parse Jupyter notebook and transform to UMCF format.
 
         Pipeline:
         1. Extract raw structure
@@ -484,7 +484,7 @@ class FastaiImporter(CurriculumImporter):
         """
         raw = await self.extract(content)
 
-        # Build UMLCFstructure
+        # Build UMCF structure
         umlcf = {
             "umlcf": "1.0.0",
             "id": self._generate_id(raw),
@@ -648,7 +648,7 @@ class FastaiImporter(CurriculumImporter):
         return text.strip()
 
     async def _code_to_example(self, cell: Dict) -> Dict:
-        """Convert code cell to UMLCFexample"""
+        """Convert code cell to UMCF example"""
         source = cell["source"]
         outputs = cell.get("outputs", [])
 
@@ -796,7 +796,7 @@ class FastaiImporter(CurriculumImporter):
         return "Code Example"
 
     def _question_to_assessment(self, question: Dict) -> Dict:
-        """Convert extracted question to UMLCFassessment"""
+        """Convert extracted question to UMCF assessment"""
         return {
             "id": {"value": question["id"]},
             "type": "self-assessment",
@@ -809,7 +809,7 @@ class FastaiImporter(CurriculumImporter):
         }
 
     def _build_educational(self, raw: Dict) -> Dict:
-        """Build UMLCFeducational context for Fast.ai content"""
+        """Build UMCF educational context for Fast.ai content"""
         return {
             "audience": {
                 "type": "learner",
@@ -848,7 +848,7 @@ class FastaiImporter(CurriculumImporter):
         return round((markdown_cells * 2 + code_cells * 5) / 60, 1)
 
     def _build_rights(self) -> Dict:
-        """Build UMLCFrights for Fast.ai content"""
+        """Build UMCF rights for Fast.ai content"""
         return {
             "license": {
                 "type": "Apache-2.0",
@@ -894,7 +894,7 @@ class FastaiImporter(CurriculumImporter):
         return ""
 
     def _generate_id(self, raw: Dict) -> Dict:
-        """Generate UMLCFID from notebook metadata"""
+        """Generate UMCF ID from notebook metadata"""
         # Try to get from metadata
         nb_meta = raw.get("metadata", {})
 
@@ -926,7 +926,7 @@ class FastaiImporter(CurriculumImporter):
         }
 
     def _build_metadata(self, raw: Dict) -> Dict:
-        """Build UMLCFmetadata"""
+        """Build UMCF metadata"""
         return {
             "language": "en-US",
             "keywords": ["deep learning", "machine learning", "AI", "fastai", "PyTorch"],
@@ -1123,7 +1123,7 @@ async def test_extract_headings(importer, sample_notebook):
 async def test_parse_creates_umlcf(importer, sample_notebook):
     content = json.dumps(sample_notebook).encode()
     curriculum = await importer.parse(content)
-    assert curriculum.umlcf == "1.0.0"
+    assert curriculum.umcf == "1.0.0"
     assert len(curriculum.content) >= 1
 ```
 

@@ -1072,7 +1072,7 @@
                         <div id="source-view-github" class="source-view hidden flex-1 flex flex-col">
                             <div class="flex gap-3 mb-4">
                                 <div class="flex-1">
-                                    <input type="text" id="github-search-input" class="input-field" placeholder="Search repositories (e.g., 'umlcf curriculum')">
+                                    <input type="text" id="github-search-input" class="input-field" placeholder="Search repositories (e.g., 'umcf curriculum')">
                                 </div>
                                 <button class="btn-primary" onclick="searchGitHubRepos()">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1087,7 +1087,7 @@
                                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                                     </svg>
                                     <p class="text-lg font-medium">Search GitHub</p>
-                                    <p class="text-sm mt-1">Enter a search term to find UMLCF curriculum files</p>
+                                    <p class="text-sm mt-1">Enter a search term to find UMCF curriculum files</p>
                                 </div>
                             </div>
                         </div>
@@ -1096,7 +1096,7 @@
                         <div id="source-view-custom" class="source-view hidden flex-1 flex flex-col">
                             <div class="flex gap-3 mb-4">
                                 <div class="flex-1">
-                                    <input type="url" id="custom-url-input" class="input-field" placeholder="https://example.com/curricula/ or direct .umlcf URL">
+                                    <input type="url" id="custom-url-input" class="input-field" placeholder="https://example.com/curricula/ or direct .umcf URL">
                                 </div>
                                 <button class="btn-primary" onclick="browseCustomURL()">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1111,7 +1111,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                                     </svg>
                                     <p class="text-lg font-medium">Enter a URL</p>
-                                    <p class="text-sm mt-1">Paste a direct link to a .umlcf file or a directory listing</p>
+                                    <p class="text-sm mt-1">Paste a direct link to a .umcf file or a directory listing</p>
                                 </div>
                             </div>
                         </div>
@@ -1553,9 +1553,9 @@
                     <div id="import-tab-url" class="import-tab-content">
                         <form id="import-url-form" onsubmit="importFromUrl(event)">
                             <div class="mb-4">
-                                <label class="block text-sm font-medium text-dark-300 mb-2">UMLCF URL</label>
-                                <input type="url" name="url" required class="input-field" placeholder="https://example.com/curriculum.umlcf">
-                                <p class="text-xs text-dark-500 mt-1">Enter a direct link to a UMLCF curriculum file</p>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">UMCF URL</label>
+                                <input type="url" name="url" required class="input-field" placeholder="https://example.com/curriculum.umcf">
+                                <p class="text-xs text-dark-500 mt-1">Enter a direct link to a UMCF curriculum file</p>
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button type="button" class="btn-secondary" onclick="hideImportModal()">Cancel</button>
@@ -1573,13 +1573,13 @@
                     <div id="import-tab-file" class="import-tab-content hidden">
                         <form id="import-file-form" onsubmit="importFromFile(event)">
                             <div class="mb-4">
-                                <label class="block text-sm font-medium text-dark-300 mb-2">Upload UMLCF File</label>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Upload UMCF File</label>
                                 <div class="border-2 border-dashed border-dark-600 rounded-lg p-6 text-center hover:border-accent-primary/50 transition-colors cursor-pointer" onclick="document.getElementById('curriculum-file-input').click()">
-                                    <input type="file" id="curriculum-file-input" name="file" accept=".umlcf,.json" class="hidden" onchange="handleFileSelect(event)">
+                                    <input type="file" id="curriculum-file-input" name="file" accept=".umcf,.json" class="hidden" onchange="handleFileSelect(event)">
                                     <svg class="w-10 h-10 mx-auto mb-2 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
-                                    <p class="text-dark-300" id="file-upload-text">Click or drag to upload .umlcf file</p>
+                                    <p class="text-dark-300" id="file-upload-text">Click or drag to upload .umcf file</p>
                                 </div>
                             </div>
                             <div class="flex justify-end gap-2">
@@ -1598,8 +1598,8 @@
                     <div id="import-tab-paste" class="import-tab-content hidden">
                         <form id="import-paste-form" onsubmit="importFromPaste(event)">
                             <div class="mb-4">
-                                <label class="block text-sm font-medium text-dark-300 mb-2">Paste UMLCF JSON</label>
-                                <textarea name="json" required class="input-field h-48 font-mono text-sm" placeholder='{"formatIdentifier": "umlcf", ...}'></textarea>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Paste UMCF JSON</label>
+                                <textarea name="json" required class="input-field h-48 font-mono text-sm" placeholder='{"formatIdentifier": "umcf", ...}'></textarea>
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button type="button" class="btn-secondary" onclick="hideImportModal()">Cancel</button>

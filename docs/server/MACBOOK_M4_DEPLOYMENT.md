@@ -138,7 +138,7 @@ ollama pull qwen2.5:14b         # Excellent multilingual
 Create optimized models:
 
 ```
-# ~/voicelearn-tutor.Modelfile
+# ~/unamentis-tutor.Modelfile
 FROM qwen2.5:7b
 
 # Large context for tutoring conversations
@@ -158,7 +158,7 @@ Keep responses conversational and concise."""
 ```
 
 ```bash
-ollama create voicelearn-tutor -f ~/voicelearn-tutor.Modelfile
+ollama create unamentis-tutor -f ~/unamentis-tutor.Modelfile
 ```
 
 ### Performance on M4 Max
@@ -191,7 +191,7 @@ mlx_lm.server --model mlx-community/Qwen2.5-7B-Instruct-4bit --port 8080
 
 ```python
 #!/usr/bin/env python3
-# ~/voicelearn/mlx-server.py
+# ~/unamentis/mlx-server.py
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
@@ -351,7 +351,7 @@ print(result["text"])
 
 ```python
 #!/usr/bin/env python3
-# ~/voicelearn/whisper-server.py
+# ~/unamentis/whisper-server.py
 
 from fastapi import FastAPI, UploadFile, File
 import mlx_whisper
@@ -447,7 +447,7 @@ pip install -r requirements.txt
 ### Directory Structure
 
 ```
-~/voicelearn-server/
+~/unamentis-server/
 ├── start-all.sh           # Start all services
 ├── stop-all.sh            # Stop all services
 ├── llm/
@@ -467,7 +467,7 @@ pip install -r requirements.txt
 
 ```bash
 #!/bin/bash
-# ~/voicelearn-server/start-all.sh
+# ~/unamentis-server/start-all.sh
 
 echo "Starting UnaMentis AI Server Stack..."
 
@@ -478,13 +478,13 @@ sleep 2
 
 # Start Whisper server
 echo "Starting STT server..."
-cd ~/voicelearn-server/stt
+cd ~/unamentis-server/stt
 python whisper-server.py &
 sleep 2
 
 # Start TTS server
 echo "Starting TTS server..."
-cd ~/voicelearn-server/tts
+cd ~/unamentis-server/tts
 python piper-server.py &
 sleep 2
 
@@ -509,16 +509,16 @@ Create `~/Library/LaunchAgents/com.unamentis.server.plist`:
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>~/voicelearn-server/start-all.sh</string>
+        <string>~/unamentis-server/start-all.sh</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/voicelearn-server.log</string>
+    <string>/tmp/unamentis-server.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/voicelearn-server.err</string>
+    <string>/tmp/unamentis-server.err</string>
 </dict>
 </plist>
 ```
@@ -600,10 +600,10 @@ tailscale up
 brew install cloudflared
 
 # Create tunnel
-cloudflared tunnel create voicelearn
+cloudflared tunnel create unamentis
 
 # Configure in ~/.cloudflared/config.yml
-# Map voicelearn.yourdomain.com -> localhost:8080
+# Map unamentis.yourdomain.com -> localhost:8080
 ```
 
 ### Option 3: ngrok (Quick Testing)

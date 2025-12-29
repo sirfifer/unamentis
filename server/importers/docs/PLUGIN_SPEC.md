@@ -466,7 +466,7 @@ class MyEnricherPlugin(BaseImporterPlugin):
         REQUIRED: Enrich content with AI-generated additions.
 
         Args:
-            content: Content to enrich (UMLCF structure)
+            content: Content to enrich (UMCF structure)
             config: Import configuration with enrichment options
 
         Returns:
@@ -515,7 +515,7 @@ class MyExporterPlugin(BaseImporterPlugin):
         REQUIRED: Return supported export format IDs.
 
         Standard formats:
-        - "umlcf": UnaMentis Curriculum Format (JSON)
+        - "umcf": Una Mentis Curriculum Format (JSON)
         - "scorm": SCORM 2004 package
         - "xapi": xAPI statements
         - "markdown": Markdown files
@@ -533,7 +533,7 @@ class MyExporterPlugin(BaseImporterPlugin):
         REQUIRED: Export content to specified format.
 
         Args:
-            content: UMLCF content to export
+            content: UMCF content to export
             output_path: Directory for output
             format_id: Format to export to
 

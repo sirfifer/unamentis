@@ -23,7 +23,7 @@
 
 ## Overview
 
-The MIT OCW importer converts MIT OpenCourseWare course packages into UMLCF format for use with UnaMentis's conversational AI tutoring system. MIT OCW is a free, publicly accessible collection of over 2,500 MIT courses with comprehensive materials.
+The MIT OCW importer converts MIT OpenCourseWare course packages into UMCF format for use with UnaMentis's conversational AI tutoring system. MIT OCW is a free, publicly accessible collection of over 2,500 MIT courses with comprehensive materials.
 
 ### Why MIT OCW?
 
@@ -35,7 +35,7 @@ The MIT OCW importer converts MIT OpenCourseWare course packages into UMLCF form
 | **Formats** | ZIP packages with HTML, PDF, video links |
 | **Coverage** | 2,500+ courses across all disciplines |
 | **Standards Alignment** | University curriculum standards |
-| **Structure** | Course → Lecture/Topic → Resources (maps to UMLCF hierarchy) |
+| **Structure** | Course → Lecture/Topic → Resources (maps to UMCF hierarchy) |
 
 ### Import Scope
 
@@ -59,7 +59,7 @@ The MIT OCW importer converts MIT OpenCourseWare course packages into UMLCF form
 
 ### Content Organization
 
-MIT OCW organizes content in a clear hierarchy that maps well to UMLCF:
+MIT OCW organizes content in a clear hierarchy that maps well to UMCF:
 
 ```
 Course ZIP Package
@@ -83,7 +83,7 @@ Course ZIP Package
 
 ### Course Types
 
-| Type | Description | UMLCF Mapping |
+| Type | Description | UMCF Mapping |
 |------|-------------|---------------|
 | **Full Course** | Complete semester materials | Complete curriculum |
 | **Video Course** | Primarily lecture videos | Video-heavy modules |
@@ -158,7 +158,7 @@ For courses without ZIP packages:
 
 ### Metadata Mapping
 
-| MIT OCW Element | UMLCF Field | Notes |
+| MIT OCW Element | UMCF Field | Notes |
 |-----------------|-------------|-------|
 | `<title>` from index.html | `title` | Course title |
 | Course number (6.001) | `id.value` | Unique identifier |
@@ -172,7 +172,7 @@ For courses without ZIP packages:
 
 ### Content Hierarchy Mapping
 
-| MIT OCW Level | UMLCF Type | Example |
+| MIT OCW Level | UMCF Type | Example |
 |---------------|------------|---------|
 | Course | Root curriculum | "6.001 SICP" |
 | Section (Lecture Notes) | `module` | "Lecture Notes" |
@@ -182,7 +182,7 @@ For courses without ZIP packages:
 
 ### Resource Type Mapping
 
-| MIT OCW Resource | UMLCF Element | Transformation |
+| MIT OCW Resource | UMCF Element | Transformation |
 |------------------|---------------|----------------|
 | Lecture PDF | `transcript` segments | Extract text, create segments |
 | Problem Set PDF | `assessments[]` | Parse problems into questions |
@@ -197,7 +197,7 @@ For courses without ZIP packages:
 Video transcripts are the richest content source for lecture courses:
 
 ```python
-# Video transcript to UMLCF mapping
+# Video transcript to UMCF mapping
 VIDEO_TRANSCRIPT_MAPPING = {
     # OCW provides transcripts in multiple formats
     "transcript_html": "Primary source - clean HTML",
@@ -384,7 +384,7 @@ class MITOCWImporter(CurriculumImporter):
 
     async def extract(self, content: bytes) -> Dict[str, Any]:
         """
-        Extract raw MIT OCW structure before UMLCF transformation.
+        Extract raw MIT OCW structure before UMCF transformation.
 
         Returns intermediate representation with:
         - Course metadata from index.html
@@ -627,11 +627,11 @@ class MITOCWImporter(CurriculumImporter):
 
     async def parse(self, content: bytes) -> CurriculumData:
         """
-        Parse MIT OCW content and transform to UMLCF format.
+        Parse MIT OCW content and transform to UMCF format.
 
         Full pipeline:
         1. Extract raw structure
-        2. Map metadata to UMLCF
+        2. Map metadata to UMCF
         3. Convert sections to content nodes
         4. Extract and map assessments
         5. Process transcripts for segments
@@ -640,7 +640,7 @@ class MITOCWImporter(CurriculumImporter):
         # Step 1: Extract
         raw = await self.extract(content)
 
-        # Step 2: Build UMLCF structure
+        # Step 2: Build UMCF structure
         umlcf = {
             "umlcf": "1.0.0",
             "id": self._generate_id(raw),
@@ -666,7 +666,7 @@ class MITOCWImporter(CurriculumImporter):
         return CurriculumData(**umlcf)
 
     def _build_lifecycle(self, metadata: Dict) -> Dict:
-        """Build UMLCF lifecycle from MIT OCW metadata"""
+        """Build UMCF lifecycle from MIT OCW metadata"""
         contributors = [
             {
                 "role": "publisher",
@@ -688,7 +688,7 @@ class MITOCWImporter(CurriculumImporter):
         }
 
     def _build_metadata(self, metadata: Dict) -> Dict:
-        """Build UMLCF metadata from MIT OCW metadata"""
+        """Build UMCF metadata from MIT OCW metadata"""
         keywords = ["MIT", "OpenCourseWare", "university"]
 
         if metadata.get("department"):
@@ -701,7 +701,7 @@ class MITOCWImporter(CurriculumImporter):
         }
 
     def _build_educational(self, metadata: Dict) -> Dict:
-        """Build UMLCF educational context from MIT OCW metadata"""
+        """Build UMCF educational context from MIT OCW metadata"""
         return {
             "audience": {
                 "type": "learner",
@@ -716,7 +716,7 @@ class MITOCWImporter(CurriculumImporter):
         }
 
     def _build_rights(self) -> Dict:
-        """Build UMLCF rights from MIT OCW license"""
+        """Build UMCF rights from MIT OCW license"""
         return {
             "license": {
                 "type": "CC-BY-NC-SA-4.0",
@@ -736,7 +736,7 @@ class MITOCWImporter(CurriculumImporter):
         }
 
     def _generate_id(self, raw: Dict) -> Dict:
-        """Generate UMLCF ID from MIT OCW metadata"""
+        """Generate UMCF ID from MIT OCW metadata"""
         course_number = raw["metadata"].get("course_number")
         if course_number:
             return {"catalog": "MIT-OCW", "value": course_number}
@@ -1104,7 +1104,7 @@ MIT OCW content is relatively well-structured but needs enrichment for tutoring:
 │                                                                 │
 │  Stage 5: Assessment Generation                                 │
 │  ├─ Input: Problem sets, exams (existing)                       │
-│  ├─ Output: UMLCF assessments with feedback                     │
+│  ├─ Output: UMCF assessments with feedback                      │
 │  └─ MIT OCW Specific: Parse existing problems, add hints        │
 │                                                                 │
 │  Stage 6: Tutoring Enhancement                                  │

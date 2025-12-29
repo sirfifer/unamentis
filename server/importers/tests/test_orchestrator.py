@@ -4,7 +4,7 @@ Unit tests for the import orchestrator.
 Tests the full import pipeline including:
 - Job creation and tracking
 - Stage progression
-- UMLCF generation
+- UMCF generation
 - File storage
 """
 
@@ -214,8 +214,8 @@ class TestImportOrchestrator(unittest.TestCase):
         self.assertEqual(progress.overall_progress, 100.0)
         self.assertIsNotNone(progress.result)
 
-    def test_import_generates_valid_umlcf(self):
-        """Test that import generates a valid UMLCF file."""
+    def test_import_generates_valid_umcf(self):
+        """Test that import generates a valid UMCF file."""
         config = ImportConfig(
             source_id="mock_source",
             course_id="test-course-789",
@@ -227,21 +227,21 @@ class TestImportOrchestrator(unittest.TestCase):
 
         self.assertEqual(progress.status, ImportStatus.COMPLETE)
 
-        # Check UMLCF file was created
-        umlcf_path = self.output_dir / "curricula" / "test-course-789.umlcf"
-        self.assertTrue(umlcf_path.exists(), f"UMLCF file not found at {umlcf_path}")
+        # Check UMCF file was created
+        umcf_path = self.output_dir / "curricula" / "test-course-789.umcf"
+        self.assertTrue(umcf_path.exists(), f"UMCF file not found at {umcf_path}")
 
-        # Validate UMLCF structure
-        with open(umlcf_path) as f:
-            umlcf = json.load(f)
+        # Validate UMCF structure
+        with open(umcf_path) as f:
+            umcf = json.load(f)
 
-        self.assertEqual(umlcf["umlcf"], "1.0.0")
-        self.assertEqual(umlcf["id"]["value"], "test-course-789")
-        self.assertEqual(umlcf["title"], "Test Course")
-        self.assertIn("content", umlcf)
-        self.assertIn("glossary", umlcf)
-        self.assertIsInstance(umlcf["glossary"], dict)
-        self.assertIn("terms", umlcf["glossary"])
+        self.assertEqual(umcf["umcf"], "1.0.0")
+        self.assertEqual(umcf["id"]["value"], "test-course-789")
+        self.assertEqual(umcf["title"], "Test Course")
+        self.assertIn("content", umcf)
+        self.assertIn("glossary", umcf)
+        self.assertIsInstance(umcf["glossary"], dict)
+        self.assertIn("terms", umcf["glossary"])
 
     def test_import_extracts_lectures(self):
         """Test that import correctly extracts lecture content."""
@@ -256,12 +256,12 @@ class TestImportOrchestrator(unittest.TestCase):
 
         self.assertEqual(progress.status, ImportStatus.COMPLETE)
 
-        # Check UMLCF content
-        umlcf_path = self.output_dir / "curricula" / "test-course-lectures.umlcf"
-        with open(umlcf_path) as f:
-            umlcf = json.load(f)
+        # Check UMCF content
+        umcf_path = self.output_dir / "curricula" / "test-course-lectures.umcf"
+        with open(umcf_path) as f:
+            umcf = json.load(f)
 
-        content = umlcf["content"]
+        content = umcf["content"]
         self.assertGreater(len(content), 0)
 
         # Find lectures module

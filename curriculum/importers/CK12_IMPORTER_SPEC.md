@@ -24,7 +24,7 @@
 
 ## Overview
 
-The CK-12 importer converts CK-12 FlexBook content into UMLCF format for use with UnaMentis's conversational AI tutoring system. CK-12 is a nonprofit organization providing free, high-quality K-12 educational content with comprehensive coverage across math, science, ELA, and social studies.
+The CK-12 importer converts CK-12 FlexBook content into UMCF format for use with UnaMentis's conversational AI tutoring system. CK-12 is a nonprofit organization providing free, high-quality K-12 educational content with comprehensive coverage across math, science, ELA, and social studies.
 
 ### Why CK-12?
 
@@ -36,7 +36,7 @@ The CK-12 importer converts CK-12 FlexBook content into UMLCF format for use wit
 | **Formats** | EPUB, PDF, HTML (all parseable) |
 | **8th Grade Coverage** | Complete: Pre-Algebra, Physical Science, Life Science, ELA, Civics |
 | **Standards Alignment** | Common Core, NGSS, state standards |
-| **Modular Structure** | Chapters → Lessons → Sections (maps to UMLCFhierarchy) |
+| **Modular Structure** | Chapters → Lessons → Sections (maps to UMCF hierarchy) |
 
 ### Import Scope
 
@@ -59,7 +59,7 @@ The CK-12 importer converts CK-12 FlexBook content into UMLCF format for use wit
 
 ### Content Organization
 
-CK-12 organizes content in a clear hierarchy that maps well to VLCF:
+CK-12 organizes content in a clear hierarchy that maps well to UMCF:
 
 ```
 FlexBook
@@ -79,7 +79,7 @@ FlexBook
 
 ### FlexBook Types
 
-| Type | Description | UMLCFMapping |
+| Type | Description | UMCF Mapping |
 |------|-------------|--------------|
 | **Textbook** | Full course content | Complete curriculum |
 | **Concept** | Single topic deep-dive | Module or topic |
@@ -131,7 +131,7 @@ Direct HTML from CK-12 library:
 
 ### Metadata Mapping
 
-| CK-12 Element | UMLCFField | Notes |
+| CK-12 Element | UMCF Field | Notes |
 |---------------|------------|-------|
 | `<dc:title>` | `title` | Book title |
 | `<dc:creator>` | `lifecycle.contributors[].name` | Authors |
@@ -145,7 +145,7 @@ Direct HTML from CK-12 library:
 
 ### Content Hierarchy Mapping
 
-| CK-12 Level | UMLCFType | Example |
+| CK-12 Level | UMCF Type | Example |
 |-------------|-----------|---------|
 | FlexBook | Root curriculum | "CK-12 Pre-Algebra" |
 | Chapter | `module` | "Chapter 1: Numbers" |
@@ -155,7 +155,7 @@ Direct HTML from CK-12 library:
 
 ### Educational Context Mapping
 
-| CK-12 Metadata | UMLCFField | Transformation |
+| CK-12 Metadata | UMCF Field | Transformation |
 |----------------|------------|----------------|
 | Grade Level | `educational.audience.gradeLevel` | Extract from metadata |
 | Subject | `metadata.keywords[]` | Direct mapping |
@@ -164,7 +164,7 @@ Direct HTML from CK-12 library:
 
 ### Assessment Mapping
 
-| CK-12 Question Type | UMLCFAssessment Type | Notes |
+| CK-12 Question Type | UMCF Assessment Type | Notes |
 |---------------------|---------------------|-------|
 | Multiple Choice | `choice` | Direct mapping |
 | True/False | `choice` | 2-option choice |
@@ -334,7 +334,7 @@ class CK12Importer(CurriculumImporter):
 
     async def extract(self, content: bytes) -> Dict[str, Any]:
         """
-        Extract raw CK-12 structure before UMLCFtransformation.
+        Extract raw CK-12 structure before UMCF transformation.
 
         Returns intermediate representation with:
         - Metadata from OPF
@@ -398,11 +398,11 @@ class CK12Importer(CurriculumImporter):
 
     async def parse(self, content: bytes) -> CurriculumData:
         """
-        Parse CK-12 content and transform to UMLCFformat.
+        Parse CK-12 content and transform to UMCF format.
 
         Full pipeline:
         1. Extract raw structure
-        2. Map metadata to VLCF
+        2. Map metadata to UMCF
         3. Convert chapters to content nodes
         4. Extract and map assessments
         5. Build glossary
@@ -411,7 +411,7 @@ class CK12Importer(CurriculumImporter):
         # Step 1: Extract
         raw = await self.extract(content)
 
-        # Step 2: Build UMLCFstructure
+        # Step 2: Build UMCF structure
         umlcf = {
             "umlcf": "1.0.0",
             "id": self._generate_id(raw),
@@ -437,7 +437,7 @@ class CK12Importer(CurriculumImporter):
         return CurriculumData(**umlcf)
 
     async def _transform_chapter(self, chapter: Dict) -> Dict:
-        """Transform a chapter to UMLCFcontent node"""
+        """Transform a chapter to UMCF content node"""
         node = {
             "id": {"value": self._slugify(chapter["title"])},
             "title": chapter["title"],
@@ -459,7 +459,7 @@ class CK12Importer(CurriculumImporter):
         return node
 
     async def _transform_lesson(self, lesson: Dict) -> Dict:
-        """Transform a lesson to UMLCFtopic node"""
+        """Transform a lesson to UMCF topic node"""
         node = {
             "id": {"value": self._slugify(lesson["title"])},
             "title": lesson["title"],
@@ -504,7 +504,7 @@ class CK12Importer(CurriculumImporter):
         return node
 
     async def _build_transcript(self, lesson: Dict) -> Dict:
-        """Build UMLCFtranscript from lesson content"""
+        """Build UMCF transcript from lesson content"""
         segments = []
 
         for i, para in enumerate(lesson.get("paragraphs", [])):
@@ -578,7 +578,7 @@ class CK12Importer(CurriculumImporter):
         return result.strip()
 
     def _transform_quizzes(self, quizzes: List[Dict]) -> List[Dict]:
-        """Transform CK-12 quiz questions to UMLCFassessments"""
+        """Transform CK-12 quiz questions to UMCF assessments"""
         assessments = []
 
         for q in quizzes:
@@ -609,7 +609,7 @@ class CK12Importer(CurriculumImporter):
         return assessments
 
     def _map_question_type(self, ck12_type: str) -> str:
-        """Map CK-12 question type to UMLCFassessment type"""
+        """Map CK-12 question type to UMCF assessment type"""
         mapping = {
             "multiple_choice": "choice",
             "true_false": "choice",
@@ -620,7 +620,7 @@ class CK12Importer(CurriculumImporter):
         return mapping.get(ck12_type, "text-entry")
 
     def _build_educational(self, metadata: Dict) -> Dict:
-        """Build UMLCFeducational context from CK-12 metadata"""
+        """Build UMCF educational context from CK-12 metadata"""
         grade = self.config.get("target_grade", 8)
 
         return {
@@ -668,7 +668,7 @@ class CK12Importer(CurriculumImporter):
         return alignments
 
     def _build_rights(self, metadata: Dict) -> Dict:
-        """Build UMLCFrights from CK-12 license"""
+        """Build UMCF rights from CK-12 license"""
         return {
             "license": {
                 "type": "CC-BY-NC-3.0",
@@ -702,7 +702,7 @@ class CK12Importer(CurriculumImporter):
         return str(uuid4())
 
     def _generate_id(self, raw: Dict) -> Dict:
-        """Generate UMLCFID from CK-12 metadata"""
+        """Generate UMCF ID from CK-12 metadata"""
         isbn = raw["metadata"].get("isbn")
         if isbn:
             return {"catalog": "ISBN", "value": isbn}

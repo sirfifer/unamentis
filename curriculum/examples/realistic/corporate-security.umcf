@@ -1,5 +1,5 @@
 {
-  "umlcf": "1.0.0",
+  "umcf": "1.0.0",
   "id": {
     "catalog": "UUID",
     "value": "b2c3d4e5-f6a7-8901-bcde-f23456789012"
@@ -576,7 +576,7 @@
     }
   ],
   "extensions": {
-    "https://voicelearn.io/extensions/corporate": {
+    "https://unamentis.com/extensions/corporate": {
       "departmentMapping": {
         "required_for": ["all"],
         "deadline_extension_allowed": false

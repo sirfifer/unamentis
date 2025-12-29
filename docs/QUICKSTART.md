@@ -248,13 +248,13 @@ xcrun simctl list devices
 3. **Read the TDD** - [UnaMentis_TDD.md](UnaMentis_TDD.md) has full architecture details
 4. **Set up models** - For on-device STT, see [GLM_ASR_ON_DEVICE_GUIDE.md](GLM_ASR_ON_DEVICE_GUIDE.md)
 5. **Configure APIs** - Add provider keys for cloud services
-6. **Explore curriculum format** - See [Curriculum Overview](../curriculum/README.md) for VLCF specification
+6. **Explore curriculum format** - See [Curriculum Overview](../curriculum/README.md) for UMCF specification
 
 ---
 
-## Curriculum System (VLCF)
+## Curriculum System (UMCF)
 
-UnaMentis uses the **UnaMentis Curriculum Format (VLCF)** for structured educational content. This is a JSON-based format designed specifically for conversational AI tutoring.
+UnaMentis uses the **Una Mentis Curriculum Format (UMCF)** for structured educational content. This is a JSON-based format designed specifically for conversational AI tutoring.
 
 ### Quick Overview
 
@@ -268,16 +268,16 @@ UnaMentis uses the **UnaMentis Curriculum Format (VLCF)** for structured educati
 | Document | Description |
 |----------|-------------|
 | [Curriculum README](../curriculum/README.md) | **Comprehensive overview** |
-| [UMLCF Specification](../curriculum/spec/VLCF_SPECIFICATION.md) | Format specification |
-| [JSON Schema](../curriculum/spec/umlcf-schema.json) | Schema for validation |
+| [UMCF Specification](../curriculum/spec/UMCF_SPECIFICATION.md) | Format specification |
+| [JSON Schema](../curriculum/spec/umcf-schema.json) | Schema for validation |
 | [Examples](../curriculum/examples/) | Minimal and realistic examples |
 
 ### Import System
 
-UMLCF includes importers for external content:
+UMCF includes importers for external content:
 - **CK-12**: K-12 FlexBooks (EPUB)
 - **Fast.ai**: Jupyter notebooks for AI/ML
-- **AI Enrichment**: Transform sparse content to rich UMLCF
+- **AI Enrichment**: Transform sparse content to rich UMCF
 
 See [Import Architecture](../curriculum/importers/IMPORTER_ARCHITECTURE.md) for details.
 

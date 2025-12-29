@@ -1,6 +1,6 @@
-# UMLCF Standards Traceability Matrix
+# UMCF Standards Traceability Matrix
 
-This document provides field-by-field traceability from UMLCF to established educational standards.
+This document provides field-by-field traceability from UMCF to established educational standards.
 
 ## Standards Referenced
 
@@ -17,15 +17,15 @@ This document provides field-by-field traceability from UMLCF to established edu
 | **CC** | Creative Commons | [CC Licenses](https://creativecommons.org/licenses/) |
 | **ISO 8601** | Date/Time Format | [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) |
 | **BCP 47** | Language Tags | [BCP 47](https://www.rfc-editor.org/info/bcp47) |
-| **UMLCF** | UnaMentis Markup Language Curriculum Format | Native (this specification) |
+| **UMCF** | Una Mentis Curriculum Format | Native (this specification) |
 
 ---
 
 ## Top-Level Fields
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
-| `vlcf` | JSON Schema | `$schema` convention | Version identifier |
+| `umcf` | JSON Schema | `$schema` convention | Version identifier |
 | `id` | LOM, DC | LOM General.Identifier, dc:identifier | Combined |
 | `id.catalog` | LOM | General.Identifier.Catalog | Namespace |
 | `id.value` | LOM | General.Identifier.Entry | Actual value |
@@ -34,13 +34,13 @@ This document provides field-by-field traceability from UMLCF to established edu
 | `version` | LOM | LifeCycle.Version | Extended with semver |
 | `version.number` | SemVer | Semantic Versioning 2.0 | Pattern enforced |
 | `version.date` | LOM | LifeCycle.Contribute.Date | ISO 8601 |
-| `version.changelog` | VLCF | Native | Software convention |
+| `version.changelog` | UMCF | Native | Software convention |
 
 ---
 
 ## Lifecycle
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `lifecycle.status` | LOM | LifeCycle.Status | Vocabulary: draft, final, revised, unavailable |
 | `lifecycle.contributors` | LOM, DC | LifeCycle.Contribute, dc:contributor | Array of contributors |
@@ -51,7 +51,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ### Contributor
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `contributor.id` | vCard, ORCID | vCard UID | Optional identifier |
 | `contributor.name` | LOM | Contribute.Entity (vCard FN) | Display name |
@@ -64,7 +64,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Metadata
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `metadata.language` | LOM, DC | General.Language, dc:language | BCP 47 format |
 | `metadata.keywords` | LOM, DC | General.Keyword, dc:subject | Array of strings |
@@ -76,7 +76,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Educational Context
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `educational.interactivityType` | LOM | Educational.InteractivityType | active/expositive/mixed |
 | `educational.interactivityLevel` | LOM | Educational.InteractivityLevel | 5-level scale |
@@ -90,7 +90,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ### Educational Alignment
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `educationalAlignment.alignmentType` | LRMI | AlignmentObject.alignmentType | Vocabulary from LRMI |
 | `educationalAlignment.educationalFramework` | LRMI, CASE | AlignmentObject.educationalFramework, CFDocument.title | Framework name |
@@ -100,7 +100,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ### Audience Profile
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `audienceProfile.educationLevel` | LRMI | schema:educationalLevel | ISCED-inspired |
 | `audienceProfile.gradeLevel` | LRMI | schema:typicalGradeLevel | US grade system |
@@ -111,7 +111,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Rights
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `rights.cost` | LOM | Rights.Cost | Boolean |
 | `rights.copyrightAndOtherRestrictions` | LOM | Rights.CopyrightAndOtherRestrictions | Boolean |
@@ -125,7 +125,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Compliance Requirements
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `compliance.certification` | OB | BadgeClass | Badge/certificate config |
 | `compliance.regulatoryFrameworks` | Corporate | Industry standards | SOC2, HIPAA, etc. |
@@ -134,7 +134,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ### Certification
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `certification.id` | OB | BadgeClass.id | Badge identifier |
 | `certification.name` | OB | BadgeClass.name | Display name |
@@ -148,7 +148,7 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ### Audit Requirements
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `auditRequirements.enabled` | Corporate | Compliance practice | Toggle |
 | `auditRequirements.retentionPeriod` | Corporate | Legal requirements | ISO 8601 duration |
@@ -161,24 +161,24 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Content Node
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `contentNode.id` | SCORM, LOM | item.identifier, General.Identifier | Required |
 | `contentNode.title` | SCORM, LOM | item.title, General.Title | Required |
-| `contentNode.type` | VLCF | Native | Tutoring-specific types |
+| `contentNode.type` | UMCF | Native | Tutoring-specific types |
 | `contentNode.orderIndex` | SCORM | Sequencing order | Sequence position |
 | `contentNode.description` | LOM | General.Description | Optional |
 | `contentNode.learningObjectives` | CASE, LRMI | CFItem, schema:teaches | Array |
 | `contentNode.prerequisites` | SCORM | Sequencing.prerequisites | Dependencies |
 | `contentNode.timeEstimates` | LOM | Educational.TypicalLearningTime | By depth level |
-| `contentNode.transcript` | VLCF | Native | Tutoring dialogue |
-| `contentNode.examples` | VLCF | Native | Instructional examples |
+| `contentNode.transcript` | UMCF | Native | Tutoring dialogue |
+| `contentNode.examples` | UMCF | Native | Instructional examples |
 | `contentNode.assessments` | QTI | assessmentItem | Questions/quizzes |
-| `contentNode.glossaryTerms` | VLCF | Native | Node-specific terms |
-| `contentNode.misconceptions` | VLCF | Native | Error handling |
+| `contentNode.glossaryTerms` | UMCF | Native | Node-specific terms |
+| `contentNode.misconceptions` | UMCF | Native | Error handling |
 | `contentNode.resources` | LOM, SCORM | Relation, resource | External refs |
-| `contentNode.children` | VLCF | Native (recursive) | Nested nodes |
-| `contentNode.tutoringConfig` | VLCF | Native | AI settings |
+| `contentNode.children` | UMCF | Native (recursive) | Nested nodes |
+| `contentNode.tutoringConfig` | UMCF | Native | AI settings |
 | `contentNode.compliance` | Corporate | Training practice | Node requirements |
 | `contentNode.extensions` | xAPI | extensions pattern | Custom data |
 
@@ -186,49 +186,49 @@ This document provides field-by-field traceability from UMLCF to established edu
 
 ## Learning Objective
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `learningObjective.id` | CASE | CFItem.identifier | Unique ID |
 | `learningObjective.statement` | CASE | CFItem.fullStatement | Full text |
 | `learningObjective.abbreviatedStatement` | CASE | CFItem.abbreviatedStatement | Short form |
 | `learningObjective.bloomsLevel` | Bloom's Taxonomy | Cognitive domain | 6 levels |
 | `learningObjective.educationalAlignment` | LRMI, CASE | educationalAlignment, CFAssociation | Standards link |
-| `learningObjective.verificationCriteria` | VLCF | Native | How to verify |
+| `learningObjective.verificationCriteria` | UMCF | Native | How to verify |
 | `learningObjective.assessmentIds` | QTI | outcomeDeclaration | Linked assessments |
 
 ---
 
-## Transcript (UMLCF Native)
+## Transcript (UMCF Native)
 
-These elements are native to UMLCF, designed for conversational AI tutoring.
+These elements are native to UMCF, designed for conversational AI tutoring.
 
-| VLCF Field | Source Standard | Inspiration/Rationale |
+| UMCF Field | Source Standard | Inspiration/Rationale |
 |------------|-----------------|----------------------|
-| `transcript.segments` | VLCF | Structured dialogue units |
+| `transcript.segments` | UMCF | Structured dialogue units |
 | `transcript.totalDuration` | ISO 8601 | Standard duration format |
-| `transcript.voiceProfile` | VLCF | TTS optimization |
-| `transcriptSegment.id` | VLCF | Unique segment reference |
-| `transcriptSegment.type` | VLCF | Pedagogical segment types |
-| `transcriptSegment.content` | VLCF | Spoken text |
-| `transcriptSegment.speakingNotes` | VLCF | TTS delivery hints |
-| `transcriptSegment.checkpoint` | VLCF, QTI | Interactive verification (QTI-inspired) |
-| `transcriptSegment.stoppingPoint` | VLCF | Natural pause configuration |
-| `transcriptSegment.alternativeExplanations` | VLCF | Rephrasing support |
+| `transcript.voiceProfile` | UMCF | TTS optimization |
+| `transcriptSegment.id` | UMCF | Unique segment reference |
+| `transcriptSegment.type` | UMCF | Pedagogical segment types |
+| `transcriptSegment.content` | UMCF | Spoken text |
+| `transcriptSegment.speakingNotes` | UMCF | TTS delivery hints |
+| `transcriptSegment.checkpoint` | UMCF, QTI | Interactive verification (QTI-inspired) |
+| `transcriptSegment.stoppingPoint` | UMCF | Natural pause configuration |
+| `transcriptSegment.alternativeExplanations` | UMCF | Rephrasing support |
 | `transcriptSegment.estimatedDuration` | ISO 8601 | Standard duration format |
 
-### Checkpoint (UMLCF Native, QTI-Inspired)
+### Checkpoint (UMCF Native, QTI-Inspired)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
-| `checkpoint.type` | VLCF | Verification level |
+| `checkpoint.type` | UMCF | Verification level |
 | `checkpoint.prompt` | QTI | Question text |
 | `checkpoint.expectedResponsePatterns` | QTI responseDeclaration | Pattern matching |
-| `checkpoint.transitions` | VLCF | Branching logic |
-| `checkpoint.fallbackBehavior` | VLCF | Error handling |
+| `checkpoint.transitions` | UMCF | Branching logic |
+| `checkpoint.fallbackBehavior` | UMCF | Error handling |
 
-### Speaking Notes (UMLCF Native)
+### Speaking Notes (UMCF Native)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
 | `speakingNotes.pace` | TTS practice | Speech rate |
 | `speakingNotes.emphasis` | SSML | Word emphasis |
@@ -238,46 +238,46 @@ These elements are native to UMLCF, designed for conversational AI tutoring.
 
 ---
 
-## Misconception (UMLCF Native)
+## Misconception (UMCF Native)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
-| `misconception.id` | VLCF | Unique identifier |
+| `misconception.id` | UMCF | Unique identifier |
 | `misconception.misconception` | Pedagogical research | The error |
-| `misconception.triggerPhrases` | VLCF | Detection patterns |
+| `misconception.triggerPhrases` | UMCF | Detection patterns |
 | `misconception.correction` | Pedagogical research | Correct understanding |
-| `misconception.spokenCorrection` | VLCF | TTS-optimized |
+| `misconception.spokenCorrection` | UMCF | TTS-optimized |
 | `misconception.explanation` | Pedagogical research | Why it happens |
-| `misconception.remediationPath` | VLCF | Recovery guidance |
-| `misconception.severity` | VLCF | Impact level |
+| `misconception.remediationPath` | UMCF | Recovery guidance |
+| `misconception.severity` | UMCF | Impact level |
 
 ---
 
-## Example (UMLCF Native)
+## Example (UMCF Native)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
-| `example.id` | VLCF | Unique identifier |
+| `example.id` | UMCF | Unique identifier |
 | `example.type` | Educational practice | code, scenario, analogy, etc. |
-| `example.title` | VLCF | Display title |
-| `example.content` | VLCF | Example content |
-| `example.spokenContent` | VLCF | TTS-optimized |
-| `example.complexity` | VLCF | Difficulty indicator |
-| `example.codeLanguage` | VLCF | Programming language |
-| `example.codeExplanation` | VLCF | Line-by-line for voice |
-| `example.walkthrough` | VLCF | Step-by-step guide |
+| `example.title` | UMCF | Display title |
+| `example.content` | UMCF | Example content |
+| `example.spokenContent` | UMCF | TTS-optimized |
+| `example.complexity` | UMCF | Difficulty indicator |
+| `example.codeLanguage` | UMCF | Programming language |
+| `example.codeExplanation` | UMCF | Line-by-line for voice |
+| `example.walkthrough` | UMCF | Step-by-step guide |
 
 ---
 
 ## Assessment (QTI-Aligned)
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `assessment.id` | QTI | assessmentItem.identifier | Required |
 | `assessment.type` | QTI | interaction types | Basic set only |
 | `assessment.title` | QTI | assessmentItem.title | Display title |
 | `assessment.prompt` | QTI | prompt/itemBody | Question stem |
-| `assessment.spokenPrompt` | VLCF | Native | TTS-optimized |
+| `assessment.spokenPrompt` | UMCF | Native | TTS-optimized |
 | `assessment.choices` | QTI | simpleChoice | Answer options |
 | `assessment.choices[].id` | QTI | simpleChoice.identifier | Choice ID |
 | `assessment.choices[].text` | QTI | simpleChoice content | Display text |
@@ -297,24 +297,24 @@ These elements are native to UMLCF, designed for conversational AI tutoring.
 
 ## Glossary
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
-| `glossary.terms` | VLCF | Native | Term array |
-| `glossaryTerm.id` | VLCF | Native | Unique ID |
-| `glossaryTerm.term` | VLCF | Native | The word/phrase |
-| `glossaryTerm.pronunciation` | VLCF | Native (IPA) | For TTS |
-| `glossaryTerm.definition` | VLCF | Native | Definition text |
-| `glossaryTerm.spokenDefinition` | VLCF | Native | TTS-optimized |
-| `glossaryTerm.simpleDefinition` | VLCF | Native | For younger audiences |
-| `glossaryTerm.synonyms` | VLCF | Native | Alternative terms |
-| `glossaryTerm.relatedTerms` | VLCF | Native | Related concepts |
-| `glossaryTerm.etymology` | VLCF | Native | Word origin |
+| `glossary.terms` | UMCF | Native | Term array |
+| `glossaryTerm.id` | UMCF | Native | Unique ID |
+| `glossaryTerm.term` | UMCF | Native | The word/phrase |
+| `glossaryTerm.pronunciation` | UMCF | Native (IPA) | For TTS |
+| `glossaryTerm.definition` | UMCF | Native | Definition text |
+| `glossaryTerm.spokenDefinition` | UMCF | Native | TTS-optimized |
+| `glossaryTerm.simpleDefinition` | UMCF | Native | For younger audiences |
+| `glossaryTerm.synonyms` | UMCF | Native | Alternative terms |
+| `glossaryTerm.relatedTerms` | UMCF | Native | Related concepts |
+| `glossaryTerm.etymology` | UMCF | Native | Word origin |
 
 ---
 
 ## Resource (LOM-Aligned)
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `resource.type` | LOM | Relation.Kind | Relationship type |
 | `resource.identifier` | LOM | Relation.Resource.Identifier | Resource ID |
@@ -325,23 +325,23 @@ These elements are native to UMLCF, designed for conversational AI tutoring.
 
 ---
 
-## Tutoring Config (UMLCF Native)
+## Tutoring Config (UMCF Native)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
 | `tutoringConfig.contentDepth` | UnaMentis ContentDepth | Depth level enum |
-| `tutoringConfig.adaptiveDepth` | VLCF | Allow dynamic adjustment |
-| `tutoringConfig.systemPromptOverride` | VLCF | Custom AI instructions |
-| `tutoringConfig.interactionMode` | VLCF | lecture/socratic/practice/etc. |
-| `tutoringConfig.allowTangents` | VLCF | Off-topic exploration |
-| `tutoringConfig.escalationThreshold` | VLCF | When to use frontier LLM |
-| `tutoringConfig.checkpointFrequency` | VLCF | Verification frequency |
+| `tutoringConfig.adaptiveDepth` | UMCF | Allow dynamic adjustment |
+| `tutoringConfig.systemPromptOverride` | UMCF | Custom AI instructions |
+| `tutoringConfig.interactionMode` | UMCF | lecture/socratic/practice/etc. |
+| `tutoringConfig.allowTangents` | UMCF | Off-topic exploration |
+| `tutoringConfig.escalationThreshold` | UMCF | When to use frontier LLM |
+| `tutoringConfig.checkpointFrequency` | UMCF | Verification frequency |
 
 ---
 
-## Node Compliance (UMLCF Native + Corporate)
+## Node Compliance (UMCF Native + Corporate)
 
-| VLCF Field | Inspiration | Notes |
+| UMCF Field | Inspiration | Notes |
 |------------|-------------|-------|
 | `nodeCompliance.mandatory` | Corporate training | Required for certification |
 | `nodeCompliance.passingCriteria` | Corporate training | Pass requirements |
@@ -353,7 +353,7 @@ These elements are native to UMLCF, designed for conversational AI tutoring.
 
 ## Extensions (xAPI Pattern)
 
-| UMLCF Field | Source Standard | Standard Path | Notes |
+| UMCF Field | Source Standard | Standard Path | Notes |
 |------------|-----------------|---------------|-------|
 | `extensions` | xAPI | extensions pattern | Namespaced custom data |
 
@@ -386,7 +386,7 @@ All duration fields use ISO 8601 duration format:
 
 ## Summary Statistics
 
-| Category | Total Fields | From Standards | VLCF Native |
+| Category | Total Fields | From Standards | UMCF Native |
 |----------|--------------|----------------|-------------|
 | Top-Level | 12 | 11 | 1 |
 | Lifecycle | 8 | 8 | 0 |
@@ -403,4 +403,4 @@ All duration fields use ISO 8601 duration format:
 | Example | 10 | 0 | 10 |
 | **TOTAL** | **152** | **82 (54%)** | **70 (46%)** |
 
-This balance reflects UMLCF's design goal: leverage established standards for interoperability while adding native support for conversational AI tutoring features not covered by existing specifications.
+This balance reflects UMCF's design goal: leverage established standards for interoperability while adding native support for conversational AI tutoring features not covered by existing specifications.

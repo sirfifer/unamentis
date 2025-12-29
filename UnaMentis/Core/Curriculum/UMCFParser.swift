@@ -1,33 +1,33 @@
-// UnaMentis - UMLCF Parser
-// Converts Una Mentis Learning Curriculum Format (UMLCF) JSON to Core Data models
+// UnaMentis - UMCF Parser
+// Converts Una Mentis Curriculum Format (UMCF) JSON to Core Data models
 //
 // Part of Curriculum Layer (TDD Section 4)
 
 import Foundation
 import CoreData
 
-// MARK: - UMLCF Data Transfer Objects
+// MARK: - UMCF Data Transfer Objects
 
-/// Root UMLCF document structure
-public struct UMLCFDocument: Codable, Sendable {
-    public let umlcf: String
-    public let id: UMLCFIdentifier
+/// Root UMCF document structure
+public struct UMCFDocument: Codable, Sendable {
+    public let umcf: String
+    public let id: UMCFIdentifier
     public let title: String
     public let description: String?
-    public let version: UMLCFVersionInfo
-    public let lifecycle: UMLCFLifecycle?
-    public let metadata: UMLCFMetadata?
-    public let educational: UMLCFEducationalContext?
-    public let content: [UMLCFContentNode]
-    public let glossary: UMLCFGlossary?
+    public let version: UMCFVersionInfo
+    public let lifecycle: UMCFLifecycle?
+    public let metadata: UMCFMetadata?
+    public let educational: UMCFEducationalContext?
+    public let content: [UMCFContentNode]
+    public let glossary: UMCFGlossary?
 
     enum CodingKeys: String, CodingKey {
-        case umlcf, id, title, description, version, lifecycle, metadata, educational, content, glossary
+        case umcf, id, title, description, version, lifecycle, metadata, educational, content, glossary
     }
 }
 
 /// Flexible identifier that can decode from either a simple string or an object with catalog/value
-public struct UMLCFIdentifier: Codable, Sendable {
+public struct UMCFIdentifier: Codable, Sendable {
     public let catalog: String?
     public let value: String
 
@@ -56,33 +56,33 @@ public struct UMLCFIdentifier: Codable, Sendable {
     }
 }
 
-public struct UMLCFVersionInfo: Codable, Sendable {
+public struct UMCFVersionInfo: Codable, Sendable {
     public let number: String
     public let date: String?
     public let changelog: String?
 }
 
-public struct UMLCFLifecycle: Codable, Sendable {
+public struct UMCFLifecycle: Codable, Sendable {
     public let status: String?
-    public let contributors: [UMLCFContributor]?
+    public let contributors: [UMCFContributor]?
     public let created: String?
     public let modified: String?
 }
 
-public struct UMLCFContributor: Codable, Sendable {
+public struct UMCFContributor: Codable, Sendable {
     public let name: String
     public let role: String
     public let organization: String?
 }
 
-public struct UMLCFMetadata: Codable, Sendable {
+public struct UMCFMetadata: Codable, Sendable {
     public let language: String?
     public let keywords: [String]?
     public let subject: [String]?
     public let coverage: [String]?
 }
 
-public struct UMLCFEducationalContext: Codable, Sendable {
+public struct UMCFEducationalContext: Codable, Sendable {
     // Server-provided fields
     public let interactivityType: String?
     public let interactivityLevel: String?
@@ -92,93 +92,93 @@ public struct UMLCFEducationalContext: Codable, Sendable {
     public let typicalAgeRange: String?
     public let difficulty: String?
     public let typicalLearningTime: String?
-    public let educationalAlignment: [UMLCFEducationalAlignment]?
-    public let audienceProfile: UMLCFAudienceProfile?
+    public let educationalAlignment: [UMCFEducationalAlignment]?
+    public let audienceProfile: UMCFAudienceProfile?
 
     // Legacy/alternative fields (for backwards compatibility)
-    public let alignment: UMLCFAlignment?
-    public let targetAudience: UMLCFTargetAudience?
-    public let prerequisites: [UMLCFPrerequisite]?
+    public let alignment: UMCFAlignment?
+    public let targetAudience: UMCFTargetAudience?
+    public let prerequisites: [UMCFPrerequisite]?
     public let estimatedDuration: String?
 }
 
-public struct UMLCFEducationalAlignment: Codable, Sendable {
+public struct UMCFEducationalAlignment: Codable, Sendable {
     public let alignmentType: String?
     public let educationalFramework: String?
     public let targetName: String?
     public let targetDescription: String?
 }
 
-public struct UMLCFAudienceProfile: Codable, Sendable {
+public struct UMCFAudienceProfile: Codable, Sendable {
     public let educationLevel: String?
     public let gradeLevel: String?
-    public let prerequisites: [UMLCFPrerequisite]?
+    public let prerequisites: [UMCFPrerequisite]?
 }
 
-public struct UMLCFAlignment: Codable, Sendable {
-    public let standards: [UMLCFStandard]?
+public struct UMCFAlignment: Codable, Sendable {
+    public let standards: [UMCFStandard]?
     public let frameworks: [String]?
     public let gradeLevel: [String]?
 }
 
-public struct UMLCFStandard: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFStandard: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let name: String
     public let description: String?
     public let url: String?
 }
 
-public struct UMLCFTargetAudience: Codable, Sendable {
+public struct UMCFTargetAudience: Codable, Sendable {
     public let type: String?
-    public let ageRange: UMLCFAgeRange?
+    public let ageRange: UMCFAgeRange?
     public let educationalRole: [String]?
     public let industry: [String]?
     public let skillLevel: String?
 }
 
-public struct UMLCFAgeRange: Codable, Sendable {
+public struct UMCFAgeRange: Codable, Sendable {
     public let minimum: Int?
     public let maximum: Int?
     public let typical: String?
 }
 
-public struct UMLCFPrerequisite: Codable, Sendable {
-    public let id: UMLCFIdentifier?
+public struct UMCFPrerequisite: Codable, Sendable {
+    public let id: UMCFIdentifier?
     public let type: String?
     public let description: String?
     public let required: Bool?
 }
 
-public struct UMLCFContentNode: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFContentNode: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let title: String
     public let type: String
     public let orderIndex: Int?
     public let description: String?
-    public let learningObjectives: [UMLCFLearningObjective]?
-    public let timeEstimates: UMLCFTimeEstimates?
-    public let transcript: UMLCFTranscript?
-    public let examples: [UMLCFExample]?
-    public let assessments: [UMLCFAssessment]?
-    public let glossaryTerms: [UMLCFGlossaryTerm]?
-    public let misconceptions: [UMLCFMisconception]?
-    public let media: UMLCFMediaCollection?
-    public let children: [UMLCFContentNode]?
-    public let tutoringConfig: UMLCFTutoringConfig?
+    public let learningObjectives: [UMCFLearningObjective]?
+    public let timeEstimates: UMCFTimeEstimates?
+    public let transcript: UMCFTranscript?
+    public let examples: [UMCFExample]?
+    public let assessments: [UMCFAssessment]?
+    public let glossaryTerms: [UMCFGlossaryTerm]?
+    public let misconceptions: [UMCFMisconception]?
+    public let media: UMCFMediaCollection?
+    public let children: [UMCFContentNode]?
+    public let tutoringConfig: UMCFTutoringConfig?
 }
 
 // MARK: - Media Types (following IMS Content Packaging and W3C standards)
 
 /// Collection of media assets for a content node
-public struct UMLCFMediaCollection: Codable, Sendable {
+public struct UMCFMediaCollection: Codable, Sendable {
     /// Embedded media shown during playback (synchronized with segments)
-    public let embedded: [UMLCFMediaAsset]?
+    public let embedded: [UMCFMediaAsset]?
     /// Reference media available on user request
-    public let reference: [UMLCFMediaAsset]?
+    public let reference: [UMCFMediaAsset]?
 }
 
 /// Individual media asset
-public struct UMLCFMediaAsset: Codable, Sendable {
+public struct UMCFMediaAsset: Codable, Sendable {
     public let id: String
     public let type: String                          // image, diagram, equation, chart, slideImage, slideDeck
     public let url: String?                          // Remote URL
@@ -187,8 +187,8 @@ public struct UMLCFMediaAsset: Codable, Sendable {
     public let alt: String?                          // Required for accessibility
     public let caption: String?
     public let mimeType: String?
-    public let dimensions: UMLCFDimensions?
-    public let segmentTiming: UMLCFSegmentTiming?    // When to display during playback
+    public let dimensions: UMCFDimensions?
+    public let segmentTiming: UMCFSegmentTiming?    // When to display during playback
     public let latex: String?                        // For equation type
     public let audioDescription: String?             // Extended accessibility description
     public let description: String?                  // For reference assets
@@ -196,26 +196,26 @@ public struct UMLCFMediaAsset: Codable, Sendable {
 }
 
 /// Dimensions for image assets
-public struct UMLCFDimensions: Codable, Sendable {
+public struct UMCFDimensions: Codable, Sendable {
     public let width: Int
     public let height: Int
 }
 
 /// Timing configuration for synchronized display
-public struct UMLCFSegmentTiming: Codable, Sendable {
+public struct UMCFSegmentTiming: Codable, Sendable {
     public let startSegment: Int
     public let endSegment: Int
     public let displayMode: String?  // persistent, highlight, popup, inline
 }
 
-public struct UMLCFLearningObjective: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFLearningObjective: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let statement: String
     public let abbreviatedStatement: String?
     public let bloomsLevel: String?
 }
 
-public struct UMLCFTimeEstimates: Codable, Sendable {
+public struct UMCFTimeEstimates: Codable, Sendable {
     public let overview: String?
     public let introductory: String?
     public let intermediate: String?
@@ -224,17 +224,17 @@ public struct UMLCFTimeEstimates: Codable, Sendable {
     public let research: String?
 }
 
-public struct UMLCFTranscript: Codable, Sendable {
-    public let segments: [UMLCFTranscriptSegment]?
+public struct UMCFTranscript: Codable, Sendable {
+    public let segments: [UMCFTranscriptSegment]?
     public let totalDuration: String?
-    public let pronunciationGuide: [String: UMLCFPronunciationEntry]?
-    public let voiceProfile: UMLCFVoiceProfile?
+    public let pronunciationGuide: [String: UMCFPronunciationEntry]?
+    public let voiceProfile: UMCFVoiceProfile?
 }
 
 /// Pronunciation guide entry with IPA and optional metadata
 /// Used by TTS services to correctly pronounce proper nouns, foreign terms, etc.
 /// TTS services should convert these to SSML <phoneme> tags when supported.
-public struct UMLCFPronunciationEntry: Codable, Sendable {
+public struct UMCFPronunciationEntry: Codable, Sendable {
     /// IPA (International Phonetic Alphabet) pronunciation
     /// Example: "/ˈmɛdɪtʃi/" for "Medici"
     public let ipa: String
@@ -251,18 +251,18 @@ public struct UMLCFPronunciationEntry: Codable, Sendable {
     public let notes: String?
 }
 
-public struct UMLCFTranscriptSegment: Codable, Sendable {
+public struct UMCFTranscriptSegment: Codable, Sendable {
     public let id: String
     public let type: String
     public let content: String
-    public let speakingNotes: UMLCFSpeakingNotes?
-    public let checkpoint: UMLCFCheckpoint?
-    public let stoppingPoint: UMLCFStoppingPoint?
+    public let speakingNotes: UMCFSpeakingNotes?
+    public let checkpoint: UMCFCheckpoint?
+    public let stoppingPoint: UMCFStoppingPoint?
     public let glossaryRefs: [String]?
-    public let alternativeExplanations: [UMLCFAlternativeExplanation]?
+    public let alternativeExplanations: [UMCFAlternativeExplanation]?
 }
 
-public struct UMLCFSpeakingNotes: Codable, Sendable {
+public struct UMCFSpeakingNotes: Codable, Sendable {
     public let pace: String?
     public let emphasis: [String]?
     public let pronunciation: [String: String]?
@@ -270,86 +270,86 @@ public struct UMLCFSpeakingNotes: Codable, Sendable {
     public let pauseAfter: String?
 }
 
-public struct UMLCFCheckpoint: Codable, Sendable {
+public struct UMCFCheckpoint: Codable, Sendable {
     public let type: String?
     public let question: String?
-    public let expectedResponse: UMLCFExpectedResponse?
+    public let expectedResponse: UMCFExpectedResponse?
     public let celebrationMessage: String?
 }
 
-public struct UMLCFExpectedResponse: Codable, Sendable {
+public struct UMCFExpectedResponse: Codable, Sendable {
     public let type: String?
     public let acceptablePatterns: [String]?
     public let keywords: [String]?
 }
 
-public struct UMLCFStoppingPoint: Codable, Sendable {
+public struct UMCFStoppingPoint: Codable, Sendable {
     public let type: String?
     public let promptForContinue: Bool?
     public let suggestedPrompt: String?
 }
 
-public struct UMLCFAlternativeExplanation: Codable, Sendable {
+public struct UMCFAlternativeExplanation: Codable, Sendable {
     public let style: String?
     public let content: String?
 }
 
-public struct UMLCFVoiceProfile: Codable, Sendable {
+public struct UMCFVoiceProfile: Codable, Sendable {
     public let tone: String?
     public let pace: String?
     public let accent: String?
 }
 
-public struct UMLCFExample: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFExample: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let type: String?
     public let title: String?
     public let content: String?
     public let explanation: String?
 }
 
-public struct UMLCFAssessment: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFAssessment: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let type: String?
     public let question: String?
-    public let options: [UMLCFAssessmentOption]?
+    public let options: [UMCFAssessmentOption]?
     public let correctAnswer: String?
     public let hint: String?
-    public let feedback: UMLCFFeedback?
+    public let feedback: UMCFFeedback?
 }
 
-public struct UMLCFAssessmentOption: Codable, Sendable {
+public struct UMCFAssessmentOption: Codable, Sendable {
     public let id: String
     public let text: String
     public let isCorrect: Bool?
 }
 
-public struct UMLCFFeedback: Codable, Sendable {
+public struct UMCFFeedback: Codable, Sendable {
     public let correct: String?
     public let incorrect: String?
     public let partial: String?
 }
 
-public struct UMLCFMisconception: Codable, Sendable {
-    public let id: UMLCFIdentifier
+public struct UMCFMisconception: Codable, Sendable {
+    public let id: UMCFIdentifier
     public let trigger: [String]?
     public let misconception: String?
     public let correction: String?
     public let explanation: String?
 }
 
-public struct UMLCFTutoringConfig: Codable, Sendable {
+public struct UMCFTutoringConfig: Codable, Sendable {
     public let contentDepth: String?
     public let interactionMode: String?
     public let checkpointFrequency: String?
     public let adaptationRules: [String: String]?
 }
 
-public struct UMLCFGlossary: Codable, Sendable {
-    public let terms: [UMLCFGlossaryTerm]?
+public struct UMCFGlossary: Codable, Sendable {
+    public let terms: [UMCFGlossaryTerm]?
 }
 
-public struct UMLCFGlossaryTerm: Codable, Sendable {
+public struct UMCFGlossaryTerm: Codable, Sendable {
     public let term: String
     public let definition: String?
     public let pronunciation: String?
@@ -359,10 +359,10 @@ public struct UMLCFGlossaryTerm: Codable, Sendable {
     public let simpleDefinition: String?
 }
 
-// MARK: - UMLCF Parser
+// MARK: - UMCF Parser
 
-/// Parser for converting UMLCF JSON to Core Data models
-public actor UMLCFParser {
+/// Parser for converting UMCF JSON to Core Data models
+public actor UMCFParser {
     private let persistenceController: PersistenceController
 
     public init(persistenceController: PersistenceController = .shared) {
@@ -371,53 +371,53 @@ public actor UMLCFParser {
 
     // MARK: - Static Import (MainActor safe)
 
-    /// Import a UMLCF document into Core Data directly from MainActor context
+    /// Import a UMCF document into Core Data directly from MainActor context
     /// This static method avoids actor isolation issues when called from @MainActor code
     /// - Parameters:
-    ///   - document: The UMLCF document to import
+    ///   - document: The UMCF document to import
     ///   - replaceExisting: Whether to replace existing curriculum with same sourceId
     ///   - selectedTopicIds: Optional set of topic IDs to import. If nil or empty, imports all topics.
     ///   - persistenceController: The persistence controller to use
     @MainActor
     public static func importDocument(
-        _ document: UMLCFDocument,
+        _ document: UMCFDocument,
         replaceExisting: Bool = true,
         selectedTopicIds: Set<String>? = nil,
         persistenceController: PersistenceController = .shared
     ) throws -> Curriculum {
-        let parser = UMLCFParserHelper(persistenceController: persistenceController)
+        let parser = UMCFParserHelper(persistenceController: persistenceController)
         return try parser.importToCoreData(document: document, replaceExisting: replaceExisting, selectedTopicIds: selectedTopicIds)
     }
 
     // MARK: - Parsing
 
-    /// Parse UMLCF JSON data into a UMLCFDocument
-    public func parse(data: Data) throws -> UMLCFDocument {
+    /// Parse UMCF JSON data into a UMCFDocument
+    public func parse(data: Data) throws -> UMCFDocument {
         let decoder = JSONDecoder()
-        return try decoder.decode(UMLCFDocument.self, from: data)
+        return try decoder.decode(UMCFDocument.self, from: data)
     }
 
-    /// Parse UMLCF JSON from URL
-    public func parse(from url: URL) throws -> UMLCFDocument {
+    /// Parse UMCF JSON from URL
+    public func parse(from url: URL) throws -> UMCFDocument {
         let data = try Data(contentsOf: url)
         return try parse(data: data)
     }
 
     // MARK: - Core Data Import
 
-    /// Import a UMLCF document into Core Data
+    /// Import a UMCF document into Core Data
     /// - Parameters:
-    ///   - document: Parsed UMLCF document
+    ///   - document: Parsed UMCF document
     ///   - replaceExisting: If true, replace existing curriculum with same ID
     /// - Returns: Created or updated Curriculum Core Data object
     @MainActor
     public func importToCoreData(
-        document: UMLCFDocument,
+        document: UMCFDocument,
         replaceExisting: Bool = true
     ) throws -> Curriculum {
         let context = persistenceController.container.viewContext
 
-        // Check for existing curriculum with same sourceId (the UMLCF identifier)
+        // Check for existing curriculum with same sourceId (the UMCF identifier)
         let curriculumIdValue = document.id.value
         if replaceExisting {
             let fetchRequest: NSFetchRequest<Curriculum> = Curriculum.fetchRequest()
@@ -432,7 +432,7 @@ public actor UMLCFParser {
         // Create new Curriculum
         let curriculum = Curriculum(context: context)
         curriculum.id = UUID(uuidString: curriculumIdValue) ?? UUID()
-        curriculum.sourceId = curriculumIdValue  // Store UMLCF ID for server sync
+        curriculum.sourceId = curriculumIdValue  // Store UMCF ID for server sync
         curriculum.name = document.title
         curriculum.summary = document.description
         curriculum.createdAt = parseDate(document.lifecycle?.created) ?? Date()
@@ -457,11 +457,11 @@ public actor UMLCFParser {
     /// Create topics from a content node and its children
     @MainActor
     private func createTopics(
-        from node: UMLCFContentNode,
+        from node: UMCFContentNode,
         curriculum: Curriculum,
         context: NSManagedObjectContext,
         startingIndex: Int32,
-        glossary: UMLCFGlossary?,
+        glossary: UMCFGlossary?,
         parentObjectives: [String]? = nil
     ) -> Int32 {
         var currentIndex = startingIndex
@@ -470,7 +470,7 @@ public actor UMLCFParser {
         if node.type == "topic" || node.type == "subtopic" || node.type == "lesson" {
             let topic = Topic(context: context)
             topic.id = UUID(uuidString: node.id.value) ?? UUID()
-            topic.sourceId = node.id.value  // Store UMLCF ID for server sync
+            topic.sourceId = node.id.value  // Store UMCF ID for server sync
             topic.title = node.title
             topic.orderIndex = currentIndex
             topic.mastery = 0.0
@@ -547,7 +547,7 @@ public actor UMLCFParser {
     @MainActor
     private func createTranscriptDocument(
         for topic: Topic,
-        transcript: UMLCFTranscript,
+        transcript: UMCFTranscript,
         context: NSManagedObjectContext
     ) -> Document {
         let document = Document(context: context)
@@ -620,7 +620,7 @@ public actor UMLCFParser {
     /// Create VisualAsset entities from media collection
     @MainActor
     private func createVisualAssets(
-        from media: UMLCFMediaCollection,
+        from media: UMCFMediaCollection,
         for topic: Topic,
         context: NSManagedObjectContext
     ) {
@@ -649,10 +649,10 @@ public actor UMLCFParser {
         }
     }
 
-    /// Create a single VisualAsset entity from UMLCF media asset
+    /// Create a single VisualAsset entity from UMCF media asset
     @MainActor
     private func createVisualAsset(
-        from asset: UMLCFMediaAsset,
+        from asset: UMCFMediaAsset,
         isReference: Bool,
         context: NSManagedObjectContext
     ) -> VisualAsset {
@@ -766,32 +766,32 @@ extension Document {
     }
 }
 
-// MARK: - UMLCF Parser Helper (MainActor Safe)
+// MARK: - UMCF Parser Helper (MainActor Safe)
 
 /// Non-actor helper class for Core Data imports that runs entirely on MainActor
 /// This avoids the actor isolation issues that can occur when calling @MainActor methods
 /// from within an actor context
 @MainActor
-public final class UMLCFParserHelper {
+public final class UMCFParserHelper {
     private let persistenceController: PersistenceController
 
     public init(persistenceController: PersistenceController = .shared) {
         self.persistenceController = persistenceController
     }
 
-    /// Import a UMLCF document into Core Data
+    /// Import a UMCF document into Core Data
     /// - Parameters:
-    ///   - document: The UMLCF document to import
+    ///   - document: The UMCF document to import
     ///   - replaceExisting: Whether to replace existing curriculum with same sourceId
     ///   - selectedTopicIds: Optional set of topic IDs to import. If nil or empty, imports all topics.
     public func importToCoreData(
-        document: UMLCFDocument,
+        document: UMCFDocument,
         replaceExisting: Bool = true,
         selectedTopicIds: Set<String>? = nil
     ) throws -> Curriculum {
         let context = persistenceController.container.viewContext
 
-        // Check for existing curriculum with same sourceId (the UMLCF identifier)
+        // Check for existing curriculum with same sourceId (the UMCF identifier)
         let curriculumIdValue = document.id.value
         if replaceExisting {
             let fetchRequest: NSFetchRequest<Curriculum> = Curriculum.fetchRequest()
@@ -829,11 +829,11 @@ public final class UMLCFParserHelper {
     }
 
     private func createTopics(
-        from node: UMLCFContentNode,
+        from node: UMCFContentNode,
         curriculum: Curriculum,
         context: NSManagedObjectContext,
         startingIndex: Int32,
-        glossary: UMLCFGlossary?,
+        glossary: UMCFGlossary?,
         parentObjectives: [String]? = nil,
         selectedTopicIds: Set<String>? = nil
     ) -> Int32 {
@@ -905,7 +905,7 @@ public final class UMLCFParserHelper {
 
     private func createTranscriptDocument(
         for topic: Topic,
-        transcript: UMLCFTranscript,
+        transcript: UMCFTranscript,
         context: NSManagedObjectContext
     ) -> Document {
         let document = Document(context: context)
@@ -956,7 +956,7 @@ public final class UMLCFParserHelper {
     }
 
     private func createVisualAssets(
-        from media: UMLCFMediaCollection,
+        from media: UMCFMediaCollection,
         for topic: Topic,
         context: NSManagedObjectContext
     ) {
@@ -975,7 +975,7 @@ public final class UMLCFParserHelper {
     }
 
     private func createVisualAsset(
-        from asset: UMLCFMediaAsset,
+        from asset: UMCFMediaAsset,
         isReference: Bool,
         context: NSManagedObjectContext
     ) -> VisualAsset {

@@ -43,15 +43,15 @@ The Curriculum Source Browser is a server-side web interface that enables admini
 │   Backend:                                                              │
 │   ├─ Python importers (mit_ocw, stanford_see, ck12, fastai)           │
 │   ├─ AI Enrichment Pipeline                                            │
-│   └─ UMLCF file storage                                                │
+│   └─ UMCF file storage                                                 │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
-                                    │ Export .umlcf files
+                                    │ Export .umcf files
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        iOS CLIENT (Simple Loader)                        │
-│   └─ Load pre-built .umlcf → Use in tutoring sessions                   │
+│   └─ Load pre-built .umcf → Use in tutoring sessions                    │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -125,7 +125,7 @@ Curriculum Tab
 │  │  │  Fast.ai        │  │  Manual         │                       │   │
 │  │  │  Courses        │  │  Upload         │                       │   │
 │  │  │                 │  │                 │                       │   │
-│  │  │  AI/ML focused  │  │  ZIP or UMLCF   │                       │   │
+│  │  │  AI/ML focused  │  │  ZIP or UMCF    │                       │   │
 │  │  │  CC-BY          │  │  files          │                       │   │
 │  │  │                 │  │                 │                       │   │
 │  │  │  [Browse →]     │  │  [Upload →]     │                       │   │
@@ -294,7 +294,7 @@ Curriculum Tab
 │  │     ├─ ⏳ Stage 6: Tutoring Enhancement Pending                 │   │
 │  │     └─ ⏳ Stage 7: Knowledge Graph      Pending                 │   │
 │  │  ⏳ 5. Quality Validation           Pending                     │   │
-│  │  ⏳ 6. UMLCF Generation             Pending                     │   │
+│  │  ⏳ 6. UMCF Generation              Pending                     │   │
 │  │                                                                  │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │
@@ -770,7 +770,7 @@ class ImportOrchestrator:
     3. Extract - Parse content into intermediate format
     4. Enrich - Run AI enrichment pipeline (7 sub-stages)
     5. Validate - Quality checks
-    6. Generate - Create UMLCF output
+    6. Generate - Create UMCF output
     """
 
     def __init__(
@@ -873,9 +873,9 @@ class ImportOrchestrator:
             quality_result = await self._validate_quality(enriched)
             self._complete_stage(job, "quality", f"Quality score: {quality_result['score']:.0%}")
 
-            # Stage 6: Generate UMLCF
+            # Stage 6: Generate UMCF
             job.current_stage = "generate"
-            self._log(job, "info", "Generating UMLCF output...")
+            self._log(job, "info", "Generating UMCF output...")
 
             umlcf = await importer.parse(content)
             output_path = self._save_umlcf(umlcf, config["outputName"])
@@ -1044,19 +1044,19 @@ class ImportOrchestrator:
 
 ---
 
-## iOS Client: Simple UMLCF Loader
+## iOS Client: Simple UMCF Loader
 
 For the iOS client, we keep it simple for now:
 
 ```swift
 // Simple curriculum loader for iOS
-// Loads pre-built .umlcf files exported from server
+// Loads pre-built .umcf files exported from server
 
 class CurriculumLoader {
-    /// Load a UMLCF curriculum file
-    func loadCurriculum(from url: URL) async throws -> UMLCFDocument {
+    /// Load a UMCF curriculum file
+    func loadCurriculum(from url: URL) async throws -> UMCFDocument {
         let data = try Data(contentsOf: url)
-        let document = try JSONDecoder().decode(UMLCFDocument.self, from: data)
+        let document = try JSONDecoder().decode(UMCFDocument.self, from: data)
 
         // Validate license is present
         guard document.rights != nil else {
@@ -1067,16 +1067,16 @@ class CurriculumLoader {
     }
 
     /// Import from Files app
-    func importFromFiles() async throws -> UMLCFDocument {
-        // Present document picker for .umlcf files
+    func importFromFiles() async throws -> UMCFDocument {
+        // Present document picker for .umcf files
         // Load selected file
     }
 
     /// Import from shared URL (AirDrop, etc.)
-    func importFromURL(_ url: URL) async throws -> UMLCFDocument {
+    func importFromURL(_ url: URL) async throws -> UMCFDocument {
         // Load from incoming URL
     }
 }
 ```
 
-The full import pipeline runs on the server; the iOS client just consumes the resulting UMLCF files.
+The full import pipeline runs on the server; the iOS client just consumes the resulting UMCF files.

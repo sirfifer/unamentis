@@ -1,6 +1,6 @@
-# VoiceLearn Web Management Interface
+# UnaMentis Web Management Interface
 
-A next-generation web management dashboard for monitoring and configuring VoiceLearn services.
+A next-generation web management dashboard for monitoring and configuring UnaMentis services.
 
 ## Features
 
@@ -23,12 +23,12 @@ Then open http://localhost:8766 in your browser.
 ## Configuration
 
 Environment variables:
-- `VOICELEARN_MGMT_HOST` - Host to bind to (default: `0.0.0.0`)
-- `VOICELEARN_MGMT_PORT` - Port to listen on (default: `8766`)
+- `UNAMENTIS_MGMT_HOST` - Host to bind to (default: `0.0.0.0`)
+- `UNAMENTIS_MGMT_PORT` - Port to listen on (default: `8766`)
 
 Example:
 ```bash
-VOICELEARN_MGMT_PORT=9000 ./run.sh
+UNAMENTIS_MGMT_PORT=9000 ./run.sh
 ```
 
 ## Remote Testing via Tunnel
@@ -113,7 +113,7 @@ When sending logs/metrics, include these headers:
 {
     "timestamp": "2025-12-19T10:30:00.000Z",
     "level": "INFO",
-    "label": "com.voicelearn.audio",
+    "label": "com.unamentis.audio",
     "message": "Audio engine started",
     "file": "AudioEngine.swift",
     "function": "start()",

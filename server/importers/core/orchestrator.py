@@ -6,7 +6,7 @@ Pipeline stages:
 2. Validate - Check license and structure
 3. Extract - Parse content into intermediate format
 4. Enrich - Run AI enrichment pipeline
-5. Generate - Create UMLCF output
+5. Generate - Create UMCF output
 6. Store - Save to curriculum storage
 """
 
@@ -183,7 +183,7 @@ class ImportOrchestrator:
             if self.enrichment_enabled:
                 await self._run_enrich_stage(progress, config)
 
-            # Stage 5: Generate UMLCF
+            # Stage 5: Generate UMCF
             await self._run_generate_stage(progress)
 
             # Stage 6: Store
@@ -334,7 +334,7 @@ class ImportOrchestrator:
                     with open(metadata_file, "r") as f:
                         metadata = json.load(f)
                         extracted_content = metadata.get("content", {})
-                        # Also capture course metadata for UMLCF generation
+                        # Also capture course metadata for UMCF generation
                         progress._course_title = metadata.get("title", progress.config.output_name)
                         progress._course_description = metadata.get("description", "")
                         progress._instructors = metadata.get("instructors", [])
@@ -416,10 +416,10 @@ class ImportOrchestrator:
         self._notify_progress(progress)
 
     async def _run_generate_stage(self, progress: ImportProgress):
-        """Generate UMLCF output."""
+        """Generate UMCF output."""
         progress.status = ImportStatus.GENERATING
         progress.current_stage = "generate"
-        progress.current_activity = "Generating UMLCF document..."
+        progress.current_activity = "Generating UMCF document..."
         progress.update_stage("generate", "running")
         self._notify_progress(progress)
 
@@ -436,7 +436,7 @@ class ImportOrchestrator:
         level = getattr(progress, "_level", "intermediate")
         keywords = getattr(progress, "_keywords", [])
 
-        # Build UMLCF content structure from extracted content
+        # Build UMCF content structure from extracted content
         content_modules = []
 
         # Create lectures module
@@ -579,9 +579,9 @@ class ImportOrchestrator:
                 "name": instructor,
             })
 
-        # Create UMLCF document
-        umlcf = {
-            "umlcf": "1.0.0",
+        # Create UMCF document
+        umcf = {
+            "umcf": "1.0.0",
             "id": {
                 "catalog": "UnaMentis",
                 "value": config.output_name,
@@ -624,17 +624,17 @@ class ImportOrchestrator:
             },
         }
 
-        # Save UMLCF file
-        output_path = self.output_dir / "curricula" / f"{config.output_name}.umlcf"
+        # Save UMCF file
+        output_path = self.output_dir / "curricula" / f"{config.output_name}.umcf"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(output_path, "w") as f:
-            json.dump(umlcf, f, indent=2)
+            json.dump(umcf, f, indent=2)
 
         progress.update_stage("generate", "complete", 100, f"Generated {output_path.name}")
         progress.add_log(
             "info",
-            f"Generated UMLCF with {len(lectures)} lectures, "
+            f"Generated UMCF with {len(lectures)} lectures, "
             f"{len(assignments)} assignments, {len(exams)} exams"
         )
         progress.overall_progress = 95.0
@@ -700,7 +700,7 @@ class ImportOrchestrator:
             stages.append(enrich_stage)
 
         stages.extend([
-            ImportStage(id="generate", name="Generate UMLCF"),
+            ImportStage(id="generate", name="Generate UMCF"),
             ImportStage(id="store", name="Store Curriculum"),
         ])
 

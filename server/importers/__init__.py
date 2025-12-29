@@ -1,8 +1,8 @@
 """
-UMLCF Curriculum Importer Package
+UMCF Curriculum Importer Package
 
 This package provides tools for importing curriculum content from external sources
-(MIT OCW, Stanford SEE, CK-12, etc.) into the UnaMentis UMLCF format.
+(MIT OCW, Stanford SEE, CK-12, etc.) into the Una Mentis UMCF format.
 
 Architecture:
     sources/     - Source handlers for fetching course catalogs and content

@@ -58,7 +58,7 @@ Repository = "https://github.com/sirfifer/unamentis"
 # ai_enrich = "unamentis_importers.enrichment.ai:AIEnrichmentPlugin"
 
 [project.entry-points."unamentis.importers.exporters"]
-# umlcf = "unamentis_importers.exporters.umlcf:UMLCFExporterPlugin"
+# umcf = "unamentis_importers.exporters.umcf:UMCFExporterPlugin"
 
 [project.entry-points."unamentis.importers.validators"]
 # schema = "unamentis_importers.validators.schema:SchemaValidatorPlugin"

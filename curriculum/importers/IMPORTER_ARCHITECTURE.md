@@ -1,4 +1,4 @@
-# UMLCF Import System Architecture
+# UMCF Import System Architecture
 
 **Version:** 1.0.0
 **Status:** Draft
@@ -21,7 +21,7 @@
 
 ## Overview
 
-The UMLCF Import System is a **pluggable, cross-platform** toolkit for converting external curriculum formats into the UnaMentis Curriculum Format (UMLCF). It follows a "hub-and-spoke" model where UMLCF is the canonical format and importers are plugins that convert from various sources.
+The UMCF Import System is a **pluggable, cross-platform** toolkit for converting external curriculum formats into the Una Mentis Curriculum Format (UMCF). It follows a "hub-and-spoke" model where UMCF is the canonical format and importers are plugins that convert from various sources.
 
 ### Goals
 
@@ -52,9 +52,9 @@ The UMLCF Import System is a **pluggable, cross-platform** toolkit for convertin
         │             │             │
         ▼             ▼             ▼
 ┌──────────────────────────────────────────────────┐
-│                    UMLCF                           │
+│                    UMCF                            │
 │              (Canonical Format)                   │
-│                   .umlcf                           │
+│                   .umcf                            │
 └──────────────────────────────────────────────────┘
         │
         ▼
@@ -167,7 +167,7 @@ unamentis_curriculum_importer/
 │       │   ├── notebook_parser.py   # Jupyter .ipynb
 │       │   └── markdown_parser.py
 │       │
-│       ├── transformers/            # UMLCF model transformers
+│       ├── transformers/            # UMCF model transformers
 │       │   ├── __init__.py
 │       │   ├── content_transformer.py
 │       │   ├── assessment_transformer.py
@@ -329,7 +329,7 @@ class MyFormatImporter(CurriculumImporter):
         ...
 
     async def parse(self, content: bytes) -> CurriculumData:
-        # Full parse and transform to UMLCF
+        # Full parse and transform to UMCF
         ...
 ```
 
@@ -346,7 +346,7 @@ pip install vlcf-importer[cli]
 # Usage
 vlcf-import list                           # List available importers
 vlcf-import validate file.epub --format ck12
-vlcf-import convert file.epub -o output.umlcf --format ck12
+vlcf-import convert file.epub -o output.umcf --format ck12
 vlcf-import import file.epub --format ck12 --storage filesystem
 ```
 
@@ -379,7 +379,7 @@ print(f"Imported: {result.curriculum.title}")
 from fastapi import FastAPI, UploadFile, File, Query
 from vlcf_importer.core.registry import ImporterRegistry
 
-app = FastAPI(title="UMLCF Import API")
+app = FastAPI(title="UMCF Import API")
 
 @app.post("/import")
 async def import_curriculum(
@@ -478,7 +478,7 @@ class CurriculumImporter(ABC):
         """
         Extract raw data from format.
 
-        Returns intermediate representation before UMLCF transformation.
+        Returns intermediate representation before UMCF transformation.
         Useful for debugging and format inspection.
         """
         pass
@@ -486,7 +486,7 @@ class CurriculumImporter(ABC):
     @abstractmethod
     async def parse(self, content: bytes) -> "CurriculumData":
         """
-        Parse content and transform to UMLCF format.
+        Parse content and transform to UMCF format.
 
         This is the main parsing method that produces a complete
         CurriculumData object ready for storage.
@@ -641,7 +641,7 @@ touch unamentis_curriculum_importer/pyproject.toml
 
 ### Step 2: Implement Core Models
 
-Create Pydantic models matching UMLCF schema (already defined in umlcf-schema.json).
+Create Pydantic models matching UMCF schema (already defined in umcf-schema.json).
 
 ### Step 3: Implement Base Classes
 

@@ -28,6 +28,7 @@ export const CurriculumStudio: React.FC<CurriculumStudioProps> = ({ initialData,
     // Help system state
     const [showTour, setShowTour] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+    const [tourKey, setTourKey] = useState(0); // Used to reset tour component
 
     // Check if user has completed the tour before
     useEffect(() => {
@@ -46,6 +47,7 @@ export const CurriculumStudio: React.FC<CurriculumStudioProps> = ({ initialData,
 
     const handleStartTour = useCallback(() => {
         setShowHelp(false);
+        setTourKey(k => k + 1); // Increment key to reset tour state
         setShowTour(true);
     }, []);
 
@@ -170,7 +172,7 @@ export const CurriculumStudio: React.FC<CurriculumStudioProps> = ({ initialData,
                         ))}
                     </div>
 
-                    {/* Footer with mode indicator */}
+                    {/* Footer with mode indicator and tour button */}
                     <div data-tour="mode-indicator" className="p-4 border-t border-slate-800 bg-slate-900/80">
                         <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
@@ -188,6 +190,14 @@ export const CurriculumStudio: React.FC<CurriculumStudioProps> = ({ initialData,
                                     {isReadOnly ? 'External content - changes disabled' : 'Auto-saving enabled'}
                                 </div>
                             </div>
+                            <Tooltip content="Take a guided tour of the editor" side="top">
+                                <button
+                                    onClick={handleStartTour}
+                                    className="text-slate-500 hover:text-indigo-400 transition-colors"
+                                >
+                                    <Sparkles size={16} />
+                                </button>
+                            </Tooltip>
                             <Tooltip content="Editor settings and preferences" side="top">
                                 <button className="text-slate-500 hover:text-white transition-colors">
                                     <Settings size={16} />
@@ -230,8 +240,9 @@ export const CurriculumStudio: React.FC<CurriculumStudioProps> = ({ initialData,
                 </div>
             </div>
 
-            {/* Interactive Tour */}
+            {/* Interactive Tour - key resets component state when tour is restarted */}
             <StudioTour
+                key={tourKey}
                 steps={STUDIO_TOUR_STEPS}
                 isOpen={showTour}
                 onClose={() => setShowTour(false)}

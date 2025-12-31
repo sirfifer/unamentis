@@ -14,6 +14,7 @@ interface PluginApiResponse {
   plugin_type: string;
   enabled: boolean;
   settings?: Record<string, unknown>;
+  has_config?: boolean;
   error?: string;
 }
 
@@ -38,7 +39,7 @@ function mapApiPlugin(p: PluginApiResponse): Plugin {
     type: p.plugin_type === 'sources' ? 'source' : p.plugin_type as Plugin['type'],
     enabled: p.enabled,
     configured: p.settings ? Object.keys(p.settings).length > 0 : false,
-    hasSettings: true, // Assume all plugins can have settings
+    hasSettings: p.has_config ?? false,
     error: p.error,
   };
 }

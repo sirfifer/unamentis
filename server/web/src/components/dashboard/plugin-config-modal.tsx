@@ -6,9 +6,22 @@ import { Badge } from '@/components/ui/badge';
 
 interface SchemaField {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'select';
+  type: 'string' | 'number' | 'boolean' | 'select' | 'password';
   label: string;
   description?: string;
+  required?: boolean;
+  default?: string | number | boolean;
+  options?: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  helpUrl?: string;
+}
+
+interface BackendSchemaField {
+  key: string;
+  type: string;
+  label: string;
+  help_text?: string;
+  help_url?: string;
   required?: boolean;
   default?: string | number | boolean;
   options?: Array<{ value: string; label: string }>;
@@ -27,13 +40,34 @@ interface PluginConfigModalProps {
   onSave: () => void;
 }
 
-async function getPluginSchema(pluginId: string): Promise<PluginSchema> {
+async function getPluginSchema(pluginId: string): Promise<PluginSchema | null> {
   const response = await fetch(`/api/plugins/${pluginId}/schema`);
   if (!response.ok) {
     throw new Error('Failed to fetch plugin schema');
   }
   const data = await response.json();
-  return data.schema;
+  // Return null if no schema or has_config is false
+  if (!data.success || !data.has_config || !data.schema) {
+    return null;
+  }
+
+  // Transform backend format to frontend format
+  const backendSchema = data.schema;
+  const settings: BackendSchemaField[] = backendSchema.settings || backendSchema.fields || [];
+
+  const fields: SchemaField[] = settings.map((field: BackendSchemaField) => ({
+    name: field.key || (field as unknown as SchemaField).name,
+    type: (field.type === 'password' ? 'password' : field.type) as SchemaField['type'],
+    label: field.label,
+    description: field.help_text,
+    helpUrl: field.help_url,
+    required: field.required,
+    default: field.default,
+    options: field.options,
+    placeholder: field.placeholder,
+  }));
+
+  return { fields };
 }
 
 async function getPluginConfig(pluginId: string): Promise<Record<string, unknown>> {
@@ -93,9 +127,11 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
 
         // Initialize values with defaults and existing config
         const initialValues: Record<string, unknown> = {};
-        schemaData.fields.forEach(field => {
-          initialValues[field.name] = configData[field.name] ?? field.default ?? '';
-        });
+        if (schemaData?.fields) {
+          schemaData.fields.forEach(field => {
+            initialValues[field.name] = configData[field.name] ?? field.default ?? '';
+          });
+        }
         setValues(initialValues);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load plugin configuration');
@@ -211,6 +247,15 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
                       placeholder={field.placeholder}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
                     />
+                  ) : field.type === 'password' ? (
+                    <input
+                      type="password"
+                      value={String(values[field.name] || '')}
+                      onChange={(e) => updateValue(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      autoComplete="off"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                    />
                   ) : (
                     <input
                       type="text"
@@ -222,7 +267,22 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
                   )}
 
                   {field.description && (
-                    <p className="text-xs text-slate-500 mt-1">{field.description}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {field.description}
+                      {field.helpUrl && (
+                        <>
+                          {' '}
+                          <a
+                            href={field.helpUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-orange-400 hover:text-orange-300 underline"
+                          >
+                            Learn more
+                          </a>
+                        </>
+                      )}
+                    </p>
                   )}
                 </div>
               ))}

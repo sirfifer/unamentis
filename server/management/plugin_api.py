@@ -38,6 +38,22 @@ def get_discovery() -> PluginDiscovery:
     return _discovery
 
 
+def check_plugin_has_config(discovery: PluginDiscovery, plugin_id: str) -> bool:
+    """Check if a plugin has configuration options."""
+    try:
+        handler_class = discovery.get_plugin_class(plugin_id)
+        if handler_class:
+            handler = handler_class()
+            if hasattr(handler, "get_configuration_schema"):
+                schema = handler.get_configuration_schema()
+                # Check if schema has actual settings
+                if schema and (schema.get("settings") or schema.get("fields")):
+                    return True
+    except Exception as e:
+        logger.debug(f"Could not check config for plugin {plugin_id}: {e}")
+    return False
+
+
 def init_plugin_system():
     """Initialize the plugin system (call on server startup)."""
     logger.info("Initializing plugin system...")
@@ -67,11 +83,13 @@ async def handle_get_plugins(request: web.Request) -> web.Response:
         plugins = []
         for plugin in discovery._discovered.values():
             state = discovery._states.get(plugin.plugin_id)
+            has_config = check_plugin_has_config(discovery, plugin.plugin_id)
             plugins.append({
                 **plugin.to_dict(),
                 "enabled": state.enabled if state else False,
                 "priority": state.priority if state else 100,
                 "settings": state.settings if state else {},
+                "has_config": has_config,
             })
 
         return web.json_response({

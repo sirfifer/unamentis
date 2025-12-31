@@ -13,7 +13,7 @@ interface RouteContext {
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { pluginId } = await context.params;
-    const response = await fetch(`${BACKEND_URL}/api/plugins/${pluginId}/schema`, {
+    const response = await fetch(`${BACKEND_URL}/api/plugins/${pluginId}/config-schema`, {
       headers: {
         'Content-Type': 'application/json',
       },

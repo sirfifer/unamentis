@@ -148,6 +148,7 @@ struct CurriculumView: View {
             Self.logger.info("CurriculumView onAppear")
         }
         .task {
+            // Load curricula after view appears
             Self.logger.info("CurriculumView .task STARTED")
             await loadCurricula()
             Self.logger.info("CurriculumView .task COMPLETED")

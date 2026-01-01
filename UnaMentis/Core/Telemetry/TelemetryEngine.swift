@@ -2,6 +2,11 @@
 // Comprehensive telemetry for latency, cost, and performance tracking
 //
 // Part of Core Components (TDD Section 3)
+//
+// Architecture Note:
+// This file separates concerns between actor isolation (TelemetryEngine) and
+// UI observation (TelemetryPublisher) to prevent deadlocks when multiple views
+// observe telemetry while the actor processes events.
 
 @preconcurrency import Darwin
 import Foundation
@@ -14,33 +19,33 @@ public enum TelemetryEvent: Sendable {
     // Session events
     case sessionStarted
     case sessionEnded(duration: TimeInterval)
-    
+
     // Audio engine events
     case audioEngineConfigured(AudioEngineConfig)
     case audioEngineStarted
     case audioEngineStopped
     case thermalStateChanged(ProcessInfo.ThermalState)
     case adaptiveQualityAdjusted(reason: String)
-    
+
     // VAD events
     case vadSpeechDetected(confidence: Float)
     case vadSilenceDetected(duration: TimeInterval)
-    
-    // STT events  
+
+    // STT events
     case sttPartialReceived(transcript: String, isFinal: Bool)
     case sttStreamFailed(Error)
-    
+
     // User interaction events
     case userStartedSpeaking
     case userFinishedSpeaking(transcript: String)
     case userInterrupted
-    
+
     // AI events
     case aiStartedSpeaking
     case aiFinishedSpeaking
     case llmFirstTokenReceived
     case llmStreamFailed(Error)
-    
+
     // TTS events
     case ttsChunkCompleted(text: String, duration: TimeInterval)
     case ttsStreamFailed(Error)
@@ -49,11 +54,11 @@ public enum TelemetryEvent: Sendable {
     case ttsPlaybackInterrupted
     case ttsPlaybackPaused
     case ttsPlaybackResumed
-    
+
     // Curriculum events
     case topicStarted(topic: String)
     case topicCompleted(topic: String, timeSpent: TimeInterval, mastery: Float)
-    
+
     // Context management
     case contextCompressed(from: Int, to: Int)
 }
@@ -82,7 +87,7 @@ public enum CostType: String, Sendable {
 public struct RecordedEvent: Sendable {
     public let timestamp: Date
     public let event: TelemetryEvent
-    
+
     public init(timestamp: Date = Date(), event: TelemetryEvent) {
         self.timestamp = timestamp
         self.event = event
@@ -95,36 +100,36 @@ public struct RecordedEvent: Sendable {
 public struct SessionMetrics: Sendable {
     // Duration
     public var duration: TimeInterval
-    
+
     // Latency arrays
     public var sttLatencies: [TimeInterval]
     public var llmLatencies: [TimeInterval]
     public var ttsLatencies: [TimeInterval]
     public var e2eLatencies: [TimeInterval]
-    
+
     // Costs
     public var sttCost: Decimal
     public var ttsCost: Decimal
     public var llmCost: Decimal
-    
+
     // Counts
     public var turnsTotal: Int
     public var interruptions: Int
     public var thermalThrottleEvents: Int
     public var networkDegradations: Int
-    
+
     /// Total cost across all categories
     public var totalCost: Decimal {
         sttCost + ttsCost + llmCost
     }
-    
+
     /// Cost per hour based on session duration
     public var costPerHour: Double {
         guard duration > 0 else { return 0 }
         let costDouble = NSDecimalNumber(decimal: totalCost).doubleValue
         return costDouble * (3600.0 / duration)
     }
-    
+
     public init() {
         duration = 0
         sttLatencies = []
@@ -141,7 +146,37 @@ public struct SessionMetrics: Sendable {
     }
 }
 
-// MARK: - Telemetry Engine
+// MARK: - Telemetry Publisher (MainActor-isolated for UI observation)
+
+/// Observable publisher for telemetry metrics, isolated to MainActor.
+///
+/// This class is separate from TelemetryEngine to prevent actor isolation conflicts.
+/// Views should observe this publisher rather than the TelemetryEngine directly.
+/// The TelemetryEngine updates this publisher via fire-and-forget tasks.
+@MainActor
+public final class TelemetryPublisher: ObservableObject {
+    /// Current session metrics for UI display
+    @Published public private(set) var metrics = SessionMetrics()
+
+    /// Current device metrics for UI display
+    @Published public private(set) var deviceMetrics = DeviceMetrics()
+
+    /// Nonisolated init to allow creation from actor context
+    /// The @Published properties are still MainActor-isolated for thread safety
+    nonisolated public init() {}
+
+    /// Update metrics (called by TelemetryEngine)
+    public func updateMetrics(_ newMetrics: SessionMetrics) {
+        metrics = newMetrics
+    }
+
+    /// Update device metrics (called by TelemetryEngine)
+    public func updateDeviceMetrics(_ newMetrics: DeviceMetrics) {
+        deviceMetrics = newMetrics
+    }
+}
+
+// MARK: - Telemetry Engine (Actor-isolated for thread safety)
 
 /// Central telemetry engine for tracking all metrics
 ///
@@ -150,27 +185,30 @@ public struct SessionMetrics: Sendable {
 /// - Cost metrics (by provider type)
 /// - Events (for debugging and analysis)
 /// - Session metrics (duration, turns, interruptions)
-public actor TelemetryEngine: ObservableObject {
-    
+///
+/// Architecture Note:
+/// This is a pure actor that does NOT conform to ObservableObject.
+/// UI observation is handled by the separate TelemetryPublisher class.
+/// This separation prevents cross-actor deadlocks when views observe telemetry.
+public actor TelemetryEngine {
+
     // MARK: - Properties
-    
+
     private let logger = Logger(label: "com.unamentis.telemetry")
-    
+
+    /// Publisher for UI observation (MainActor-isolated)
+    /// Marked nonisolated because it's immutable (let) and safe for cross-actor access
+    public nonisolated let publisher: TelemetryPublisher
+
     /// Current session metrics
     private var metrics = SessionMetrics()
-    
+
     /// Session start time
     private var sessionStartTime: Date?
-    
+
     /// Recent events (limited buffer)
     private var events: [RecordedEvent] = []
     private let maxEventBuffer = 1000
-    
-    /// Published metrics for UI observation
-    @MainActor @Published public private(set) var currentMetricsPublished = SessionMetrics()
-
-    /// Published device metrics for UI observation
-    @MainActor @Published public private(set) var deviceMetrics = DeviceMetrics()
 
     /// Device metrics sampling task
     private var deviceMetricsSamplingTask: Task<Void, Never>?
@@ -182,11 +220,14 @@ public actor TelemetryEngine: ObservableObject {
     // MARK: - Initialization
 
     public init() {
+        // Create the publisher on MainActor
+        // Note: This is safe because TelemetryPublisher.init() is synchronous
+        self.publisher = TelemetryPublisher()
         logger.info("TelemetryEngine initialized")
     }
-    
+
     // MARK: - Public API
-    
+
     /// Get current metrics
     public var currentMetrics: SessionMetrics {
         var current = metrics
@@ -195,12 +236,12 @@ public actor TelemetryEngine: ObservableObject {
         }
         return current
     }
-    
+
     /// Get recent events
     public var recentEvents: [RecordedEvent] {
         events
     }
-    
+
     /// Start a new session
     public func startSession() {
         sessionStartTime = Date()
@@ -209,7 +250,7 @@ public actor TelemetryEngine: ObservableObject {
         logger.info("Session started")
         recordEvent(.sessionStarted)
     }
-    
+
     /// End the current session
     public func endSession() {
         guard let startTime = sessionStartTime else { return }
@@ -220,7 +261,7 @@ public actor TelemetryEngine: ObservableObject {
             "total_cost": .stringConvertible(metrics.totalCost)
         ])
     }
-    
+
     /// Record a telemetry event
     public func recordEvent(_ event: TelemetryEvent) {
         // Add to buffer
@@ -228,7 +269,7 @@ public actor TelemetryEngine: ObservableObject {
         if events.count > maxEventBuffer {
             events.removeFirst(events.count - maxEventBuffer)
         }
-        
+
         // Track specific metrics
         switch event {
         case .userFinishedSpeaking:
@@ -240,27 +281,22 @@ public actor TelemetryEngine: ObservableObject {
         default:
             break
         }
-        
+
         // Log event
         logger.debug("Event: \(String(describing: event))")
-        
-        // Update published metrics - capture values first
-        let currentMetrics = metrics
-        let startTime = sessionStartTime
-        Task { @MainActor in
-            var current = currentMetrics
-            if let time = startTime {
-                current.duration = Date().timeIntervalSince(time)
-            }
-            currentMetricsPublished = current
+
+        // Update publisher (fire-and-forget, no await to prevent blocking)
+        let snapshot = currentMetrics
+        Task { @MainActor [publisher] in
+            publisher.updateMetrics(snapshot)
         }
     }
-    
+
     /// Record an error
     public func recordError(_ error: Error) {
         logger.error("Error: \(error.localizedDescription)")
     }
-    
+
     /// Record a latency measurement
     public func recordLatency(_ type: LatencyType, _ value: TimeInterval) {
         switch type {
@@ -276,10 +312,10 @@ public actor TelemetryEngine: ObservableObject {
             // Not stored in session metrics, just logged
             break
         }
-        
+
         logger.debug("Latency \(type.rawValue): \(value * 1000)ms")
     }
-    
+
     /// Record a cost
     public func recordCost(_ type: CostType, amount: Decimal, description: String) {
         switch type {
@@ -290,10 +326,10 @@ public actor TelemetryEngine: ObservableObject {
         case .llmInput, .llmOutput:
             metrics.llmCost += amount
         }
-        
+
         logger.debug("Cost \(type.rawValue): $\(amount) - \(description)")
     }
-    
+
     /// Reset all metrics
     public func reset() {
         metrics = SessionMetrics()
@@ -301,6 +337,11 @@ public actor TelemetryEngine: ObservableObject {
         sessionStartTime = nil
         deviceMetricsHistory.removeAll()
         logger.info("TelemetryEngine reset")
+
+        // Update publisher
+        Task { @MainActor [publisher] in
+            publisher.updateMetrics(SessionMetrics())
+        }
     }
 
     // MARK: - Device Metrics
@@ -311,28 +352,35 @@ public actor TelemetryEngine: ObservableObject {
 
         logger.info("Starting device metrics sampling at \(interval)s interval")
 
-        deviceMetricsSamplingTask = Task {
+        deviceMetricsSamplingTask = Task { [weak self] in
             while !Task.isCancelled {
+                guard let self = self else { break }
+
                 let sample = DeviceMetricsCollector.sample()
 
-                // Store in history
-                deviceMetricsHistory.append(sample)
-                if deviceMetricsHistory.count > maxMetricsHistory {
-                    deviceMetricsHistory.removeFirst()
-                }
+                // Store in history (actor-isolated)
+                await self.addDeviceMetricsSample(sample)
 
                 // Log if under stress
                 if sample.isUnderStress {
-                    logger.warning("Device under stress: CPU=\(String(format: "%.1f", sample.cpuUsage))%, Memory=\(sample.memoryUsedString), Thermal=\(sample.thermalStateString)")
+                    self.logger.warning("Device under stress: CPU=\(String(format: "%.1f", sample.cpuUsage))%, Memory=\(sample.memoryUsedString), Thermal=\(sample.thermalStateString)")
                 }
 
-                // Publish to UI
-                await MainActor.run {
-                    deviceMetrics = sample
+                // Update publisher (fire-and-forget)
+                Task { @MainActor [publisher = await self.publisher] in
+                    publisher.updateDeviceMetrics(sample)
                 }
 
                 try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
             }
+        }
+    }
+
+    /// Add a device metrics sample to history (actor-isolated helper)
+    private func addDeviceMetricsSample(_ sample: DeviceMetrics) {
+        deviceMetricsHistory.append(sample)
+        if deviceMetricsHistory.count > maxMetricsHistory {
+            deviceMetricsHistory.removeFirst()
         }
     }
 
@@ -379,7 +427,7 @@ public actor TelemetryEngine: ObservableObject {
             timestamp: Date()
         )
     }
-    
+
     /// Export metrics as a snapshot for persistence/analysis
     public func exportMetrics() -> MetricsSnapshot {
         let latencies = LatencyMetrics(
@@ -392,7 +440,7 @@ public actor TelemetryEngine: ObservableObject {
             e2eMedianMs: Int(metrics.e2eLatencies.median * 1000),
             e2eP99Ms: Int(metrics.e2eLatencies.percentile(99) * 1000)
         )
-        
+
         let costs = CostMetrics(
             sttTotal: metrics.sttCost,
             ttsTotal: metrics.ttsCost,
@@ -401,7 +449,7 @@ public actor TelemetryEngine: ObservableObject {
             llmTotal: metrics.llmCost,
             totalSession: metrics.totalCost
         )
-        
+
         let quality = QualityMetrics(
             turnsTotal: metrics.turnsTotal,
             interruptions: metrics.interruptions,
@@ -409,7 +457,7 @@ public actor TelemetryEngine: ObservableObject {
             thermalThrottleEvents: metrics.thermalThrottleEvents,
             networkDegradations: metrics.networkDegradations
         )
-        
+
         return MetricsSnapshot(
             latencies: latencies,
             costs: costs,

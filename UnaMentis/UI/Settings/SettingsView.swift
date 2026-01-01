@@ -488,6 +488,10 @@ public struct SettingsView: View {
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingView(hasCompletedOnboarding: .constant(true))
             }
+            .task {
+                // Load async data after view appears (non-blocking)
+                await viewModel.loadAsync()
+            }
         }
     }
 }
@@ -732,6 +736,9 @@ class SettingsViewModel: ObservableObject {
 
     private let curriculumSeeder = SampleCurriculumSeeder()
 
+    /// Whether async loading has been triggered
+    private var hasLoadedAsync = false
+
     init() {
         // Load persisted provider settings synchronously (fast UserDefaults reads)
         if let sttRaw = UserDefaults.standard.string(forKey: "sttProvider"),
@@ -758,17 +765,22 @@ class SettingsViewModel: ObservableObject {
         // Load remote logging setting (defaults to true)
         self.remoteLoggingEnabled = UserDefaults.standard.object(forKey: "remoteLoggingEnabled") as? Bool ?? true
 
-        // Defer async loading to after view appears to prevent init-time lag
-        // Each task loads data independently and updates UI atomically
-        Task.detached(priority: .userInitiated) { [weak self] in
-            await self?.loadKeyStatus()
-        }
-        Task.detached(priority: .background) { [weak self] in
-            await self?.checkSampleCurriculum()
-        }
-        Task.detached(priority: .background) { [weak self] in
-            await self?.loadServerStatus()
-        }
+        // NOTE: No Task spawning here! Async loading is deferred to loadAsync()
+        // called from the view's .task modifier
+    }
+
+    /// Load async data (call from view's .task modifier)
+    @MainActor
+    func loadAsync() async {
+        guard !hasLoadedAsync else { return }
+        hasLoadedAsync = true
+
+        // Load all async data concurrently
+        async let keyStatusTask: () = loadKeyStatus()
+        async let curriculumTask: () = checkSampleCurriculum()
+        async let serverTask: () = loadServerStatus()
+
+        _ = await (keyStatusTask, curriculumTask, serverTask)
     }
 
     /// Available models for current provider

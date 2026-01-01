@@ -271,8 +271,11 @@ struct ContentView: View {
         }
         .environmentObject(sessionActivityState)
         .task {
+            // Initialize AppState async components (non-blocking)
+            await appState.initializeAsync()
+
             // Give UI a moment to initialize and show splash
-            try? await Task.sleep(for: .milliseconds(500))
+            try? await Task.sleep(for: .milliseconds(300))
             withAnimation(.easeOut(duration: 0.3)) {
                 isLoading = false
             }
@@ -490,6 +493,12 @@ struct FreeformSessionView: View {
 /// - Manages application configuration state
 /// - Provides factory methods for creating session managers
 /// - Coordinates between subsystems (Telemetry, PatchPanel, Curriculum, etc.)
+///
+/// Architecture Note:
+/// Initialization is synchronous and non-blocking. Async setup (configuration
+/// checks, patch panel initialization) is deferred and triggered via
+/// `initializeAsync()` from a view's `.task` modifier to prevent MainActor
+/// contention during app launch.
 @MainActor
 public class AppState: ObservableObject {
 
@@ -520,19 +529,31 @@ public class AppState: ObservableObject {
     /// Current device capability tier
     @Published public var deviceTier: DeviceCapabilityTier = .proMax
 
+    /// Whether async initialization has been performed
+    private var hasInitializedAsync = false
+
     // MARK: - Initialization
 
+    /// Synchronous initialization, non-blocking
+    /// Call `initializeAsync()` from a view's `.task` modifier to complete setup
     public init() {
-        // Initialize patch panel with telemetry
+        // Initialize patch panel with telemetry (synchronous)
         self.patchPanel = PatchPanelService(telemetry: telemetry)
 
-        // Detect device capability tier
+        // Detect device capability tier (synchronous, no I/O)
         self.deviceTier = Self.detectDeviceTier()
 
-        Task {
-            await checkConfiguration()
-            await initializePatchPanel()
-        }
+        // NOTE: No Task spawning here! Async work is deferred to initializeAsync()
+    }
+
+    /// Perform async initialization
+    /// Call this from a view's `.task` modifier after the view hierarchy is set up
+    public func initializeAsync() async {
+        guard !hasInitializedAsync else { return }
+        hasInitializedAsync = true
+
+        await checkConfiguration()
+        await initializePatchPanel()
     }
 
     // MARK: - Configuration

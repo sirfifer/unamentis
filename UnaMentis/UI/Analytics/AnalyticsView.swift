@@ -6,6 +6,11 @@
 import SwiftUI
 
 /// Analytics dashboard showing session metrics
+///
+/// Architecture Note:
+/// This view observes TelemetryPublisher (MainActor-isolated) rather than
+/// TelemetryEngine (actor) directly. This prevents cross-actor deadlocks
+/// when switching between tabs.
 public struct AnalyticsView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var viewModel = AnalyticsViewModel()
@@ -13,30 +18,32 @@ public struct AnalyticsView: View {
 
     public init() { }
 
+    /// Access to the telemetry publisher for reactive updates
+    private var telemetryPublisher: TelemetryPublisher {
+        appState.telemetry.publisher
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Quick stats
-                    QuickStatsView(metrics: viewModel.currentMetrics)
+                    // Quick stats - observe publisher directly for reactive updates
+                    QuickStatsView(metrics: telemetryPublisher.metrics)
 
                     // Latency metrics
-                    LatencyMetricsCard(metrics: viewModel.currentMetrics)
+                    LatencyMetricsCard(metrics: telemetryPublisher.metrics)
 
                     // Cost breakdown
-                    CostMetricsCard(metrics: viewModel.currentMetrics)
+                    CostMetricsCard(metrics: telemetryPublisher.metrics)
 
                     // Session quality
-                    QualityMetricsCard(metrics: viewModel.currentMetrics)
+                    QualityMetricsCard(metrics: telemetryPublisher.metrics)
                 }
                 .padding()
             }
             .navigationTitle("Analytics")
             .refreshable {
-                await viewModel.refresh(telemetry: appState.telemetry)
-            }
-            .task {
-                // Initial load
+                // Force refresh from actor (for pull-to-refresh)
                 await viewModel.refresh(telemetry: appState.telemetry)
             }
             #if os(iOS)
@@ -363,29 +370,35 @@ struct QualityItem: View {
 
 // MARK: - View Model
 
+/// ViewModel for Analytics view export functionality.
+/// Note: Metrics display is handled by observing TelemetryPublisher directly,
+/// so this ViewModel only handles export and refresh operations.
 @MainActor
 class AnalyticsViewModel: ObservableObject {
-    @Published var currentMetrics = SessionMetrics()
     @Published var exportURL: URL?
-    
+
+    /// Refresh metrics from the telemetry actor (used for pull-to-refresh)
+    /// This updates the TelemetryPublisher which the view observes
     func refresh(telemetry: TelemetryEngine) async {
-        currentMetrics = await telemetry.currentMetrics
+        // Get current metrics from actor - this triggers publisher update
+        _ = await telemetry.currentMetrics
     }
-    
+
+    /// Generate export file from telemetry data
     func generateExport(telemetry: TelemetryEngine) async {
         let snapshot = await telemetry.exportMetrics()
-        
+
         // Convert to JSON
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
-        
+
         do {
             let data = try encoder.encode(snapshot)
             let tempDir = FileManager.default.temporaryDirectory
             let fileName = "UnaMentis_Session_\(Date().ISO8601Format()).json"
             let fileURL = tempDir.appendingPathComponent(fileName)
-            
+
             try data.write(to: fileURL)
             exportURL = fileURL
         } catch {

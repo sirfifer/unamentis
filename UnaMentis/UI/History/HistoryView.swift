@@ -78,6 +78,10 @@ public struct HistoryView: View {
                 }
             }
             #endif
+            .task {
+                // Load data after view appears (non-blocking)
+                viewModel.loadAsync()
+            }
         }
     }
 }
@@ -358,7 +362,18 @@ class HistoryViewModel: ObservableObject {
     private let persistence = PersistenceController.shared
     private let logger = Logger(label: "com.unamentis.ui.history")
 
+    /// Whether data has been loaded
+    private var hasLoaded = false
+
     init() {
+        // NOTE: No Task spawning here! Data loading is deferred to loadAsync()
+        // called from the view's .task modifier
+    }
+
+    /// Load data asynchronously (call from view's .task modifier)
+    func loadAsync() {
+        guard !hasLoaded else { return }
+        hasLoaded = true
         loadFromCoreData()
     }
 

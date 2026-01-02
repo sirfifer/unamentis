@@ -154,7 +154,7 @@
   "_import_metadata": {
     "source": "mock_source",
     "course_id": "test-course-lectures",
-    "imported_at": "2026-01-02T04:15:30.315512",
+    "imported_at": "2026-01-02T05:34:26.910673",
     "attribution": "Test attribution text",
     "stats": {
       "lectures": 3,

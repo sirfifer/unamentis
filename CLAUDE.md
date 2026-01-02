@@ -21,6 +21,47 @@ This repository contains multiple components, each with its own CLAUDE.md:
 
 See the CLAUDE.md in each directory for component-specific instructions.
 
+## MANDATORY: MCP Server Integration
+
+**You MUST use the configured MCP servers for all Xcode and Simulator operations.** This enables first-class, round-trip development and debugging.
+
+### Required MCP Servers
+
+Verify both servers are connected:
+```bash
+claude mcp list
+# Should show:
+# ios-simulator: ✓ Connected
+# XcodeBuildMCP: ✓ Connected
+```
+
+If not connected, restart the Claude Code session.
+
+### MCP Tools to Use
+
+| Task | MCP Tool |
+|------|----------|
+| Build for simulator | `mcp__XcodeBuildMCP__build_for_simulator` |
+| Install app | `mcp__XcodeBuildMCP__simulator_app_install` |
+| Launch app | `mcp__XcodeBuildMCP__simulator_app_launch` |
+| Capture logs | `mcp__XcodeBuildMCP__simulator_get_app_logs` |
+| Take screenshot | `mcp__ios-simulator__screenshot` |
+| Tap UI | `mcp__ios-simulator__ui_tap` |
+| Type text | `mcp__ios-simulator__ui_type` |
+| Swipe | `mcp__ios-simulator__ui_swipe` |
+
+### Round-Trip Debugging Workflow
+
+When debugging UI issues:
+1. Build with XcodeBuildMCP
+2. Install and launch with XcodeBuildMCP
+3. Capture logs with XcodeBuildMCP
+4. Screenshot with ios-simulator MCP
+5. Interact with ios-simulator MCP
+6. Analyze and iterate
+
+This workflow allows autonomous debugging without manual user intervention.
+
 ## Quick Commands
 
 ```bash
@@ -131,6 +172,7 @@ Do NOT commit if either command fails. Fix the issues first.
 
 ## Key Documentation
 
+- `docs/DEV_ENVIRONMENT.md` - **Developer environment setup guide**
 - `docs/IOS_STYLE_GUIDE.md` - Mandatory iOS coding standards
 - `docs/UnaMentis_TDD.md` - Technical design document
 - `docs/TASK_STATUS.md` - Current task status

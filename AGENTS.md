@@ -19,6 +19,52 @@ This repository contains multiple components, each with its own AGENTS.md:
 
 See the AGENTS.md in each directory for component-specific instructions.
 
+## MANDATORY: MCP Server Integration
+
+**All AI agents working on this project MUST use the configured MCP servers for first-class Xcode and Simulator integration.** This is non-negotiable for effective round-trip development.
+
+### Required MCP Servers
+
+| Server | Purpose | Installation |
+|--------|---------|--------------|
+| **XcodeBuildMCP** | Xcode builds, tests, log capture, app lifecycle | `claude mcp add XcodeBuildMCP -- npx xcodebuildmcp@latest` |
+| **ios-simulator** | Simulator control, screenshots, UI automation | `claude mcp add ios-simulator -- npx -y ios-simulator-mcp` |
+
+### When to Use MCP Tools
+
+**Always prefer MCP tools over raw CLI commands:**
+
+| Task | Use This | NOT This |
+|------|----------|----------|
+| Build iOS app | `mcp__XcodeBuildMCP__build_for_simulator` | `xcodebuild` CLI |
+| Capture app logs | `mcp__XcodeBuildMCP__simulator_get_app_logs` | Manual log fetching |
+| Install app | `mcp__XcodeBuildMCP__simulator_app_install` | `xcrun simctl install` |
+| Launch app | `mcp__XcodeBuildMCP__simulator_app_launch` | `xcrun simctl launch` |
+| Take screenshot | `mcp__ios-simulator__screenshot` | Manual screenshot |
+| Tap UI element | `mcp__ios-simulator__ui_tap` | N/A |
+
+### Round-Trip Development Workflow
+
+For debugging UI issues or testing changes:
+
+1. **Build** using XcodeBuildMCP
+2. **Install** using XcodeBuildMCP
+3. **Launch** using XcodeBuildMCP
+4. **Capture logs** using XcodeBuildMCP (simulator_get_app_logs)
+5. **Screenshot** using ios-simulator MCP
+6. **Interact** using ios-simulator MCP (tap, swipe, type)
+7. **Analyze logs** and iterate
+
+This workflow enables autonomous testing and debugging without requiring manual user interaction.
+
+### Verifying MCP Server Status
+
+```bash
+claude mcp list
+```
+
+Both servers should show "✓ Connected". If not, restart the Claude Code session.
+
 ## Time Estimation Guidelines
 
 ### DO NOT use traditional software development timelines

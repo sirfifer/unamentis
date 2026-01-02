@@ -109,15 +109,8 @@ struct CurriculumView: View {
                 }
             }
         .toolbar {
-            if #available(iOS 26.0, *) {
-                ToolbarItem(placement: .topBarLeading) {
-                    BrandLogo(size: .compact)
-                }
-                .sharedBackgroundVisibility(.hidden)
-            } else {
-                ToolbarItem(placement: .topBarLeading) {
-                    BrandLogo(size: .compact)
-                }
+            ToolbarItem(placement: .topBarLeading) {
+                BrandLogo(size: .compact)
             }
             ToolbarItem(placement: .primaryAction) {
                 HStack(spacing: 12) {

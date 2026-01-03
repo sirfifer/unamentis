@@ -55,8 +55,42 @@ public struct WordTimestamp: Sendable, Codable {
     public let startTime: TimeInterval
     public let endTime: TimeInterval
     public let confidence: Float?
-    
+
     public init(word: String, startTime: TimeInterval, endTime: TimeInterval, confidence: Float? = nil) {
+        self.word = word
+        self.startTime = startTime
+        self.endTime = endTime
+        self.confidence = confidence
+    }
+}
+
+// MARK: - Transcription Result
+
+/// Result of a full transcription (used by batch/file transcription services)
+public struct TranscriptionResult: Sendable {
+    public let text: String
+    public let words: [TranscribedWord]
+    public let language: String
+    public let duration: Double
+    public let isFinal: Bool
+
+    public init(text: String, words: [TranscribedWord], language: String, duration: Double, isFinal: Bool) {
+        self.text = text
+        self.words = words
+        self.language = language
+        self.duration = duration
+        self.isFinal = isFinal
+    }
+}
+
+/// A single transcribed word with timing (used by batch/file transcription services)
+public struct TranscribedWord: Sendable {
+    public let word: String
+    public let startTime: Double
+    public let endTime: Double
+    public let confidence: Float
+
+    public init(word: String, startTime: Double, endTime: Double, confidence: Float) {
         self.word = word
         self.startTime = startTime
         self.endTime = endTime

@@ -220,9 +220,10 @@ struct LaunchScreenView: View {
 enum AppTab: Int {
     case session = 0
     case curriculum = 1
-    case history = 2
-    case analytics = 3
-    case settings = 4
+    case todo = 2
+    case history = 3
+    case analytics = 4
+    case settings = 5
 }
 
 // MARK: - Session Activity State
@@ -391,6 +392,12 @@ struct ContentView: View {
                     Label("Curriculum", systemImage: "book")
                 }
                 .tag(AppTab.curriculum.rawValue)
+
+            TodoListView()
+                .tabItem {
+                    Label("To-Do", systemImage: "checklist")
+                }
+                .tag(AppTab.todo.rawValue)
 
             HistoryView()
                 .tabItem {

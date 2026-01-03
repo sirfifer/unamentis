@@ -257,6 +257,7 @@ public final class SessionManager: ObservableObject {
     /// Silence detection for utterance completion
     private var silenceStartTime: Date?
     private var hasDetectedSpeech: Bool = false
+    private var speechStartTime: Date?  // Track when user started speaking for STT cost
     private let silenceThreshold: TimeInterval = 1.5  // seconds of silence before completing utterance
     private var pendingUtteranceTask: Task<Void, Never>?
 
@@ -705,6 +706,7 @@ public final class SessionManager: ObservableObject {
                 // User is speaking - mark speech detected and reset silence timer
                 if !hasDetectedSpeech {
                     logger.info("🎤 Speech started - VAD detected voice activity")
+                    speechStartTime = Date()  // Track when speech started for STT cost
                 }
                 hasDetectedSpeech = true
                 silenceStartTime = nil
@@ -837,20 +839,46 @@ public final class SessionManager: ObservableObject {
     }
     #endif
 
+    // MARK: - Cost Recording Helpers
+
+    /// Record TTS cost for synthesized text
+    private func recordTTSCost(for text: String) async {
+        guard let ttsService = ttsService else { return }
+        let costPerChar = await ttsService.costPerCharacter
+        if costPerChar > 0 {
+            let cost = Decimal(text.count) * costPerChar
+            await telemetry.recordCost(.tts, amount: cost, description: "TTS (\(text.count) chars)")
+            logger.info("Recorded TTS cost: $\(cost) for \(text.count) chars")
+        }
+    }
+
     // MARK: - Utterance Processing
 
     private func processUserUtterance(_ transcript: String) async {
         logger.info("Processing user utterance: \(transcript.prefix(50))...")
-        
+
         await setState(.processingUserUtterance)
         currentTurnStartTime = Date()
-        
+
+        // Record STT cost based on speech duration
+        if let sttService = sttService, let startTime = speechStartTime {
+            let duration = Date().timeIntervalSince(startTime)
+            let costPerHour = await sttService.costPerHour
+            if costPerHour > 0 {
+                // Cost = (duration in hours) * cost per hour
+                let cost = (Decimal(duration) / 3600) * costPerHour
+                await telemetry.recordCost(.stt, amount: cost, description: "STT (\(String(format: "%.1f", duration))s audio)")
+                logger.info("Recorded STT cost: $\(cost) for \(String(format: "%.1f", duration))s")
+            }
+        }
+        speechStartTime = nil  // Reset for next utterance
+
         // Add to conversation history
         conversationHistory.append(LLMMessage(role: .user, content: transcript))
-        
+
         // Record event
         await telemetry.recordEvent(.userFinishedSpeaking(transcript: transcript))
-        
+
         // Generate AI response
         await generateAIResponse()
     }
@@ -867,6 +895,9 @@ public final class SessionManager: ObservableObject {
         }
 
         do {
+            // Capture metrics before streaming to calculate cost delta
+            let metricsBefore = await llmService.metrics
+
             logger.info("Calling LLM streamCompletion with \(conversationHistory.count) messages")
             let stream = try await llmService.streamCompletion(
                 messages: conversationHistory,
@@ -939,6 +970,23 @@ public final class SessionManager: ObservableObject {
                 // when all sentences have been played
                 self.isLLMStreamingComplete = true
                 logger.info("LLM streaming complete - TTS queue will finish when all sentences played")
+
+                // Record LLM cost based on token usage delta
+                let metricsAfter = await llmService.metrics
+                let inputTokens = metricsAfter.totalInputTokens - metricsBefore.totalInputTokens
+                let outputTokens = metricsAfter.totalOutputTokens - metricsBefore.totalOutputTokens
+                let inputCost = Decimal(inputTokens) * (await llmService.costPerInputToken)
+                let outputCost = Decimal(outputTokens) * (await llmService.costPerOutputToken)
+
+                if inputCost > 0 {
+                    await self.telemetry.recordCost(.llmInput, amount: inputCost, description: "LLM input (\(inputTokens) tokens)")
+                }
+                if outputCost > 0 {
+                    await self.telemetry.recordCost(.llmOutput, amount: outputCost, description: "LLM output (\(outputTokens) tokens)")
+                }
+                if inputCost > 0 || outputCost > 0 {
+                    logger.info("Recorded LLM cost: input $\(inputCost) (\(inputTokens) tokens), output $\(outputCost) (\(outputTokens) tokens)")
+                }
 
                 // The queue processor will handle state transition when done
             }
@@ -1186,6 +1234,10 @@ public final class SessionManager: ObservableObject {
                 if chunk.isLast {
                     let elapsed = Date().timeIntervalSince(startTime)
                     logger.info("🔊 Prefetch: Completed in \(String(format: "%.3f", elapsed))s for \"\(text.prefix(30))...\"")
+
+                    // Record TTS cost
+                    await recordTTSCost(for: text)
+
                     return chunk  // Return the full audio chunk
                 }
             }
@@ -1297,6 +1349,8 @@ public final class SessionManager: ObservableObject {
                 }
 
                 if chunk.isLast {
+                    // Record TTS cost for fallback synthesis
+                    await recordTTSCost(for: text)
                     break
                 }
             }
@@ -1356,6 +1410,8 @@ public final class SessionManager: ObservableObject {
 
                     if chunk.isLast {
                         logger.info("Received last TTS chunk, total chunks: \(chunkCount)")
+                        // Record TTS cost for full response synthesis
+                        await self.recordTTSCost(for: text)
                         break
                     }
                 }

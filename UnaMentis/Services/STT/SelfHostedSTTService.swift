@@ -266,31 +266,16 @@ extension SelfHostedSTTService {
 
 // MARK: - Supporting Types
 
-/// Result of a transcription
-public struct TranscriptionResult: Sendable {
-    public let text: String
-    public let words: [TranscribedWord]
-    public let language: String
-    public let duration: Double
-    public let isFinal: Bool
+// Note: TranscriptionResult, TranscribedWord, STTMetrics, and STTError are defined in STTService.swift
+
+/// Legacy STT metrics (kept for compatibility)
+struct SelfHostedSTTMetrics: Sendable {
+    let averageLatency: TimeInterval
+    let wordErrorRate: Double
 }
 
-/// A single transcribed word with timing
-public struct TranscribedWord: Sendable {
-    public let word: String
-    public let startTime: Double
-    public let endTime: Double
-    public let confidence: Float
-}
-
-/// STT service metrics
-public struct STTMetrics: Sendable {
-    public let averageLatency: TimeInterval
-    public let wordErrorRate: Double
-}
-
-/// STT service errors
-public enum STTError: Error, LocalizedError {
+/// Self-hosted specific errors
+enum SelfHostedSTTError: Error, LocalizedError {
     case connectionFailed(String)
     case authenticationFailed
     case invalidAudioFormat

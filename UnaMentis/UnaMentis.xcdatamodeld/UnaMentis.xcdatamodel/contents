@@ -81,4 +81,25 @@
         <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="session" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Session" inverseName="transcript" inverseEntity="Session"/>
     </entity>
+    <entity name="TodoItem" representedClassName="TodoItem" syncable="YES">
+        <attribute name="archivedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="curriculumId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="dueDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="granularity" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="priority" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="resumeConversationContext" optional="YES" attributeType="Binary"/>
+        <attribute name="resumeSegmentIndex" attributeType="Integer 32" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="resumeTopicId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="sourceRaw" attributeType="String" defaultValueString="manual"/>
+        <attribute name="sourceSessionId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="statusRaw" attributeType="String" defaultValueString="pending"/>
+        <attribute name="suggestedCurriculumIds" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName" customClassName="[String]"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="topicId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="typeRaw" attributeType="String" defaultValueString="learning_target"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
+    </entity>
 </model>

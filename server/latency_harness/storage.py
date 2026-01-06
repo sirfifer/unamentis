@@ -1,8 +1,97 @@
 """
 Latency Test Harness - Storage Layer
+=====================================
 
-Provides both file-based (development) and PostgreSQL (production) storage
-for test suites, runs, results, and baselines.
+This module provides the persistence layer for the latency test harness,
+supporting both development (file-based) and production (PostgreSQL) storage.
+
+Storage Backends
+---------------
+1. **FileBasedLatencyStorage** - JSON files on disk
+   - Best for: Development, simple deployments, debugging
+   - Location: `server/data/latency_harness/`
+   - Structure: Separate directories for suites/, runs/, baselines/
+
+2. **PostgreSQLLatencyStorage** - Relational database
+   - Best for: Production, high-volume testing, concurrent access
+   - Requires: `asyncpg` library and PostgreSQL database
+   - Tables: latency_test_suites, latency_test_runs, latency_test_results, latency_baselines
+
+Data Model
+----------
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  TestSuite      │     │    TestRun      │     │   TestResult    │
+│  Definition     │────►│                 │────►│                 │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ id              │     │ id              │     │ id              │
+│ name            │     │ suite_id        │     │ run_id          │
+│ scenarios[]     │     │ client_id       │     │ config_id       │
+│ parameter_space │     │ status          │     │ e2e_latency_ms  │
+│ network_profiles│     │ results[]       │     │ llm_ttfb_ms     │
+└─────────────────┘     └─────────────────┘     │ tts_ttfb_ms     │
+                                                └─────────────────┘
+
+┌─────────────────┐
+│ Performance     │
+│ Baseline        │
+├─────────────────┤
+│ id              │
+│ run_id          │  ◄── Created from a completed TestRun
+│ config_metrics  │
+│ is_active       │
+└─────────────────┘
+```
+
+Usage Examples
+-------------
+```python
+# File-based storage (development)
+from latency_harness.storage import create_latency_storage
+
+storage = create_latency_storage(storage_type="file")
+await storage.initialize()
+
+# PostgreSQL storage (production)
+storage = create_latency_storage(
+    storage_type="postgresql",
+    connection_string="postgresql://user:pass@localhost/unamentis"
+)
+await storage.connect()
+await storage.initialize_schema()
+
+# Save a test run
+await storage.save_run(run)
+
+# Query results
+results = await storage.get_results(run_id="run_123", limit=100)
+
+# Create baseline from run
+baseline = PerformanceBaseline(
+    id="baseline_v1",
+    name="Production Baseline",
+    run_id="run_123",
+    ...
+)
+await storage.save_baseline(baseline)
+```
+
+Environment Variables
+--------------------
+- `LATENCY_STORAGE_TYPE`: "file" or "postgresql" (default: "file")
+- `LATENCY_DATABASE_URL`: PostgreSQL connection string
+- `DATABASE_URL`: Fallback connection string
+
+Thread Safety
+------------
+- FileBasedLatencyStorage: Uses in-memory caches, safe for single-process
+- PostgreSQLLatencyStorage: Connection pool handles concurrency
+
+See Also
+--------
+- `orchestrator.py`: Uses storage for persistence
+- `models.py`: Data model definitions
+- `docs/LATENCY_TEST_HARNESS_GUIDE.md`: Complete usage guide
 """
 
 import json

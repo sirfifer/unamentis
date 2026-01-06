@@ -1,3 +1,54 @@
+/**
+ * UnaMentis - Latency Test Harness Dashboard Panel
+ * =================================================
+ *
+ * React component for the Operations Console latency testing interface.
+ * Part of the Audio Latency Test Harness infrastructure.
+ *
+ * FEATURES
+ * --------
+ * - View available test suites and their configuration
+ * - Start/stop test runs on connected clients
+ * - Monitor real-time progress of running tests
+ * - View test history and analysis results
+ * - Export results to CSV for external analysis
+ *
+ * DATA FLOW
+ * ---------
+ * 1. Panel fetches suites, runs, and clients from management API
+ * 2. User selects suite and optionally a target client
+ * 3. Panel sends start request to management API
+ * 4. Orchestrator assigns work to clients
+ * 5. Panel polls for progress updates (5-second interval)
+ * 6. Completed runs show analysis button
+ *
+ * API ENDPOINTS USED
+ * ------------------
+ * - GET  /api/latency-tests/suites - List available test suites
+ * - GET  /api/latency-tests/runs - List test runs
+ * - GET  /api/latency-tests/clients - List connected clients
+ * - POST /api/latency-tests/runs - Start a new test run
+ * - DELETE /api/latency-tests/runs/:id - Cancel a running test
+ * - GET  /api/latency-tests/runs/:id/analysis - Get analysis report
+ * - GET  /api/latency-tests/runs/:id/export?format=csv - Export results
+ *
+ * STYLING
+ * -------
+ * Uses Tailwind CSS with the project's dark theme.
+ * Status colors follow project conventions:
+ * - Emerald: Success/connected
+ * - Blue: Running/active
+ * - Amber: Warning/cancelled
+ * - Red: Error/failed
+ * - Slate: Neutral/pending
+ *
+ * SEE ALSO
+ * --------
+ * - server/management/latency_harness_api.py: Backend API handlers
+ * - server/web/src/lib/latency-harness/types.ts: Type definitions
+ * - docs/LATENCY_TEST_HARNESS_GUIDE.md: Complete usage guide
+ */
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -21,7 +72,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-// Types matching the server models
+// ============================================================================
+// Type Definitions
+// ============================================================================
+// These types match the server API response models
+
+/** Test suite definition from the server */
 interface TestSuite {
   id: string;
   name: string;
@@ -31,6 +87,7 @@ interface TestSuite {
   networkProfiles: string[];
 }
 
+/** Test run status and progress */
 interface TestRun {
   id: string;
   suiteName: string;
@@ -46,6 +103,7 @@ interface TestRun {
   elapsedTimeSeconds: number;
 }
 
+/** Connected test client with capabilities */
 interface TestClient {
   clientId: string;
   clientType: string;
@@ -64,6 +122,7 @@ interface TestClient {
   };
 }
 
+/** Summary statistics from analysis report */
 interface AnalysisSummary {
   totalConfigurations: number;
   totalTests: number;
@@ -81,10 +140,21 @@ interface AnalysisSummary {
   testDurationMinutes: number;
 }
 
-// API Base URL - connect to management server
+// ============================================================================
+// API Configuration
+// ============================================================================
+
+/**
+ * Base URL for the management server API.
+ * Defaults to localhost:8766 for local development.
+ */
 const API_BASE = process.env.NEXT_PUBLIC_MANAGEMENT_API_URL || 'http://localhost:8766';
 
-// API functions
+// ============================================================================
+// API Functions
+// ============================================================================
+
+/** Fetch all available test suites */
 async function fetchSuites(): Promise<TestSuite[]> {
   const response = await fetch(`${API_BASE}/api/latency-tests/suites`);
   if (!response.ok) throw new Error('Failed to fetch suites');
@@ -92,6 +162,7 @@ async function fetchSuites(): Promise<TestSuite[]> {
   return data.suites;
 }
 
+/** Fetch recent test runs (default: last 20) */
 async function fetchRuns(limit = 20): Promise<TestRun[]> {
   const response = await fetch(`${API_BASE}/api/latency-tests/runs?limit=${limit}`);
   if (!response.ok) throw new Error('Failed to fetch runs');
@@ -99,6 +170,7 @@ async function fetchRuns(limit = 20): Promise<TestRun[]> {
   return data.runs;
 }
 
+/** Fetch all connected test clients */
 async function fetchClients(): Promise<TestClient[]> {
   const response = await fetch(`${API_BASE}/api/latency-tests/clients`);
   if (!response.ok) throw new Error('Failed to fetch clients');
@@ -106,6 +178,11 @@ async function fetchClients(): Promise<TestClient[]> {
   return data.clients;
 }
 
+/**
+ * Start a new test run.
+ * @param suiteId - ID of the test suite to run
+ * @param clientId - Optional specific client to target (any available if omitted)
+ */
 async function startTestRun(suiteId: string, clientId?: string): Promise<TestRun> {
   const response = await fetch(`${API_BASE}/api/latency-tests/runs`, {
     method: 'POST',
@@ -119,6 +196,7 @@ async function startTestRun(suiteId: string, clientId?: string): Promise<TestRun
   return response.json();
 }
 
+/** Cancel a running test */
 async function cancelTestRun(runId: string): Promise<void> {
   const response = await fetch(`${API_BASE}/api/latency-tests/runs/${runId}`, {
     method: 'DELETE',
@@ -126,13 +204,21 @@ async function cancelTestRun(runId: string): Promise<void> {
   if (!response.ok) throw new Error('Failed to cancel run');
 }
 
+/** Fetch analysis report for a completed run */
 async function fetchAnalysis(runId: string): Promise<{ summary: AnalysisSummary }> {
   const response = await fetch(`${API_BASE}/api/latency-tests/runs/${runId}/analysis`);
   if (!response.ok) throw new Error('Failed to fetch analysis');
   return response.json();
 }
 
-// Status badge component
+// ============================================================================
+// Helper Components
+// ============================================================================
+
+/**
+ * Status badge component with color-coded icons.
+ * Maps run status to appropriate colors and icons.
+ */
 function StatusBadge({ status }: { status: TestRun['status'] }) {
   const config = {
     pending: { color: 'bg-slate-500/20 text-slate-400', icon: Clock, label: 'Pending' },
@@ -163,26 +249,52 @@ function ClientTypeIcon({ type, className }: { type: string; className?: string 
   return <Icon className={className} />;
 }
 
-// Format duration
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Format duration in human-readable form.
+ * Shows seconds for <1min, minutes+seconds for <1hr, hours+minutes otherwise.
+ */
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
 }
 
-// Format timestamp
+/**
+ * Format ISO timestamp to local time (HH:MM).
+ */
 function formatTime(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Latency color
+/**
+ * Get color class for latency value based on target.
+ * Emerald: meets target, Amber: within 1.5x, Red: exceeds 1.5x.
+ */
 function getLatencyColor(ms: number, target = 500): string {
   if (ms <= target) return 'text-emerald-400';
   if (ms <= target * 1.5) return 'text-amber-400';
   return 'text-red-400';
 }
 
+// ============================================================================
+// Main Component
+// ============================================================================
+
+/**
+ * Latency Harness Dashboard Panel.
+ *
+ * Provides the complete UI for managing latency tests:
+ * - Header stats showing suite/run/client counts
+ * - Test suite selection and run initiation
+ * - Active run progress monitoring
+ * - Test history with analysis access
+ * - Connected client list with capabilities
+ */
 export function LatencyHarnessPanel() {
   const [suites, setSuites] = useState<TestSuite[]>([]);
   const [runs, setRuns] = useState<TestRun[]>([]);

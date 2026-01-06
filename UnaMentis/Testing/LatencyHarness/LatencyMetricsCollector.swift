@@ -1,7 +1,79 @@
 // UnaMentis - Latency Metrics Collector
-// High-precision metrics collection for latency tests
+// ======================================
 //
-// Part of the Audio Latency Test Harness
+// High-precision metrics collection for latency tests.
+// Part of the Audio Latency Test Harness.
+//
+// ARCHITECTURE OVERVIEW
+// ---------------------
+// This module provides nanosecond-precision timing using Mach absolute time,
+// which is the lowest-overhead timing mechanism available on Apple platforms.
+//
+// Key Components:
+// 1. LatencyMetricsCollector - Main actor for collecting test metrics
+// 2. TestPhaseTimer - Lightweight struct for timing individual phases
+//
+// TIMING PRECISION
+// ----------------
+// - Uses mach_absolute_time() for nanosecond precision
+// - Zero syscall overhead (reads CPU time counter directly)
+// - Conversion to milliseconds via mach_timebase_info
+//
+// OBSERVER EFFECT MITIGATION
+// --------------------------
+// This collector is designed to have MINIMAL impact on the operations being measured:
+// - All timing operations are local, in-memory, and non-blocking
+// - No network I/O during test execution
+// - Resource sampling runs on separate Task (100ms interval)
+// - Results are assembled only at finalization
+//
+// USAGE EXAMPLE
+// -------------
+// ```swift
+// let collector = LatencyMetricsCollector()
+//
+// // Start a test
+// await collector.startTest(
+//     configId: "config_123",
+//     scenarioName: "greeting",
+//     repetition: 1,
+//     sttConfig: sttConfig,
+//     llmConfig: llmConfig,
+//     ttsConfig: ttsConfig,
+//     audioConfig: audioConfig,
+//     networkProfile: .localhost
+// )
+//
+// // Record stage latencies as they occur
+// let llmStart = mach_absolute_time()
+// // ... LLM call ...
+// await collector.recordLLMTTFBFromStart(llmStart)
+//
+// // Finalize and get result
+// let result = await collector.finalizeTest()
+// print("E2E: \(result.e2eLatencyMs)ms")
+// ```
+//
+// METRICS COLLECTED
+// -----------------
+// | Metric           | Unit  | Description                              |
+// |------------------|-------|------------------------------------------|
+// | sttLatencyMs     | ms    | Speech-to-text recognition time          |
+// | llmTTFBMs        | ms    | LLM time to first token                  |
+// | llmCompletionMs  | ms    | LLM total completion time                |
+// | ttsTTFBMs        | ms    | TTS time to first audio byte             |
+// | ttsCompletionMs  | ms    | TTS total audio generation time          |
+// | e2eLatencyMs     | ms    | End-to-end latency                       |
+// | peakCPUPercent   | %     | Peak CPU usage during test               |
+// | peakMemoryMB     | MB    | Peak memory usage during test            |
+// | thermalState     | enum  | iOS thermal state (nominal/fair/serious) |
+//
+// SEE ALSO
+// --------
+// - LatencyTestCoordinator.swift: Coordinates test execution
+// - TestConfiguration.swift: Test configuration models
+// - TestResult.swift: Result data model
+// - docs/LATENCY_TEST_HARNESS_GUIDE.md: Complete usage guide
 
 import Foundation
 import Darwin

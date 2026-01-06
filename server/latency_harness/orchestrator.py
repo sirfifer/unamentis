@@ -1,7 +1,98 @@
 """
 UnaMentis Latency Test Harness - Test Orchestrator
+===================================================
 
-Coordinates test execution across iOS and web clients.
+This module is the central coordinator for the latency test harness. It manages:
+
+1. **Client Registration**: Track connected test clients (iOS/Web) and their capabilities
+2. **Test Suite Management**: Store and retrieve test suite definitions
+3. **Test Execution**: Schedule and run tests across available clients
+4. **Result Collection**: Gather results without blocking test execution (fire-and-forget)
+5. **Real-time Updates**: Broadcast progress via callbacks/WebSocket
+
+Architecture Overview
+--------------------
+```
+                    ┌─────────────────────────────┐
+                    │   LatencyTestOrchestrator   │
+                    │                             │
+                    │  ┌──────────────────────┐   │
+                    │  │ Test Suite Registry  │   │
+                    │  └──────────────────────┘   │
+                    │  ┌──────────────────────┐   │
+                    │  │ Client Manager       │   │
+                    │  └──────────────────────┘   │
+                    │  ┌──────────────────────┐   │
+                    │  │ Result Queue         │──────► Persistence Worker
+                    │  └──────────────────────┘   │    (async, batched)
+                    │  ┌──────────────────────┐   │
+                    │  │ Callbacks            │──────► WebSocket Broadcast
+                    │  └──────────────────────┘   │    (fire-and-forget)
+                    └─────────────┬───────────────┘
+                                  │
+              ┌───────────────────┼───────────────────┐
+              │                   │                   │
+              ▼                   ▼                   ▼
+      ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+      │ iOS Simulator │   │  iOS Device   │   │  Web Client   │
+      └───────────────┘   └───────────────┘   └───────────────┘
+```
+
+Critical Design Principle: Observer Effect Mitigation
+----------------------------------------------------
+All observation, logging, and persistence operations are designed to be
+**fire-and-forget** to avoid introducing latency into the measurements.
+
+- `_enqueue_result()` returns immediately (non-blocking)
+- `_persistence_worker()` batches and writes asynchronously
+- Callbacks use `asyncio.create_task()` for non-blocking broadcast
+- Status updates are coalesced (only latest persisted)
+
+Usage Example
+------------
+```python
+from latency_harness.orchestrator import LatencyTestOrchestrator
+from latency_harness.storage import create_latency_storage
+
+# Create orchestrator with storage backend
+storage = create_latency_storage(storage_type="file")
+await storage.initialize()
+
+orchestrator = LatencyTestOrchestrator(storage=storage)
+await orchestrator.start()
+
+# Register a test suite
+await orchestrator.register_suite(my_suite)
+
+# Register a client (typically done via WebSocket connection)
+await orchestrator.register_client(
+    client_id="ios_sim_1",
+    client_type=ClientType.IOS_SIMULATOR,
+    capabilities=capabilities,
+)
+
+# Start a test run
+run = await orchestrator.start_test_run(suite_id="quick_validation")
+print(f"Started run: {run.id}")
+
+# Results are collected automatically via callbacks
+orchestrator.on_result = lambda run_id, result: print(f"Result: {result.e2e_latency_ms}ms")
+
+# Shutdown
+await orchestrator.stop()
+```
+
+Key Classes
+----------
+- `LatencyTestOrchestrator`: Main coordinator class
+- `ConnectedClient`: Represents a connected test client with capabilities
+
+See Also
+--------
+- `models.py`: Data models for tests, results, configurations
+- `storage.py`: Persistence backends (file, PostgreSQL)
+- `analyzer.py`: Statistical analysis of results
+- `docs/LATENCY_TEST_HARNESS_GUIDE.md`: Complete usage guide
 """
 
 import asyncio

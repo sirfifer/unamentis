@@ -155,7 +155,10 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
               <p className="text-sm text-slate-400">Write diagram code and preview the result</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
+          >
             <X size={20} />
           </button>
         </div>
@@ -219,7 +222,11 @@ export const DiagramEditor: React.FC<DiagramEditorProps> = ({
                 disabled={validating}
                 className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-all flex items-center gap-2 disabled:opacity-50"
               >
-                {validating ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                {validating ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <CheckCircle size={16} />
+                )}
                 Validate
               </button>
               <button
@@ -289,7 +296,7 @@ interface FormulaEditorProps {
 const FORMULA_EXAMPLES = [
   { name: 'Quadratic Formula', latex: 'x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}' },
   { name: 'Pythagorean Theorem', latex: 'a^2 + b^2 = c^2' },
-  { name: 'Euler\'s Identity', latex: 'e^{i\\pi} + 1 = 0' },
+  { name: "Euler's Identity", latex: 'e^{i\\pi} + 1 = 0' },
   { name: 'Derivative', latex: '\\frac{d}{dx}f(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}' },
   { name: 'Integral', latex: '\\int_a^b f(x)\\,dx = F(b) - F(a)' },
   { name: 'Sum', latex: '\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}' },
@@ -372,7 +379,10 @@ export const FormulaEditor: React.FC<FormulaEditorProps> = ({
               <p className="text-sm text-slate-400">Write LaTeX and preview the rendered formula</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
+          >
             <X size={20} />
           </button>
         </div>
@@ -457,7 +467,11 @@ export const FormulaEditor: React.FC<FormulaEditorProps> = ({
               disabled={validating}
               className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              {validating ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+              {validating ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <CheckCircle size={16} />
+              )}
               Validate
             </button>
             <button
@@ -504,23 +518,22 @@ interface MapEditorProps {
     routes: MapRouteSpec[];
     regions: MapRegionSpec[];
   }>;
-  onSave: (spec: {
-    title: string;
-    center: { latitude: number; longitude: number };
-    zoom: number;
-    style: MapStyleOption;
-    markers: MapMarkerSpec[];
-    routes: MapRouteSpec[];
-    regions: MapRegionSpec[];
-  }, renderedData?: string) => void;
+  onSave: (
+    spec: {
+      title: string;
+      center: { latitude: number; longitude: number };
+      zoom: number;
+      style: MapStyleOption;
+      markers: MapMarkerSpec[];
+      routes: MapRouteSpec[];
+      regions: MapRegionSpec[];
+    },
+    renderedData?: string
+  ) => void;
   onClose: () => void;
 }
 
-export const MapEditor: React.FC<MapEditorProps> = ({
-  initialSpec,
-  onSave,
-  onClose,
-}) => {
+export const MapEditor: React.FC<MapEditorProps> = ({ initialSpec, onSave, onClose }) => {
   const [title, setTitle] = useState(initialSpec?.title || '');
   const [latitude, setLatitude] = useState(initialSpec?.center?.latitude?.toString() || '43.0');
   const [longitude, setLongitude] = useState(initialSpec?.center?.longitude?.toString() || '12.0');
@@ -530,7 +543,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [styles, setStyles] = useState<{ id: MapStyleOption; name: string; description: string }[]>([]);
+  const [styles, setStyles] = useState<{ id: MapStyleOption; name: string; description: string }[]>(
+    []
+  );
 
   // Load available styles
   useEffect(() => {
@@ -556,12 +571,12 @@ export const MapEditor: React.FC<MapEditorProps> = ({
     setMarkers(markers.filter((_, i) => i !== index));
   };
 
-  const handleMarkerChange = (index: number, field: keyof MapMarkerSpec, value: string | number) => {
-    setMarkers(
-      markers.map((m, i) =>
-        i === index ? { ...m, [field]: value } : m
-      )
-    );
+  const handleMarkerChange = (
+    index: number,
+    field: keyof MapMarkerSpec,
+    value: string | number
+  ) => {
+    setMarkers(markers.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
   };
 
   const handleRender = useCallback(async () => {
@@ -621,10 +636,15 @@ export const MapEditor: React.FC<MapEditorProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">Create Map</h2>
-              <p className="text-sm text-slate-400">Configure geographic content with markers and routes</p>
+              <p className="text-sm text-slate-400">
+                Configure geographic content with markers and routes
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white"
+          >
             <X size={20} />
           </button>
         </div>
@@ -668,7 +688,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-300 block mb-1">Zoom (1-18)</label>
+                  <label className="text-sm font-medium text-slate-300 block mb-1">
+                    Zoom (1-18)
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -719,7 +741,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({
                 </div>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {markers.length === 0 ? (
-                    <div className="text-xs text-slate-500 py-2">No markers yet. Click Add to create one.</div>
+                    <div className="text-xs text-slate-500 py-2">
+                      No markers yet. Click Add to create one.
+                    </div>
                   ) : (
                     markers.map((marker, i) => (
                       <div key={i} className="bg-slate-800 rounded-lg p-2 space-y-2">
@@ -744,7 +768,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({
                             type="number"
                             step="0.1"
                             value={marker.latitude}
-                            onChange={(e) => handleMarkerChange(i, 'latitude', parseFloat(e.target.value))}
+                            onChange={(e) =>
+                              handleMarkerChange(i, 'latitude', parseFloat(e.target.value))
+                            }
                             placeholder="Lat"
                             className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200"
                           />
@@ -752,7 +778,9 @@ export const MapEditor: React.FC<MapEditorProps> = ({
                             type="number"
                             step="0.1"
                             value={marker.longitude}
-                            onChange={(e) => handleMarkerChange(i, 'longitude', parseFloat(e.target.value))}
+                            onChange={(e) =>
+                              handleMarkerChange(i, 'longitude', parseFloat(e.target.value))
+                            }
                             placeholder="Lon"
                             className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200"
                           />

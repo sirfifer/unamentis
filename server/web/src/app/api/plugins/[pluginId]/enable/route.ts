@@ -30,9 +30,6 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error enabling plugin:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to enable plugin' },
-      { status: 503 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to enable plugin' }, { status: 503 });
   }
 }

@@ -27,12 +27,14 @@ Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 ### With Python Backend
 
 1. Start the Python backend:
+
 ```bash
 cd ../management
 python server.py
 ```
 
 2. Configure the frontend to use the backend:
+
 ```bash
 # .env.local
 BACKEND_URL=http://localhost:8766
@@ -41,17 +43,18 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:8766
 ```
 
 3. Start the frontend:
+
 ```bash
 npm run dev
 ```
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `BACKEND_URL` | Python backend URL (server-side) | Empty (mock) |
-| `NEXT_PUBLIC_USE_MOCK` | Force mock data mode | `true` |
-| `NEXT_PUBLIC_BACKEND_URL` | Backend URL (client-side) | Empty |
+| Variable                  | Description                      | Default      |
+| ------------------------- | -------------------------------- | ------------ |
+| `BACKEND_URL`             | Python backend URL (server-side) | Empty (mock) |
+| `NEXT_PUBLIC_USE_MOCK`    | Force mock data mode             | `true`       |
+| `NEXT_PUBLIC_BACKEND_URL` | Backend URL (client-side)        | Empty        |
 
 ## Architecture
 

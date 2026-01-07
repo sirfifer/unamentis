@@ -26,9 +26,9 @@ export async function GET() {
     models,
     total: models.length,
     by_type: {
-      llm: models.filter(m => m.type === 'llm').length,
-      stt: models.filter(m => m.type === 'stt').length,
-      tts: models.filter(m => m.type === 'tts').length,
+      llm: models.filter((m) => m.type === 'llm').length,
+      stt: models.filter((m) => m.type === 'stt').length,
+      tts: models.filter((m) => m.type === 'tts').length,
     },
   });
 }

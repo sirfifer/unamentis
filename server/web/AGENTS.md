@@ -9,6 +9,7 @@ Next.js/React web application providing a unified interface for system managemen
 The UnaMentis Server is the main web interface for managing UnaMentis deployments, from single home/school setups to large enterprise installations.
 
 ### System Management
+
 - System health monitoring (CPU, memory, thermal, battery)
 - Service status (Ollama, VibeVoice, Piper, etc.)
 - Power/idle management profiles
@@ -16,6 +17,7 @@ The UnaMentis Server is the main web interface for managing UnaMentis deployment
 - Client connection monitoring
 
 ### Content Management
+
 - Curriculum browsing and management
 - Curriculum Studio for viewing/editing UMCF content
 - Import source configuration and job monitoring

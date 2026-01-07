@@ -62,9 +62,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error starting import:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to start import' },
-      { status: 503 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to start import' }, { status: 503 });
   }
 }

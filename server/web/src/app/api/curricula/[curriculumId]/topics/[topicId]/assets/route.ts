@@ -25,10 +25,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return NextResponse.json(
-          { error: 'Topic not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Topic not found' }, { status: 404 });
       }
       throw new Error(`Backend returned ${response.status}`);
     }
@@ -37,10 +34,7 @@ export async function GET(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching assets:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch assets' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch assets' }, { status: 503 });
   }
 }
 
@@ -73,9 +67,6 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error uploading asset:', error);
-    return NextResponse.json(
-      { status: 'error', error: 'Failed to upload asset' },
-      { status: 503 }
-    );
+    return NextResponse.json({ status: 'error', error: 'Failed to upload asset' }, { status: 503 });
   }
 }

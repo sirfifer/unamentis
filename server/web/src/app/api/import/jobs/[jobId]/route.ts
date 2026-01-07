@@ -63,9 +63,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(data);
   } catch (error) {
     console.error(`Error cancelling job ${jobId}:`, error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to cancel job' },
-      { status: 503 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to cancel job' }, { status: 503 });
   }
 }

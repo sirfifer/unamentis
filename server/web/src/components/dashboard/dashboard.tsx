@@ -44,7 +44,16 @@ import { useState } from 'react';
 
 // Define valid values for URL state
 const SECTIONS = ['operations', 'content'] as const;
-const OPS_TABS = ['dashboard', 'health', 'metrics', 'logs', 'clients', 'servers', 'models', 'users'] as const;
+const OPS_TABS = [
+  'dashboard',
+  'health',
+  'metrics',
+  'logs',
+  'clients',
+  'servers',
+  'models',
+  'users',
+] as const;
 const CONTENT_TABS = ['curricula', 'sources', 'plugins', 'imports'] as const;
 const ALL_TABS = [...OPS_TABS, ...CONTENT_TABS] as const;
 
@@ -78,15 +87,18 @@ export function Dashboard() {
   }, []);
 
   // Handle section change and set appropriate default tab
-  const handleSectionChange = useCallback((section: SectionId) => {
-    setActiveSection(section);
-    // Set default tab for each section
-    if (section === 'operations') {
-      setActiveTab('dashboard');
-    } else {
-      setActiveTab('curricula');
-    }
-  }, [setActiveSection, setActiveTab]);
+  const handleSectionChange = useCallback(
+    (section: SectionId) => {
+      setActiveSection(section);
+      // Set default tab for each section
+      if (section === 'operations') {
+        setActiveTab('dashboard');
+      } else {
+        setActiveTab('curricula');
+      }
+    },
+    [setActiveSection, setActiveTab]
+  );
 
   return (
     <div className="h-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden">

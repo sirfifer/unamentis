@@ -33,7 +33,11 @@ export function ModelsPanel() {
 
   const typeStyles: Record<string, { icon: typeof Cpu; color: string; bgColor: string }> = {
     llm: { icon: Cpu, color: 'text-violet-400', bgColor: 'bg-violet-500/10 border-violet-500/30' },
-    stt: { icon: Mic, color: 'text-emerald-400', bgColor: 'bg-emerald-500/10 border-emerald-500/30' },
+    stt: {
+      icon: Mic,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-500/10 border-emerald-500/30',
+    },
     tts: { icon: Volume2, color: 'text-blue-400', bgColor: 'bg-blue-500/10 border-blue-500/30' },
   };
 
@@ -120,7 +124,9 @@ export function ModelsPanel() {
                     {model.quantization && (
                       <div className="flex justify-between">
                         <span className="text-slate-400">Quant</span>
-                        <span className="text-slate-200 font-mono text-xs">{model.quantization}</span>
+                        <span className="text-slate-200 font-mono text-xs">
+                          {model.quantization}
+                        </span>
                       </div>
                     )}
                   </div>

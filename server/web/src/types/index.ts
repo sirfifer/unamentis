@@ -348,10 +348,10 @@ export type VisualAssetType =
 
 /** How visual assets are displayed during playback */
 export type VisualDisplayMode =
-  | 'persistent'  // Stays on screen for entire segment range
-  | 'highlight'   // Appears prominently, then fades to thumbnail
-  | 'popup'       // Dismissible overlay
-  | 'inline';     // Embedded in transcript text flow
+  | 'persistent' // Stays on screen for entire segment range
+  | 'highlight' // Appears prominently, then fades to thumbnail
+  | 'popup' // Dismissible overlay
+  | 'inline'; // Embedded in transcript text flow
 
 /** Image dimensions */
 export interface Dimensions {
@@ -373,15 +373,15 @@ export interface VisualAsset {
   url?: string;
   localPath?: string;
   title?: string;
-  alt: string;  // Required for accessibility
+  alt: string; // Required for accessibility
   caption?: string;
   mimeType?: string;
   dimensions?: Dimensions;
   segmentTiming?: SegmentTiming;
-  latex?: string;  // For equation type
-  audioDescription?: string;  // Extended accessibility description
-  keywords?: string[];  // For reference assets (search matching)
-  description?: string;  // For reference assets
+  latex?: string; // For equation type
+  audioDescription?: string; // Extended accessibility description
+  keywords?: string[]; // For reference assets (search matching)
+  description?: string; // For reference assets
 }
 
 /** Media collection for a topic */
@@ -592,7 +592,7 @@ export interface GlossaryTerm {
 
 /** Full UMCF curriculum document */
 export interface UMCFDocument {
-  umcf: string;  // Version string
+  umcf: string; // Version string
   id: { catalog?: string; value: string };
   title: string;
   description?: string;
@@ -887,7 +887,14 @@ export interface ImportJobsResponse {
 export type DiagramFormat = 'mermaid' | 'graphviz' | 'plantuml' | 'd2' | 'svg-raw';
 
 /** Diagram render method used by server */
-export type DiagramRenderMethod = 'mermaid_cli' | 'graphviz' | 'plantuml' | 'd2' | 'passthrough' | 'placeholder' | 'failed';
+export type DiagramRenderMethod =
+  | 'mermaid_cli'
+  | 'graphviz'
+  | 'plantuml'
+  | 'd2'
+  | 'passthrough'
+  | 'placeholder'
+  | 'failed';
 
 /** Request to validate diagram syntax */
 export interface DiagramValidateRequest {
@@ -965,7 +972,13 @@ export interface FormulaRenderResponse {
 }
 
 /** Map style options */
-export type MapStyleOption = 'standard' | 'historical' | 'physical' | 'satellite' | 'minimal' | 'educational';
+export type MapStyleOption =
+  | 'standard'
+  | 'historical'
+  | 'physical'
+  | 'satellite'
+  | 'minimal'
+  | 'educational';
 
 /** Map render method used by server */
 export type MapRenderMethod = 'cartopy' | 'folium' | 'static_tiles' | 'placeholder' | 'failed';

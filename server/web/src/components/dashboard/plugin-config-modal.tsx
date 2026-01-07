@@ -79,7 +79,10 @@ async function getPluginConfig(pluginId: string): Promise<Record<string, unknown
   return data.plugin?.settings || {};
 }
 
-async function savePluginConfig(pluginId: string, settings: Record<string, unknown>): Promise<void> {
+async function savePluginConfig(
+  pluginId: string,
+  settings: Record<string, unknown>
+): Promise<void> {
   const response = await fetch(`/api/plugins/${pluginId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -90,7 +93,10 @@ async function savePluginConfig(pluginId: string, settings: Record<string, unkno
   }
 }
 
-async function testPluginConfig(pluginId: string, settings: Record<string, unknown>): Promise<{ success: boolean; message?: string }> {
+async function testPluginConfig(
+  pluginId: string,
+  settings: Record<string, unknown>
+): Promise<{ success: boolean; message?: string }> {
   const response = await fetch(`/api/plugins/${pluginId}/test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -102,7 +108,13 @@ async function testPluginConfig(pluginId: string, settings: Record<string, unkno
   return response.json();
 }
 
-export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSave }: PluginConfigModalProps) {
+export function PluginConfigModal({
+  pluginId,
+  pluginName,
+  isOpen,
+  onClose,
+  onSave,
+}: PluginConfigModalProps) {
   const [schema, setSchema] = useState<PluginSchema | null>(null);
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
@@ -128,7 +140,7 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
         // Initialize values with defaults and existing config
         const initialValues: Record<string, unknown> = {};
         if (schemaData?.fields) {
-          schemaData.fields.forEach(field => {
+          schemaData.fields.forEach((field) => {
             initialValues[field.name] = configData[field.name] ?? field.default ?? '';
           });
         }
@@ -164,14 +176,17 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
       const result = await testPluginConfig(pluginId, values);
       setTestResult(result);
     } catch (err) {
-      setTestResult({ success: false, message: err instanceof Error ? err.message : 'Test failed' });
+      setTestResult({
+        success: false,
+        message: err instanceof Error ? err.message : 'Test failed',
+      });
     } finally {
       setTesting(false);
     }
   };
 
   const updateValue = (name: string, value: unknown) => {
-    setValues(prev => ({ ...prev, [name]: value }));
+    setValues((prev) => ({ ...prev, [name]: value }));
     setTestResult(null);
   };
 
@@ -207,7 +222,7 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
             </div>
           ) : schema && schema.fields.length > 0 ? (
             <div className="space-y-4">
-              {schema.fields.map(field => (
+              {schema.fields.map((field) => (
                 <div key={field.name}>
                   <label className="block text-sm font-medium text-slate-300 mb-1">
                     {field.label}
@@ -235,8 +250,10 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
                     >
                       <option value="">Select...</option>
-                      {field.options.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      {field.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                   ) : field.type === 'number' ? (
@@ -293,16 +310,21 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
 
           {/* Test Result */}
           {testResult && (
-            <div className={`mt-4 p-4 rounded-md ${
-              testResult.success
-                ? 'bg-emerald-500/10 border border-emerald-500/30'
-                : 'bg-red-500/10 border border-red-500/30'
-            }`}>
+            <div
+              className={`mt-4 p-4 rounded-md ${
+                testResult.success
+                  ? 'bg-emerald-500/10 border border-emerald-500/30'
+                  : 'bg-red-500/10 border border-red-500/30'
+              }`}
+            >
               <div className="flex items-center gap-2">
-                <Badge className={testResult.success
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  : 'bg-red-500/20 text-red-400 border-red-500/30'
-                }>
+                <Badge
+                  className={
+                    testResult.success
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      : 'bg-red-500/20 text-red-400 border-red-500/30'
+                  }
+                >
                   {testResult.success ? 'Success' : 'Failed'}
                 </Badge>
                 {testResult.message && (
@@ -342,11 +364,7 @@ export function PluginConfigModal({ pluginId, pluginName, isOpen, onClose, onSav
               disabled={saving || loading}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-md transition-colors disabled:opacity-50"
             >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save
             </button>
           </div>

@@ -44,7 +44,7 @@ const THRESHOLD_PRESETS = {
   '1h': 3600,
   '2h': 7200,
   '4h': 14400,
-  'never': 9999999,
+  never: 9999999,
 };
 
 interface ThresholdEditorProps {
@@ -315,11 +315,7 @@ function ProfileEditor({ profile, isNew, onSave, onCancel }: ProfileEditorProps)
           disabled={saving}
           className="px-4 py-2 text-sm bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors flex items-center gap-2 disabled:opacity-50"
         >
-          {saving ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
+          {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {isNew ? 'Create Profile' : 'Save Changes'}
         </button>
       </div>
@@ -526,25 +522,33 @@ export function PowerSettingsPanel() {
                       <div className="p-2 bg-slate-700/30 rounded">
                         <p className="text-xs text-slate-400">Warm</p>
                         <p className="text-sm font-medium text-slate-200">
-                          {mode.thresholds.warm >= 9999999 ? 'Never' : formatDuration(mode.thresholds.warm)}
+                          {mode.thresholds.warm >= 9999999
+                            ? 'Never'
+                            : formatDuration(mode.thresholds.warm)}
                         </p>
                       </div>
                       <div className="p-2 bg-slate-700/30 rounded">
                         <p className="text-xs text-slate-400">Cool</p>
                         <p className="text-sm font-medium text-slate-200">
-                          {mode.thresholds.cool >= 9999999 ? 'Never' : formatDuration(mode.thresholds.cool)}
+                          {mode.thresholds.cool >= 9999999
+                            ? 'Never'
+                            : formatDuration(mode.thresholds.cool)}
                         </p>
                       </div>
                       <div className="p-2 bg-slate-700/30 rounded">
                         <p className="text-xs text-slate-400">Cold</p>
                         <p className="text-sm font-medium text-slate-200">
-                          {mode.thresholds.cold >= 9999999 ? 'Never' : formatDuration(mode.thresholds.cold)}
+                          {mode.thresholds.cold >= 9999999
+                            ? 'Never'
+                            : formatDuration(mode.thresholds.cold)}
                         </p>
                       </div>
                       <div className="p-2 bg-slate-700/30 rounded">
                         <p className="text-xs text-slate-400">Dormant</p>
                         <p className="text-sm font-medium text-slate-200">
-                          {mode.thresholds.dormant >= 9999999 ? 'Never' : formatDuration(mode.thresholds.dormant)}
+                          {mode.thresholds.dormant >= 9999999
+                            ? 'Never'
+                            : formatDuration(mode.thresholds.dormant)}
                         </p>
                       </div>
                     </div>
@@ -615,7 +619,9 @@ export function PowerSettingsPanel() {
             <div className="text-xs text-slate-400">
               <p className="font-medium text-slate-300 mb-1">Power Profile Tips</p>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Create custom profiles for different work scenarios (coding, demos, background)</li>
+                <li>
+                  Create custom profiles for different work scenarios (coding, demos, background)
+                </li>
                 <li>Shorter thresholds save more power but increase wake-up latency</li>
                 <li>Use &quot;Keep Awake&quot; in the Health panel for temporary override</li>
                 <li>Duplicate a built-in profile to customize it</li>

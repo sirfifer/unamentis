@@ -15,7 +15,12 @@ interface MetricCardProps {
   badgeColor?: string;
 }
 
-function MetricCard({ label, value, badge, badgeColor = 'bg-indigo-500/20 text-indigo-400' }: MetricCardProps) {
+function MetricCard({
+  label,
+  value,
+  badge,
+  badgeColor = 'bg-indigo-500/20 text-indigo-400',
+}: MetricCardProps) {
   return (
     <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
       <div className="flex items-center justify-between mb-2">
@@ -108,44 +113,74 @@ export function MetricsPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-700/50">
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Time</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Client</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Duration</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Turns</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">E2E</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">LLM</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Cost</th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Time
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Client
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Duration
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Turns
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  E2E
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  LLM
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Cost
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-slate-500 py-8">Loading metrics...</td>
+                  <td colSpan={7} className="text-center text-slate-500 py-8">
+                    Loading metrics...
+                  </td>
                 </tr>
               ) : metrics.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-slate-500 py-8">No session data yet</td>
+                  <td colSpan={7} className="text-center text-slate-500 py-8">
+                    No session data yet
+                  </td>
                 </tr>
               ) : (
                 metrics.map((m) => (
                   <tr key={m.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
                     <td className="px-4 py-3 text-sm text-slate-300">{formatTime(m.timestamp)}</td>
                     <td className="px-4 py-3 text-sm text-slate-300">{m.client_name}</td>
-                    <td className="px-4 py-3 text-sm text-slate-300">{formatDuration(m.session_duration)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-300">
+                      {formatDuration(m.session_duration)}
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-300">{m.turns_total}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={cn(
-                        m.e2e_latency_median < 500 ? 'text-emerald-400' :
-                        m.e2e_latency_median < 800 ? 'text-amber-400' : 'text-red-400'
-                      )}>
+                      <span
+                        className={cn(
+                          m.e2e_latency_median < 500
+                            ? 'text-emerald-400'
+                            : m.e2e_latency_median < 800
+                              ? 'text-amber-400'
+                              : 'text-red-400'
+                        )}
+                      >
                         {m.e2e_latency_median}ms
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={cn(
-                        m.llm_ttft_median < 400 ? 'text-emerald-400' :
-                        m.llm_ttft_median < 600 ? 'text-amber-400' : 'text-red-400'
-                      )}>
+                      <span
+                        className={cn(
+                          m.llm_ttft_median < 400
+                            ? 'text-emerald-400'
+                            : m.llm_ttft_median < 600
+                              ? 'text-amber-400'
+                              : 'text-red-400'
+                        )}
+                      >
                         {m.llm_ttft_median}ms
                       </span>
                     </td>

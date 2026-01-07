@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'server/web-client/**'
+      - 'server/web/**'
       - '.github/workflows/web-client.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'server/web-client/**'
+      - 'server/web/**'
       - '.github/workflows/web-client.yml'
   workflow_dispatch:
 
@@ -20,7 +20,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: server/web-client
+    working-directory: server/web
 
 jobs:
   lint:
@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: server/web-client/pnpm-lock.yaml
+          cache-dependency-path: server/web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install
@@ -78,7 +78,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: server/web-client/pnpm-lock.yaml
+          cache-dependency-path: server/web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install
@@ -112,7 +112,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: server/web-client/pnpm-lock.yaml
+          cache-dependency-path: server/web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install
@@ -124,7 +124,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          directory: server/web-client/coverage
+          directory: server/web/coverage
           flags: web-client
           fail_ci_if_error: false
         continue-on-error: true
@@ -160,7 +160,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: server/web-client/pnpm-lock.yaml
+          cache-dependency-path: server/web/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile || pnpm install
@@ -174,7 +174,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-client-build
-          path: server/web-client/.next
+          path: server/web/.next
           retention-days: 7
 
       - name: Summary

@@ -22,10 +22,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return NextResponse.json(
-          { error: 'Curriculum not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Curriculum not found' }, { status: 404 });
       }
       throw new Error(`Backend returned ${response.status}`);
     }
@@ -34,10 +31,7 @@ export async function GET(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching curriculum:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch curriculum' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 503 });
   }
 }
 

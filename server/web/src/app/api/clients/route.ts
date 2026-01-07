@@ -25,8 +25,8 @@ export async function GET() {
   return NextResponse.json({
     clients,
     total: clients.length,
-    online: clients.filter(c => c.status === 'online').length,
-    idle: clients.filter(c => c.status === 'idle').length,
-    offline: clients.filter(c => c.status === 'offline').length,
+    online: clients.filter((c) => c.status === 'online').length,
+    idle: clients.filter((c) => c.status === 'idle').length,
+    offline: clients.filter((c) => c.status === 'offline').length,
   });
 }

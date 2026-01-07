@@ -39,18 +39,19 @@ export async function GET(request: NextRequest) {
 
   if (level) {
     const levels = level.split(',');
-    filtered = filtered.filter(l => levels.includes(l.level));
+    filtered = filtered.filter((l) => levels.includes(l.level));
   }
 
   if (search) {
     const searchLower = search.toLowerCase();
     filtered = filtered.filter(
-      l => l.message.toLowerCase().includes(searchLower) || l.label.toLowerCase().includes(searchLower)
+      (l) =>
+        l.message.toLowerCase().includes(searchLower) || l.label.toLowerCase().includes(searchLower)
     );
   }
 
   if (clientId) {
-    filtered = filtered.filter(l => l.client_id === clientId);
+    filtered = filtered.filter((l) => l.client_id === clientId);
   }
 
   // Sort by received_at descending

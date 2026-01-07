@@ -5,9 +5,11 @@ import PackageDescription
 
 let package = Package(
     name: "UnaMentis",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v18),
-        .macOS(.v14)
+        // macOS support disabled - this is an iOS-only app
+        // .macOS(.v14)
     ],
     products: [
         .library(
@@ -26,8 +28,9 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.0"),
 
         // llama.cpp for on-device LLM inference (GLM-ASR decoder)
-        // NOTE: Requires Swift/C++ interop enabled in build settings
-        .package(url: "https://github.com/StanfordBDHG/llama.cpp.git", from: "0.3.3"),
+        // NOTE: Disabled for SPM builds due to API compatibility issues
+        // NOTE: Re-enabled in Xcode project via XCFramework
+        // .package(url: "https://github.com/StanfordBDHG/llama.cpp.git", from: "0.3.3"),
     ],
     targets: [
         // Main library target
@@ -37,7 +40,7 @@ let package = Package(
                 .product(name: "LiveKit", package: "client-sdk-swift"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Collections", package: "swift-collections"),
-                .product(name: "llama", package: "llama.cpp"),
+                // .product(name: "llama", package: "llama.cpp"),  // Disabled for SPM builds
             ],
             path: "UnaMentis",
             resources: [
@@ -45,10 +48,10 @@ let package = Package(
                 .copy("UnaMentis.xcdatamodeld")
             ],
             swiftSettings: [
-                // Enable C++ interop for llama.cpp
+                // Enable C++ interop for llama.cpp (disabled in SPM builds)
                 .interoperabilityMode(.Cxx),
-                // Define LLAMA_AVAILABLE flag for conditional compilation
-                .define("LLAMA_AVAILABLE"),
+                // Define LLAMA_AVAILABLE flag for conditional compilation (disabled in SPM builds)
+                // .define("LLAMA_AVAILABLE"),
             ]
         ),
 

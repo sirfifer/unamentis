@@ -10,6 +10,8 @@
 
 import Foundation
 import Logging
+
+#if LLAMA_AVAILABLE
 import llama
 
 // MARK: - Batch Helpers
@@ -198,8 +200,8 @@ public actor OnDeviceLLMService: LLMService {
         let nThreads = max(1, min(8, ProcessInfo.processInfo.processorCount - 2))
         var ctxParams = llama_context_default_params()
         ctxParams.n_ctx = configuration.contextSize
-        ctxParams.n_threads = Int32(nThreads)
-        ctxParams.n_threads_batch = Int32(nThreads)
+        ctxParams.n_threads = UInt32(nThreads)
+        ctxParams.n_threads_batch = UInt32(nThreads)
 
         logger.debug("Creating context with \(nThreads) threads, context size: \(configuration.contextSize)")
         context = llama_new_context_with_model(model, ctxParams)
@@ -548,3 +550,5 @@ extension OnDeviceLLMService {
         return false
     }
 }
+
+#endif // LLAMA_AVAILABLE

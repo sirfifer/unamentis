@@ -5,7 +5,9 @@
 
 import Foundation
 import Logging
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// Service for uploading metrics to the management server
 public actor MetricsUploadService {
@@ -46,8 +48,13 @@ public actor MetricsUploadService {
     /// Configure device identification from MainActor context
     @MainActor
     public func configureDeviceInfo() async {
+        #if canImport(UIKit)
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         let deviceName = UIDevice.current.name
+        #else
+        let deviceId = UUID().uuidString
+        let deviceName = "UnaMentis Client"
+        #endif
 
         // Store for persistence
         UserDefaults.standard.set(deviceId, forKey: "MetricsClientId")

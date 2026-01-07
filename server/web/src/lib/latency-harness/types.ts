@@ -138,14 +138,14 @@ export interface ClientStatus {
  * - web-speech: ~100ms (browser API, quality varies)
  */
 export type STTProvider =
-  | 'deepgram'       // Cloud streaming STT, excellent quality
-  | 'assemblyai'     // Cloud batch STT
-  | 'whisper'        // OpenAI Whisper API
-  | 'groq'           // Groq Whisper-3 turbo
-  | 'apple'          // iOS on-device Speech framework
-  | 'glm-asr'        // GLM ASR cloud
+  | 'deepgram' // Cloud streaming STT, excellent quality
+  | 'assemblyai' // Cloud batch STT
+  | 'whisper' // OpenAI Whisper API
+  | 'groq' // Groq Whisper-3 turbo
+  | 'apple' // iOS on-device Speech framework
+  | 'glm-asr' // GLM ASR cloud
   | 'glm-asr-ondevice' // GLM ASR on-device (iOS)
-  | 'web-speech';    // Browser Web Speech API
+  | 'web-speech'; // Browser Web Speech API
 
 /**
  * Large Language Model (LLM) provider identifiers.
@@ -159,10 +159,10 @@ export type STTProvider =
  * For sub-500ms E2E, prioritize selfhosted or anthropic with haiku.
  */
 export type LLMProvider =
-  | 'anthropic'      // Claude models (recommended)
-  | 'openai'         // GPT models
-  | 'selfhosted'     // vLLM, llama.cpp, etc.
-  | 'mlx';           // Apple MLX on-device
+  | 'anthropic' // Claude models (recommended)
+  | 'openai' // GPT models
+  | 'selfhosted' // vLLM, llama.cpp, etc.
+  | 'mlx'; // Apple MLX on-device
 
 /**
  * Text-to-Speech (TTS) provider identifiers.
@@ -178,15 +178,15 @@ export type LLMProvider =
  * - web-speech: ~50ms (browser API, robotic quality)
  */
 export type TTSProvider =
-  | 'deepgram'         // Cloud streaming TTS
+  | 'deepgram' // Cloud streaming TTS
   | 'elevenlabs-flash' // ElevenLabs Flash (faster)
   | 'elevenlabs-turbo' // ElevenLabs Turbo (better quality)
-  | 'playht'           // PlayHT cloud
-  | 'apple'            // iOS AVSpeechSynthesizer
-  | 'piper'            // Local Piper TTS (very fast)
-  | 'vibevoice'        // Local VibeVoice
-  | 'chatterbox'       // Local Chatterbox (recommended)
-  | 'web-speech';      // Browser speechSynthesis API
+  | 'playht' // PlayHT cloud
+  | 'apple' // iOS AVSpeechSynthesizer
+  | 'piper' // Local Piper TTS (very fast)
+  | 'vibevoice' // Local VibeVoice
+  | 'chatterbox' // Local Chatterbox (recommended)
+  | 'web-speech'; // Browser speechSynthesis API
 
 // ============================================================================
 // Test Configuration
@@ -326,10 +326,10 @@ export interface AudioEngineTestConfig {
  * network conditions by adding estimated round-trip latency.
  */
 export type NetworkProfile =
-  | 'localhost'        // Local development (0ms added)
-  | 'wifi'             // Home/office WiFi (10ms added)
-  | 'cellular_us'      // US cellular (50ms added)
-  | 'cellular_eu'      // EU cellular (70ms added)
+  | 'localhost' // Local development (0ms added)
+  | 'wifi' // Home/office WiFi (10ms added)
+  | 'cellular_us' // US cellular (50ms added)
+  | 'cellular_eu' // EU cellular (70ms added)
   | 'intercontinental'; // Cross-continent (120ms added)
 
 /**
@@ -341,11 +341,11 @@ export type NetworkProfile =
  * Used to project localhost measurements to production scenarios.
  */
 export const NETWORK_LATENCY_MS: Record<NetworkProfile, number> = {
-  localhost: 0,           // No network overhead
-  wifi: 10,               // ~10ms WiFi RTT
-  cellular_us: 50,        // ~50ms US cellular RTT
-  cellular_eu: 70,        // ~70ms EU cellular RTT
-  intercontinental: 120,  // ~120ms cross-continent RTT
+  localhost: 0, // No network overhead
+  wifi: 10, // ~10ms WiFi RTT
+  cellular_us: 50, // ~50ms US cellular RTT
+  cellular_eu: 70, // ~70ms EU cellular RTT
+  intercontinental: 120, // ~120ms cross-continent RTT
 };
 
 // ============================================================================

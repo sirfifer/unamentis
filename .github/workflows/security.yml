@@ -1,5 +1,8 @@
 name: Security Scanning
 
+# NOTE: CodeQL analysis is handled by GitHub's default setup (see repository settings)
+# This workflow handles additional security scans: secrets detection and dependency auditing
+
 on:
   push:
     branches: [ main ]
@@ -20,91 +23,6 @@ permissions:
   security-events: write
 
 jobs:
-  codeql-swift:
-    name: CodeQL Analysis (Swift)
-    runs-on: macos-14
-    timeout-minutes: 30
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: swift
-        queries: security-and-quality
-
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode_16.2.app
-
-    - name: Create placeholder model files
-      run: |
-        mkdir -p models
-        touch models/llama-3.2-3b-instruct-q4_k_m.gguf
-        touch models/ministral-3b-instruct-q4_k_m.gguf
-        touch models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
-
-    - name: Build for CodeQL
-      run: |
-        xcodebuild build \
-          -scheme UnaMentis \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-          -skipPackagePluginValidation \
-          CODE_SIGNING_ALLOWED=NO \
-          COMPILER_INDEX_STORE_ENABLE=NO
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:swift"
-
-  codeql-python:
-    name: CodeQL Analysis (Python)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: python
-        queries: security-and-quality
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:python"
-
-  codeql-javascript:
-    name: CodeQL Analysis (JavaScript)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: javascript-typescript
-        queries: security-and-quality
-
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:javascript-typescript"
-
   secrets-scan:
     name: Secrets Detection
     runs-on: ubuntu-latest
@@ -221,7 +139,7 @@ jobs:
   summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [codeql-swift, codeql-python, codeql-javascript, secrets-scan, dependency-audit]
+    needs: [secrets-scan, dependency-audit]
     if: always()
 
     steps:
@@ -233,18 +151,14 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-        echo "| CodeQL (Swift) | ${{ needs.codeql-swift.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| CodeQL (Python) | ${{ needs.codeql-python.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| CodeQL (JavaScript) | ${{ needs.codeql-javascript.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Secrets Detection | ${{ needs.secrets-scan.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Dependency Audit | ${{ needs.dependency-audit.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "*Note: CodeQL analysis is handled by GitHub's default setup*" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
 
         # Check for any failures
-        if [ "${{ needs.codeql-swift.result }}" = "failure" ] || \
-           [ "${{ needs.codeql-python.result }}" = "failure" ] || \
-           [ "${{ needs.codeql-javascript.result }}" = "failure" ] || \
-           [ "${{ needs.secrets-scan.result }}" = "failure" ]; then
+        if [ "${{ needs.secrets-scan.result }}" = "failure" ]; then
           echo "### Action Required" >> $GITHUB_STEP_SUMMARY
           echo "Security issues detected. Please review the findings above." >> $GITHUB_STEP_SUMMARY
         else

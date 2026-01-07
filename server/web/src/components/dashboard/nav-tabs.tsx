@@ -55,17 +55,18 @@ const sections: { id: SectionId; label: string; icon: typeof MonitorCog }[] = [
   { id: 'content', label: 'Content', icon: Library },
 ];
 
-const opsTabs: { id: OpsTabId; label: string; shortLabel: string; icon: typeof LayoutDashboard }[] = [
-  { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: LayoutDashboard },
-  { id: 'health', label: 'System Health', shortLabel: 'Health', icon: Activity },
-  { id: 'latency', label: 'Latency Tests', shortLabel: 'Latency', icon: Timer },
-  { id: 'metrics', label: 'Metrics', shortLabel: 'Metrics', icon: BarChart3 },
-  { id: 'logs', label: 'Logs', shortLabel: 'Logs', icon: FileText },
-  { id: 'clients', label: 'Clients', shortLabel: 'Clients', icon: Smartphone },
-  { id: 'servers', label: 'Servers', shortLabel: 'Servers', icon: Server },
-  { id: 'models', label: 'Models', shortLabel: 'Models', icon: FlaskConical },
-  { id: 'users', label: 'Users', shortLabel: 'Users', icon: Users },
-];
+const opsTabs: { id: OpsTabId; label: string; shortLabel: string; icon: typeof LayoutDashboard }[] =
+  [
+    { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: LayoutDashboard },
+    { id: 'health', label: 'System Health', shortLabel: 'Health', icon: Activity },
+    { id: 'latency', label: 'Latency Tests', shortLabel: 'Latency', icon: Timer },
+    { id: 'metrics', label: 'Metrics', shortLabel: 'Metrics', icon: BarChart3 },
+    { id: 'logs', label: 'Logs', shortLabel: 'Logs', icon: FileText },
+    { id: 'clients', label: 'Clients', shortLabel: 'Clients', icon: Smartphone },
+    { id: 'servers', label: 'Servers', shortLabel: 'Servers', icon: Server },
+    { id: 'models', label: 'Models', shortLabel: 'Models', icon: FlaskConical },
+    { id: 'users', label: 'Users', shortLabel: 'Users', icon: Users },
+  ];
 
 const contentTabs: {
   id: ContentTabId;

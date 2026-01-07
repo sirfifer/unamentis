@@ -11,11 +11,7 @@ export type {
 } from './types';
 
 // Client
-export {
-  FeatureFlagClient,
-  getFeatureFlagClient,
-  devConfig,
-} from './client';
+export { FeatureFlagClient, getFeatureFlagClient, devConfig } from './client';
 
 // React integration
 export {

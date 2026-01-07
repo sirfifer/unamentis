@@ -223,7 +223,11 @@ function StatusBadge({ status }: { status: TestRun['status'] }) {
   const config = {
     pending: { color: 'bg-slate-500/20 text-slate-400', icon: Clock, label: 'Pending' },
     running: { color: 'bg-blue-500/20 text-blue-400', icon: Play, label: 'Running' },
-    completed: { color: 'bg-emerald-500/20 text-emerald-400', icon: CheckCircle, label: 'Completed' },
+    completed: {
+      color: 'bg-emerald-500/20 text-emerald-400',
+      icon: CheckCircle,
+      label: 'Completed',
+    },
     failed: { color: 'bg-red-500/20 text-red-400', icon: XCircle, label: 'Failed' },
     cancelled: { color: 'bg-amber-500/20 text-amber-400', icon: Square, label: 'Cancelled' },
   }[status];
@@ -231,7 +235,12 @@ function StatusBadge({ status }: { status: TestRun['status'] }) {
   const Icon = config.icon;
 
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium', config.color)}>
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
+        config.color
+      )}
+    >
       <Icon className="w-3 h-3" />
       {config.label}
     </span>
@@ -240,11 +249,12 @@ function StatusBadge({ status }: { status: TestRun['status'] }) {
 
 // Client type icon
 function ClientTypeIcon({ type, className }: { type: string; className?: string }) {
-  const Icon = {
-    ios_simulator: Smartphone,
-    ios_device: Smartphone,
-    web: Globe,
-  }[type] || Monitor;
+  const Icon =
+    {
+      ios_simulator: Smartphone,
+      ios_device: Smartphone,
+      web: Globe,
+    }[type] || Monitor;
 
   return <Icon className={className} />;
 }
@@ -382,8 +392,8 @@ export function LatencyHarnessPanel() {
     );
   }
 
-  const activeRuns = runs.filter(r => r.status === 'running');
-  const connectedClients = clients.filter(c => c.isConnected);
+  const activeRuns = runs.filter((r) => r.status === 'running');
+  const connectedClients = clients.filter((c) => c.isConnected);
 
   return (
     <div className="space-y-6">
@@ -392,7 +402,10 @@ export function LatencyHarnessPanel() {
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 flex-shrink-0" />
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-red-300 hover:text-red-200">
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-red-300 hover:text-red-200"
+          >
             <XCircle className="w-4 h-4" />
           </button>
         </div>
@@ -427,7 +440,7 @@ export function LatencyHarnessPanel() {
             <span className="text-sm text-slate-400">Completed Runs</span>
           </div>
           <div className="text-2xl font-bold text-slate-100">
-            {runs.filter(r => r.status === 'completed').length}
+            {runs.filter((r) => r.status === 'completed').length}
           </div>
         </div>
       </div>
@@ -450,7 +463,7 @@ export function LatencyHarnessPanel() {
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
               >
                 <option value="">Select a test suite...</option>
-                {suites.map(suite => (
+                {suites.map((suite) => (
                   <option key={suite.id} value={suite.id}>
                     {suite.name} ({suite.totalTestCount} tests)
                   </option>
@@ -458,14 +471,16 @@ export function LatencyHarnessPanel() {
               </select>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-slate-400 mb-2">Target Client (optional)</label>
+              <label className="block text-sm font-medium text-slate-400 mb-2">
+                Target Client (optional)
+              </label>
               <select
                 value={selectedClient}
                 onChange={(e) => setSelectedClient(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
               >
                 <option value="">Any available client</option>
-                {connectedClients.map(client => (
+                {connectedClients.map((client) => (
                   <option key={client.clientId} value={client.clientId}>
                     {client.clientId} ({client.clientType})
                   </option>
@@ -503,7 +518,7 @@ export function LatencyHarnessPanel() {
             </CardTitle>
           </CardHeader>
           <div className="divide-y divide-slate-700/50">
-            {activeRuns.map(run => (
+            {activeRuns.map((run) => (
               <div key={run.id} className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -523,7 +538,8 @@ export function LatencyHarnessPanel() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Progress</span>
                     <span className="text-slate-300">
-                      {run.completedConfigurations} / {run.totalConfigurations} ({Math.round(run.progressPercent)}%)
+                      {run.completedConfigurations} / {run.totalConfigurations} (
+                      {Math.round(run.progressPercent)}%)
                     </span>
                   </div>
                   <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -562,22 +578,38 @@ export function LatencyHarnessPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-700/50">
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Suite</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Client</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Progress</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Started</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Duration</th>
-                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">Actions</th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Status
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Suite
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Client
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Progress
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Started
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Duration
+                </th>
+                <th className="text-left text-xs font-medium text-slate-400 uppercase tracking-wider px-4 py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {runs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-slate-500 py-8">No test runs yet</td>
+                  <td colSpan={7} className="text-center text-slate-500 py-8">
+                    No test runs yet
+                  </td>
                 </tr>
               ) : (
-                runs.map(run => (
+                runs.map((run) => (
                   <tr key={run.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
                     <td className="px-4 py-3">
                       <StatusBadge status={run.status} />
@@ -592,8 +624,12 @@ export function LatencyHarnessPanel() {
                     <td className="px-4 py-3 text-sm text-slate-300">
                       {run.completedConfigurations}/{run.totalConfigurations}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-400">{formatTime(run.startedAt)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-400">{formatDuration(run.elapsedTimeSeconds)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-400">
+                      {formatTime(run.startedAt)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-400">
+                      {formatDuration(run.elapsedTimeSeconds)}
+                    </td>
                     <td className="px-4 py-3">
                       {run.status === 'completed' && (
                         <button
@@ -632,31 +668,56 @@ export function LatencyHarnessPanel() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-slate-800/50 rounded-xl">
                   <div className="text-sm text-slate-400 mb-1">Median E2E</div>
-                  <div className={cn('text-2xl font-bold', getLatencyColor(selectedRunAnalysis.summary.overallMedianE2EMs))}>
+                  <div
+                    className={cn(
+                      'text-2xl font-bold',
+                      getLatencyColor(selectedRunAnalysis.summary.overallMedianE2EMs)
+                    )}
+                  >
                     {Math.round(selectedRunAnalysis.summary.overallMedianE2EMs)}ms
                   </div>
                 </div>
                 <div className="p-4 bg-slate-800/50 rounded-xl">
                   <div className="text-sm text-slate-400 mb-1">P99 E2E</div>
-                  <div className={cn('text-2xl font-bold', getLatencyColor(selectedRunAnalysis.summary.overallP99E2EMs, 1000))}>
+                  <div
+                    className={cn(
+                      'text-2xl font-bold',
+                      getLatencyColor(selectedRunAnalysis.summary.overallP99E2EMs, 1000)
+                    )}
+                  >
                     {Math.round(selectedRunAnalysis.summary.overallP99E2EMs)}ms
                   </div>
                 </div>
                 <div className="p-4 bg-slate-800/50 rounded-xl">
                   <div className="text-sm text-slate-400 mb-1">Success Rate</div>
                   <div className="text-2xl font-bold text-emerald-400">
-                    {Math.round((selectedRunAnalysis.summary.successfulTests / selectedRunAnalysis.summary.totalTests) * 100)}%
+                    {Math.round(
+                      (selectedRunAnalysis.summary.successfulTests /
+                        selectedRunAnalysis.summary.totalTests) *
+                        100
+                    )}
+                    %
                   </div>
                 </div>
                 <div className="p-4 bg-slate-800/50 rounded-xl">
                   <div className="text-sm text-slate-400 mb-1">LLM TTFB</div>
-                  <div className={cn('text-2xl font-bold', getLatencyColor(selectedRunAnalysis.summary.medianLLMTTFBMs, 300))}>
+                  <div
+                    className={cn(
+                      'text-2xl font-bold',
+                      getLatencyColor(selectedRunAnalysis.summary.medianLLMTTFBMs, 300)
+                    )}
+                  >
                     {Math.round(selectedRunAnalysis.summary.medianLLMTTFBMs)}ms
                   </div>
                 </div>
                 <div className="p-4 bg-slate-800/50 rounded-xl">
                   <div className="text-sm text-slate-400 mb-1">TTS TTFB</div>
-                  <div className={cn('text-2xl font-bold', getLatencyColor(selectedRunAnalysis.summary.medianTTSTTFBMs, 200))}>
+                  <div
+                    className={cn(
+                      'text-2xl font-bold',
+                      getLatencyColor(selectedRunAnalysis.summary.medianTTSTTFBMs, 200)
+                    )}
+                  >
                     {Math.round(selectedRunAnalysis.summary.medianTTSTTFBMs)}ms
                   </div>
                 </div>
@@ -675,7 +736,12 @@ export function LatencyHarnessPanel() {
                   Close
                 </button>
                 <button
-                  onClick={() => window.open(`${API_BASE}/api/latency-tests/runs/${selectedRunAnalysis.runId}/export?format=csv`, '_blank')}
+                  onClick={() =>
+                    window.open(
+                      `${API_BASE}/api/latency-tests/runs/${selectedRunAnalysis.runId}/export?format=csv`,
+                      '_blank'
+                    )
+                  }
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all"
                 >
                   <Download className="w-4 h-4" />
@@ -704,7 +770,7 @@ export function LatencyHarnessPanel() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {clients.map(client => (
+              {clients.map((client) => (
                 <div
                   key={client.clientId}
                   className={cn(
@@ -717,11 +783,16 @@ export function LatencyHarnessPanel() {
                   <div className="flex items-center gap-3 mb-3">
                     <ClientTypeIcon
                       type={client.clientType}
-                      className={cn('w-8 h-8', client.isConnected ? 'text-emerald-400' : 'text-slate-500')}
+                      className={cn(
+                        'w-8 h-8',
+                        client.isConnected ? 'text-emerald-400' : 'text-slate-500'
+                      )}
                     />
                     <div>
                       <div className="font-medium text-slate-100">{client.clientId}</div>
-                      <div className="text-xs text-slate-400">{client.clientType.replace('_', ' ')}</div>
+                      <div className="text-xs text-slate-400">
+                        {client.clientType.replace('_', ' ')}
+                      </div>
                     </div>
                     {client.isConnected ? (
                       <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-full">

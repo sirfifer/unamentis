@@ -25,6 +25,9 @@ concurrency:
   group: performance-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   latency-check:
     name: Latency Regression Check

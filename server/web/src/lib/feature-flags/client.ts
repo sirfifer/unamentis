@@ -9,12 +9,7 @@ import type {
   UnleashProxyResponse,
   CacheEntry,
 } from './types';
-import {
-  DEFAULT_CONFIG,
-  CACHE_KEY,
-  CACHE_VERSION,
-  MAX_CACHE_AGE,
-} from './types';
+import { DEFAULT_CONFIG, CACHE_KEY, CACHE_VERSION, MAX_CACHE_AGE } from './types';
 
 type FlagValue = { enabled: boolean; variant?: FeatureFlagVariant };
 type Listener = () => void;
@@ -307,7 +302,9 @@ export function getFeatureFlagClient(config?: FeatureFlagConfig): FeatureFlagCli
     defaultClient = new FeatureFlagClient(config);
   }
   if (!defaultClient) {
-    throw new Error('Feature flag client not initialized. Call getFeatureFlagClient with config first.');
+    throw new Error(
+      'Feature flag client not initialized. Call getFeatureFlagClient with config first.'
+    );
   }
   return defaultClient;
 }

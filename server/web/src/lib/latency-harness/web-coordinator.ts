@@ -170,24 +170,40 @@ class WebMetricsCollector {
   // These are intentionally minimal to reduce measurement overhead
 
   /** Record STT recognition latency */
-  recordSTTLatency(ms: number): void { this.sttLatencyMs = ms; }
+  recordSTTLatency(ms: number): void {
+    this.sttLatencyMs = ms;
+  }
   /** Record LLM time to first token */
-  recordLLMTTFB(ms: number): void { this.llmTTFBMs = ms; }
+  recordLLMTTFB(ms: number): void {
+    this.llmTTFBMs = ms;
+  }
   /** Record LLM total completion time */
-  recordLLMCompletion(ms: number): void { this.llmCompletionMs = ms; }
+  recordLLMCompletion(ms: number): void {
+    this.llmCompletionMs = ms;
+  }
   /** Record TTS time to first audio byte */
-  recordTTSTTFB(ms: number): void { this.ttsTTFBMs = ms; }
+  recordTTSTTFB(ms: number): void {
+    this.ttsTTFBMs = ms;
+  }
   /** Record TTS total completion time */
-  recordTTSCompletion(ms: number): void { this.ttsCompletionMs = ms; }
+  recordTTSCompletion(ms: number): void {
+    this.ttsCompletionMs = ms;
+  }
   /** Record end-to-end latency */
-  recordE2ELatency(ms: number): void { this.e2eLatencyMs = ms; }
+  recordE2ELatency(ms: number): void {
+    this.e2eLatencyMs = ms;
+  }
 
   // ---- Quality Metrics Recording ----
 
   /** Record STT transcription confidence (0.0-1.0) */
-  recordSTTConfidence(confidence: number): void { this.sttConfidence = confidence; }
+  recordSTTConfidence(confidence: number): void {
+    this.sttConfidence = confidence;
+  }
   /** Record total TTS audio duration in milliseconds */
-  recordTTSAudioDuration(ms: number): void { this.ttsAudioDurationMs = ms; }
+  recordTTSAudioDuration(ms: number): void {
+    this.ttsAudioDurationMs = ms;
+  }
   /** Record LLM input/output token counts */
   recordLLMTokenCounts(input: number, output: number): void {
     this.llmInputTokens = input;
@@ -253,9 +269,20 @@ class WebMetricsCollector {
       thermalState: undefined,
 
       sttConfig: this.config?.stt ?? { provider: 'web-speech', language: 'en-US' },
-      llmConfig: this.config?.llm ?? { provider: 'anthropic', model: 'claude-3-5-haiku', maxTokens: 512, temperature: 0.7, stream: true },
+      llmConfig: this.config?.llm ?? {
+        provider: 'anthropic',
+        model: 'claude-3-5-haiku',
+        maxTokens: 512,
+        temperature: 0.7,
+        stream: true,
+      },
       ttsConfig: this.config?.tts ?? { provider: 'web-speech', speed: 1.0, useStreaming: false },
-      audioConfig: this.config?.audioEngine ?? { sampleRate: 48000, bufferSize: 1024, vadThreshold: 0.5, vadSmoothingWindow: 5 },
+      audioConfig: this.config?.audioEngine ?? {
+        sampleRate: 48000,
+        bufferSize: 1024,
+        vadThreshold: 0.5,
+        vadSmoothingWindow: 5,
+      },
 
       errors: this.errors,
       isSuccess: this.errors.length === 0,
@@ -391,7 +418,15 @@ export class WebLatencyTestCoordinator {
       // Web can use all cloud LLM providers
       supportedLLMProviders: ['anthropic', 'openai', 'selfhosted'],
       // Web can use cloud TTS + Web Speech API
-      supportedTTSProviders: ['deepgram', 'elevenlabs-flash', 'elevenlabs-turbo', 'chatterbox', 'vibevoice', 'piper', 'web-speech'],
+      supportedTTSProviders: [
+        'deepgram',
+        'elevenlabs-flash',
+        'elevenlabs-turbo',
+        'chatterbox',
+        'vibevoice',
+        'piper',
+        'web-speech',
+      ],
       // performance.now() is not as precise as mach_absolute_time
       hasHighPrecisionTiming: false,
       // Browser doesn't expose device metrics
@@ -415,7 +450,7 @@ export class WebLatencyTestCoordinator {
     return {
       clientId: this.clientId,
       clientType: 'web',
-      isConnected: true,  // Assuming connected if this code is running
+      isConnected: true, // Assuming connected if this code is running
       isRunningTest: this.isRunning,
       currentConfigId: this.currentConfig?.id,
       lastHeartbeat: new Date(),
@@ -444,10 +479,7 @@ export class WebLatencyTestCoordinator {
    * @param config - The provider configuration to test
    * @returns Complete test result with all metrics
    */
-  async executeTest(
-    scenario: TestScenario,
-    config: TestConfiguration
-  ): Promise<TestResult> {
+  async executeTest(scenario: TestScenario, config: TestConfiguration): Promise<TestResult> {
     this.isRunning = true;
     this.currentConfig = config;
 
@@ -532,7 +564,7 @@ export class WebLatencyTestCoordinator {
 
     this.metricsCollector.recordLLMCompletion(performance.now() - llmStartTime);
     this.metricsCollector.recordLLMTokenCounts(
-      Math.ceil(userText.length / 4),  // Rough estimate
+      Math.ceil(userText.length / 4), // Rough estimate
       outputTokenCount
     );
 

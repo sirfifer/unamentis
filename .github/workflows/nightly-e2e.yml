@@ -22,6 +22,10 @@ concurrency:
   group: nightly-e2e
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  issues: write
+
 env:
   # API keys for E2E tests (from repository secrets)
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

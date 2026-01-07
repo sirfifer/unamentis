@@ -13,6 +13,12 @@ concurrency:
   group: quality-metrics
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+  issues: read
+  pull-requests: read
+
 jobs:
   collect-metrics:
     name: Collect Quality Metrics

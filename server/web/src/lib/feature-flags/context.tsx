@@ -82,15 +82,9 @@ export function FeatureFlagProvider({
   }, [client, initialContext]);
 
   // Memoized methods
-  const isEnabled = useCallback(
-    (flagName: string) => client.isEnabled(flagName),
-    [client]
-  );
+  const isEnabled = useCallback((flagName: string) => client.isEnabled(flagName), [client]);
 
-  const getVariant = useCallback(
-    (flagName: string) => client.getVariant(flagName),
-    [client]
-  );
+  const getVariant = useCallback((flagName: string) => client.getVariant(flagName), [client]);
 
   const refresh = useCallback(() => client.refresh(), [client]);
 
@@ -112,11 +106,7 @@ export function FeatureFlagProvider({
     [isEnabled, getVariant, state, refresh, updateContext, client]
   );
 
-  return (
-    <FeatureFlagContext.Provider value={value}>
-      {children}
-    </FeatureFlagContext.Provider>
-  );
+  return <FeatureFlagContext.Provider value={value}>{children}</FeatureFlagContext.Provider>;
 }
 
 /**

@@ -17,6 +17,10 @@ concurrency:
   group: flag-audit-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   audit:
     name: Feature Flag Audit
@@ -37,17 +41,23 @@ jobs:
     - name: Parse Audit Results
       id: results
       run: |
-        # Count flags found
-        TOTAL_FLAGS=$(grep -c "used.*times" audit-output.txt 2>/dev/null || echo "0")
-        echo "total_flags=$TOTAL_FLAGS" >> $GITHUB_OUTPUT
+        # Ensure audit-output.txt exists
+        touch audit-output.txt
+
+        # Count flags found (grep -c returns 1 if no match, so we handle that)
+        TOTAL_FLAGS=$(grep -c "used.*times" audit-output.txt || true)
+        TOTAL_FLAGS=${TOTAL_FLAGS:-0}
+        echo "total_flags=${TOTAL_FLAGS}" >> $GITHUB_OUTPUT
 
         # Check for overdue flags
-        OVERDUE=$(grep -c "\[OVERDUE\]" audit-output.txt 2>/dev/null || echo "0")
-        echo "overdue=$OVERDUE" >> $GITHUB_OUTPUT
+        OVERDUE=$(grep -c "\[OVERDUE\]" audit-output.txt || true)
+        OVERDUE=${OVERDUE:-0}
+        echo "overdue=${OVERDUE}" >> $GITHUB_OUTPUT
 
         # Check for flags due soon
-        DUE_SOON=$(grep -c "\[DUE SOON\]" audit-output.txt 2>/dev/null || echo "0")
-        echo "due_soon=$DUE_SOON" >> $GITHUB_OUTPUT
+        DUE_SOON=$(grep -c "\[DUE SOON\]" audit-output.txt || true)
+        DUE_SOON=${DUE_SOON:-0}
+        echo "due_soon=${DUE_SOON}" >> $GITHUB_OUTPUT
 
     - name: Generate Summary
       run: |

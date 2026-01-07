@@ -93,25 +93,6 @@ chat:
   # Enable chat in PR comments
   auto_reply: true
 
-# Tool integrations
-tools:
-  # GitHub integration
-  github:
-    # Link to issues mentioned in PR
-    link_issues: true
-    # Add labels based on changes
-    auto_label: true
-
-  # Enable built-in linting insights
-  ruff:
-    enabled: true
-  eslint:
-    enabled: true
-  shellcheck:
-    enabled: true
-  yamllint:
-    enabled: true
-
 # Knowledge base - learns from your codebase
 knowledge_base:
   # Learn from merged PRs

@@ -53,7 +53,7 @@ async function fetchWithFallback<T>(
   // If explicitly using mock or no backend configured
   if (USE_MOCK) {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
+    await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
     return mockFn();
   }
 
@@ -104,18 +104,18 @@ export async function getLogs(params?: {
 
     if (params?.level) {
       const levels = params.level.split(',');
-      filtered = filtered.filter(l => levels.includes(l.level));
+      filtered = filtered.filter((l) => levels.includes(l.level));
     }
 
     if (params?.search) {
       const search = params.search.toLowerCase();
       filtered = filtered.filter(
-        l => l.message.toLowerCase().includes(search) || l.label.toLowerCase().includes(search)
+        (l) => l.message.toLowerCase().includes(search) || l.label.toLowerCase().includes(search)
       );
     }
 
     if (params?.client_id) {
-      filtered = filtered.filter(l => l.client_id === params.client_id);
+      filtered = filtered.filter((l) => l.client_id === params.client_id);
     }
 
     // Sort by received_at descending
@@ -149,7 +149,7 @@ export async function getMetrics(params?: {
     let filtered = [...demoMetrics];
 
     if (params?.client_id) {
-      filtered = filtered.filter(m => m.client_id === params.client_id);
+      filtered = filtered.filter((m) => m.client_id === params.client_id);
     }
 
     // Sort by received_at descending
@@ -164,10 +164,10 @@ export async function getMetrics(params?: {
     return {
       metrics: filtered,
       aggregates: {
-        avg_e2e_latency: Math.round(avg(filtered.map(m => m.e2e_latency_median)) * 100) / 100,
-        avg_llm_ttft: Math.round(avg(filtered.map(m => m.llm_ttft_median)) * 100) / 100,
-        avg_stt_latency: Math.round(avg(filtered.map(m => m.stt_latency_median)) * 100) / 100,
-        avg_tts_ttfb: Math.round(avg(filtered.map(m => m.tts_ttfb_median)) * 100) / 100,
+        avg_e2e_latency: Math.round(avg(filtered.map((m) => m.e2e_latency_median)) * 100) / 100,
+        avg_llm_ttft: Math.round(avg(filtered.map((m) => m.llm_ttft_median)) * 100) / 100,
+        avg_stt_latency: Math.round(avg(filtered.map((m) => m.stt_latency_median)) * 100) / 100,
+        avg_tts_ttfb: Math.round(avg(filtered.map((m) => m.tts_ttfb_median)) * 100) / 100,
         total_cost: Math.round(filtered.reduce((sum, m) => sum + m.total_cost, 0) * 10000) / 10000,
         total_sessions: filtered.length,
         total_turns: filtered.reduce((sum, m) => sum + m.turns_total, 0),
@@ -183,9 +183,9 @@ export async function getClients(): Promise<ClientsResponse> {
     return {
       clients,
       total: clients.length,
-      online: clients.filter(c => c.status === 'online').length,
-      idle: clients.filter(c => c.status === 'idle').length,
-      offline: clients.filter(c => c.status === 'offline').length,
+      online: clients.filter((c) => c.status === 'online').length,
+      idle: clients.filter((c) => c.status === 'idle').length,
+      offline: clients.filter((c) => c.status === 'offline').length,
     };
   });
 }
@@ -197,9 +197,9 @@ export async function getServers(): Promise<ServersResponse> {
     return {
       servers,
       total: servers.length,
-      healthy: servers.filter(s => s.status === 'healthy').length,
-      degraded: servers.filter(s => s.status === 'degraded').length,
-      unhealthy: servers.filter(s => s.status === 'unhealthy').length,
+      healthy: servers.filter((s) => s.status === 'healthy').length,
+      degraded: servers.filter((s) => s.status === 'degraded').length,
+      unhealthy: servers.filter((s) => s.status === 'unhealthy').length,
     };
   });
 }
@@ -212,9 +212,9 @@ export async function getModels(): Promise<ModelsResponse> {
       models,
       total: models.length,
       by_type: {
-        llm: models.filter(m => m.type === 'llm').length,
-        stt: models.filter(m => m.type === 'stt').length,
-        tts: models.filter(m => m.type === 'tts').length,
+        llm: models.filter((m) => m.type === 'llm').length,
+        stt: models.filter((m) => m.type === 'stt').length,
+        tts: models.filter((m) => m.type === 'tts').length,
       },
     };
   });
@@ -435,7 +435,10 @@ export async function forceIdleState(state: string): Promise<{ status: string }>
   return response.json();
 }
 
-export async function unloadAllModels(): Promise<{ status: string; results: Record<string, boolean> }> {
+export async function unloadAllModels(): Promise<{
+  status: string;
+  results: Record<string, boolean>;
+}> {
   if (USE_MOCK) {
     return { status: 'ok', results: { ollama: true, vibevoice: true } };
   }
@@ -448,21 +451,27 @@ export async function unloadAllModels(): Promise<{ status: string; results: Reco
   return response.json();
 }
 
-export async function getIdleHistory(limit: number = 50): Promise<{ history: IdleTransition[]; count: number }> {
+export async function getIdleHistory(
+  limit: number = 50
+): Promise<{ history: IdleTransition[]; count: number }> {
   return fetchWithFallback(`/api/system/idle/history?limit=${limit}`, () => ({
     history: [],
     count: 0,
   }));
 }
 
-export async function getHourlyHistory(days: number = 7): Promise<{ history: HourlyMetrics[]; count: number }> {
+export async function getHourlyHistory(
+  days: number = 7
+): Promise<{ history: HourlyMetrics[]; count: number }> {
   return fetchWithFallback(`/api/system/history/hourly?days=${days}`, () => ({
     history: [],
     count: 0,
   }));
 }
 
-export async function getDailyHistory(days: number = 30): Promise<{ history: DailyMetrics[]; count: number }> {
+export async function getDailyHistory(
+  days: number = 30
+): Promise<{ history: DailyMetrics[]; count: number }> {
   return fetchWithFallback(`/api/system/history/daily?days=${days}`, () => ({
     history: [],
     count: 0,
@@ -570,7 +579,9 @@ export async function updateProfile(
   return response.json();
 }
 
-export async function deleteProfile(profileId: string): Promise<{ status: string; profile_id: string }> {
+export async function deleteProfile(
+  profileId: string
+): Promise<{ status: string; profile_id: string }> {
   if (USE_MOCK) {
     return { status: 'deleted', profile_id: profileId };
   }
@@ -734,8 +745,7 @@ export async function getCourseCatalog(
       const search = params.search.toLowerCase();
       filtered = filtered.filter(
         (c) =>
-          c.title.toLowerCase().includes(search) ||
-          c.description.toLowerCase().includes(search)
+          c.title.toLowerCase().includes(search) || c.description.toLowerCase().includes(search)
       );
     }
 
@@ -778,47 +788,44 @@ export async function getCourseDetail(
   sourceId: string,
   courseId: string
 ): Promise<CourseDetailResponse> {
-  return fetchWithFallback(
-    `/api/import/sources/${sourceId}/courses/${courseId}`,
-    () => {
-      const course = mockCourses.find((c) => c.id === courseId);
-      if (!course) {
-        return {
-          success: false,
-          course: null as unknown as CourseDetailResponse['course'],
-          canImport: false,
-          licenseWarnings: [],
-          error: `Course not found: ${courseId}`,
-        };
-      }
-
+  return fetchWithFallback(`/api/import/sources/${sourceId}/courses/${courseId}`, () => {
+    const course = mockCourses.find((c) => c.id === courseId);
+    if (!course) {
       return {
-        success: true,
-        course: {
-          ...course,
-          longDescription: `${course.description}\n\nThis is a comprehensive course covering key topics in ${course.subject}.`,
-          prerequisites: ['Basic programming knowledge'],
-          learningOutcomes: [
-            'Understand fundamental concepts',
-            'Apply learned techniques to solve problems',
-          ],
-          topics: ['Introduction', 'Core Concepts', 'Advanced Topics'],
-          contentSummary: {
-            lectureCount: 24,
-            hasTranscripts: true,
-            hasLectureNotes: true,
-            hasAssignments: true,
-            hasExams: course.contentTypes.includes('exams'),
-            hasVideos: false,
-            hasSolutions: true,
-          },
-        },
-        canImport: true,
+        success: false,
+        course: null as unknown as CourseDetailResponse['course'],
+        canImport: false,
         licenseWarnings: [],
-        attribution: `This content is from ${course.institution}, licensed under ${course.license.name}.`,
+        error: `Course not found: ${courseId}`,
       };
     }
-  );
+
+    return {
+      success: true,
+      course: {
+        ...course,
+        longDescription: `${course.description}\n\nThis is a comprehensive course covering key topics in ${course.subject}.`,
+        prerequisites: ['Basic programming knowledge'],
+        learningOutcomes: [
+          'Understand fundamental concepts',
+          'Apply learned techniques to solve problems',
+        ],
+        topics: ['Introduction', 'Core Concepts', 'Advanced Topics'],
+        contentSummary: {
+          lectureCount: 24,
+          hasTranscripts: true,
+          hasLectureNotes: true,
+          hasAssignments: true,
+          hasExams: course.contentTypes.includes('exams'),
+          hasVideos: false,
+          hasSolutions: true,
+        },
+      },
+      canImport: true,
+      licenseWarnings: [],
+      attribution: `This content is from ${course.institution}, licensed under ${course.license.name}.`,
+    };
+  });
 }
 
 /**
@@ -903,3 +910,262 @@ export async function cancelImport(jobId: string): Promise<{ success: boolean; e
 // NOTE: Curriculum data is served by the Management API (port 8766) and proxied through
 // the UnaMentis Server's Next.js API routes. The Curriculum Studio provides a unified
 // interface for viewing and editing curriculum content alongside system management.
+
+// =============================================================================
+// Generative Media APIs (Diagrams, Formulas, Maps)
+// =============================================================================
+
+import type {
+  DiagramValidateRequest,
+  DiagramValidateResponse,
+  DiagramRenderRequest,
+  DiagramRenderResponse,
+  FormulaValidateRequest,
+  FormulaValidateResponse,
+  FormulaRenderRequest,
+  FormulaRenderResponse,
+  MapRenderRequest,
+  MapRenderResponse,
+  MapStylesResponse,
+  MediaCapabilitiesResponse,
+} from '@/types';
+
+/**
+ * Get media generation capabilities
+ */
+export async function getMediaCapabilities(): Promise<MediaCapabilitiesResponse> {
+  return fetchWithFallback('/api/media/capabilities', () => ({
+    success: true,
+    capabilities: {
+      diagrams: {
+        formats: ['mermaid', 'graphviz', 'plantuml', 'd2', 'svg-raw'],
+        renderers: {
+          mermaid: false,
+          graphviz: false,
+          plantuml: false,
+          d2: false,
+        },
+      },
+      formulas: {
+        renderers: {
+          katex: false,
+          latex: false,
+        },
+        clientSideSupported: true,
+      },
+      maps: {
+        styles: ['standard', 'historical', 'physical', 'satellite', 'minimal', 'educational'],
+        renderers: {
+          cartopy: false,
+          folium: false,
+          staticTiles: true,
+        },
+        features: ['markers', 'routes', 'regions'],
+      },
+    },
+  }));
+}
+
+/**
+ * Validate diagram syntax
+ */
+export async function validateDiagram(
+  request: DiagramValidateRequest
+): Promise<DiagramValidateResponse> {
+  if (USE_MOCK) {
+    return {
+      success: true,
+      valid: request.code.trim().length > 0,
+      errors: request.code.trim().length === 0 ? ['Empty diagram source'] : [],
+    };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/media/diagrams/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Validation failed' }));
+    return { success: false, valid: false, errors: [data.error || 'Validation failed'] };
+  }
+
+  return response.json();
+}
+
+/**
+ * Render a diagram to image
+ */
+export async function renderDiagram(request: DiagramRenderRequest): Promise<DiagramRenderResponse> {
+  if (USE_MOCK) {
+    // Return a placeholder SVG in mock mode
+    const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200">
+      <rect fill="#f5f5f5" width="100%" height="100%" rx="8"/>
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-family="system-ui" font-size="14" fill="#666">
+        Diagram Preview (${request.format})
+      </text>
+    </svg>`;
+    return {
+      success: true,
+      data: btoa(placeholderSvg),
+      mimeType: 'image/svg+xml',
+      width: 400,
+      height: 200,
+      renderMethod: 'placeholder',
+    };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/media/diagrams/render`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Rendering failed' }));
+    return {
+      success: false,
+      error: data.error || 'Rendering failed',
+      validationErrors: data.validationErrors,
+    };
+  }
+
+  return response.json();
+}
+
+/**
+ * Validate LaTeX formula syntax
+ */
+export async function validateFormula(
+  request: FormulaValidateRequest
+): Promise<FormulaValidateResponse> {
+  if (USE_MOCK) {
+    const hasUnbalancedBraces =
+      (request.latex.match(/{/g) || []).length !== (request.latex.match(/}/g) || []).length;
+    return {
+      success: true,
+      valid: !hasUnbalancedBraces && request.latex.trim().length > 0,
+      errors: hasUnbalancedBraces ? ['Unbalanced braces'] : [],
+      warnings: [],
+    };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/media/formulas/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Validation failed' }));
+    return {
+      success: false,
+      valid: false,
+      errors: [data.error || 'Validation failed'],
+      warnings: [],
+    };
+  }
+
+  return response.json();
+}
+
+/**
+ * Render a LaTeX formula to image
+ */
+export async function renderFormula(request: FormulaRenderRequest): Promise<FormulaRenderResponse> {
+  if (USE_MOCK) {
+    // Return a placeholder SVG in mock mode
+    const displayLatex = request.latex.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="60">
+      <rect fill="#fafafa" width="100%" height="100%" rx="4"/>
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-family="serif" font-style="italic" font-size="16" fill="#333">
+        ${displayLatex.substring(0, 30)}${displayLatex.length > 30 ? '...' : ''}
+      </text>
+    </svg>`;
+    return {
+      success: true,
+      data: btoa(placeholderSvg),
+      mimeType: 'image/svg+xml',
+      width: 300,
+      height: 60,
+      renderMethod: 'placeholder',
+    };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/media/formulas/render`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Rendering failed' }));
+    return {
+      success: false,
+      error: data.error || 'Rendering failed',
+      validationErrors: data.validationErrors,
+    };
+  }
+
+  return response.json();
+}
+
+/**
+ * Render a map to image
+ */
+export async function renderMap(request: MapRenderRequest): Promise<MapRenderResponse> {
+  if (USE_MOCK) {
+    // Return a placeholder SVG in mock mode
+    const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${request.width || 800}" height="${request.height || 600}">
+      <rect fill="#e8f4e8" width="100%" height="100%"/>
+      <text x="50%" y="45%" text-anchor="middle" font-family="system-ui" font-size="18" fill="#2d5a2d">
+        ${request.title || 'Map Preview'}
+      </text>
+      <text x="50%" y="55%" text-anchor="middle" font-family="system-ui" font-size="12" fill="#666">
+        ${request.center.latitude.toFixed(2)}°, ${request.center.longitude.toFixed(2)}° (zoom: ${request.zoom || 5})
+      </text>
+    </svg>`;
+    return {
+      success: true,
+      data: btoa(placeholderSvg),
+      mimeType: 'image/svg+xml',
+      width: request.width || 800,
+      height: request.height || 600,
+      renderMethod: 'placeholder',
+    };
+  }
+
+  const response = await fetch(`${BACKEND_URL}/api/media/maps/render`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({ error: 'Rendering failed' }));
+    return {
+      success: false,
+      error: data.error || 'Rendering failed',
+    };
+  }
+
+  return response.json();
+}
+
+/**
+ * Get available map styles
+ */
+export async function getMapStyles(): Promise<MapStylesResponse> {
+  return fetchWithFallback('/api/media/maps/styles', () => ({
+    success: true,
+    styles: [
+      { id: 'standard', name: 'Standard', description: 'Modern political map' },
+      { id: 'historical', name: 'Historical', description: 'Aged parchment style' },
+      { id: 'physical', name: 'Physical', description: 'Terrain and elevation focus' },
+      { id: 'satellite', name: 'Satellite', description: 'Aerial imagery' },
+      { id: 'minimal', name: 'Minimal', description: 'Clean, minimal styling' },
+      { id: 'educational', name: 'Educational', description: 'Clear labels for learning' },
+    ],
+  }));
+}

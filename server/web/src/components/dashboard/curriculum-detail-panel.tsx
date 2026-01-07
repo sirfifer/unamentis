@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,7 +14,7 @@ import {
   Edit2,
   Save,
   X,
-  Layout
+  Layout,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,20 +32,21 @@ function adaptToUMCF(detail: CurriculumDetail): Curriculum {
   const isExternal = detail.document?.sourceProvenance?.originType === 'external';
 
   return {
-    umcf: "1.0.0",
+    umcf: '1.0.0',
     id: { value: detail.id || 'unknown' },
     title: detail.title,
     description: detail.description,
     version: { number: detail.version || '1.0.0' },
     locked: isExternal, // Lock if external
-    content: detail.topics?.map((t, i) => ({
-      id: { value: t.id.value || `topic-${i}` },
-      title: t.title,
-      type: 'topic',
-      description: t.description,
-      // Map other fields as best as possible
-      transcript: t.transcript ? { segments: [] /* TODO: Map segments properly */ } : undefined
-    })) || []
+    content:
+      detail.topics?.map((t, i) => ({
+        id: { value: t.id.value || `topic-${i}` },
+        title: t.title,
+        type: 'topic',
+        description: t.description,
+        // Map other fields as best as possible
+        transcript: t.transcript ? { segments: [] /* TODO: Map segments properly */ } : undefined,
+      })) || [],
   };
 }
 
@@ -278,7 +278,9 @@ export function CurriculumDetailPanel({ curriculumId, onBack }: CurriculumDetail
                 className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-all shadow-lg shadow-indigo-500/20 font-medium text-sm"
               >
                 <Layout className="w-4 h-4" />
-                {curriculum.document?.sourceProvenance?.originType === 'external' ? 'View in Studio' : 'Open Studio'}
+                {curriculum.document?.sourceProvenance?.originType === 'external'
+                  ? 'View in Studio'
+                  : 'Open Studio'}
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -336,7 +338,9 @@ export function CurriculumDetailPanel({ curriculumId, onBack }: CurriculumDetail
                 <Target className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-wide">Difficulty</span>
               </div>
-              <p className="text-2xl font-bold text-slate-100 capitalize">{curriculum.difficulty}</p>
+              <p className="text-2xl font-bold text-slate-100 capitalize">
+                {curriculum.difficulty}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -393,10 +397,10 @@ function TopicItem({ topic, index, expanded, onToggle }: TopicItemProps) {
   const hasTranscript = topic.transcript && Object.keys(topic.transcript).length > 0;
   const hasExamples = topic.examples && topic.examples.length > 0;
   const hasAssessments = topic.assessments && topic.assessments.length > 0;
-  const hasMedia = topic.media && (
-    (topic.media.embedded && topic.media.embedded.length > 0) ||
-    (topic.media.reference && topic.media.reference.length > 0)
-  );
+  const hasMedia =
+    topic.media &&
+    ((topic.media.embedded && topic.media.embedded.length > 0) ||
+      (topic.media.reference && topic.media.reference.length > 0));
 
   return (
     <div className="border border-slate-800 rounded-lg overflow-hidden">
@@ -439,19 +443,29 @@ function TopicItem({ topic, index, expanded, onToggle }: TopicItemProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {topic.timeEstimates && (
               <div>
-                <span className="text-xs text-slate-500 uppercase tracking-wide">Time Estimates</span>
+                <span className="text-xs text-slate-500 uppercase tracking-wide">
+                  Time Estimates
+                </span>
                 <div className="mt-1 space-y-1">
                   {topic.timeEstimates.overview && (
-                    <p className="text-sm text-slate-400">Overview: {topic.timeEstimates.overview}</p>
+                    <p className="text-sm text-slate-400">
+                      Overview: {topic.timeEstimates.overview}
+                    </p>
                   )}
                   {topic.timeEstimates.introductory && (
-                    <p className="text-sm text-slate-400">Intro: {topic.timeEstimates.introductory}</p>
+                    <p className="text-sm text-slate-400">
+                      Intro: {topic.timeEstimates.introductory}
+                    </p>
                   )}
                   {topic.timeEstimates.intermediate && (
-                    <p className="text-sm text-slate-400">Intermediate: {topic.timeEstimates.intermediate}</p>
+                    <p className="text-sm text-slate-400">
+                      Intermediate: {topic.timeEstimates.intermediate}
+                    </p>
                   )}
                   {topic.timeEstimates.advanced && (
-                    <p className="text-sm text-slate-400">Advanced: {topic.timeEstimates.advanced}</p>
+                    <p className="text-sm text-slate-400">
+                      Advanced: {topic.timeEstimates.advanced}
+                    </p>
                   )}
                 </div>
               </div>
@@ -467,14 +481,20 @@ function TopicItem({ topic, index, expanded, onToggle }: TopicItemProps) {
             {hasAssessments && (
               <div>
                 <span className="text-xs text-slate-500 uppercase tracking-wide">Assessments</span>
-                <p className="text-sm text-slate-300 mt-1">{topic.assessments!.length} assessments</p>
+                <p className="text-sm text-slate-300 mt-1">
+                  {topic.assessments!.length} assessments
+                </p>
               </div>
             )}
 
             {topic.misconceptions && topic.misconceptions.length > 0 && (
               <div>
-                <span className="text-xs text-slate-500 uppercase tracking-wide">Misconceptions</span>
-                <p className="text-sm text-slate-300 mt-1">{topic.misconceptions.length} common errors</p>
+                <span className="text-xs text-slate-500 uppercase tracking-wide">
+                  Misconceptions
+                </span>
+                <p className="text-sm text-slate-300 mt-1">
+                  {topic.misconceptions.length} common errors
+                </p>
               </div>
             )}
           </div>
@@ -492,4 +512,3 @@ function TopicItem({ topic, index, expanded, onToggle }: TopicItemProps) {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 // UnaMentis - GLM-ASR Health Monitor
 // Monitors GLM-ASR server health and triggers failover
 //
-// Related: docs/GLM_ASR_SERVER_TRD.md
+// Related: docs/ai-ml/GLM_ASR_SERVER_TRD.md
 
 import Foundation
 import Logging

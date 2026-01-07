@@ -4,7 +4,7 @@
 // Self-hosted STT service with zero per-hour cost
 // Designed for 16kHz mono PCM audio input
 //
-// Related: docs/GLM_ASR_SERVER_TRD.md
+// Related: docs/ai-ml/GLM_ASR_SERVER_TRD.md
 
 import Foundation
 import AVFoundation

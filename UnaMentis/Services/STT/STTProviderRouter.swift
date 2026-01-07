@@ -6,7 +6,7 @@
 // - Automatic failover to Deepgram when unhealthy
 // - Health monitoring integration
 //
-// Related: docs/GLM_ASR_SERVER_TRD.md
+// Related: docs/ai-ml/GLM_ASR_SERVER_TRD.md
 
 import Foundation
 @preconcurrency import AVFoundation

@@ -51,33 +51,33 @@ export function Header({ stats, connected = false }: HeaderProps) {
           {/* Right side controls */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* Connection Status - compact on mobile */}
-            <div className={cn(
-              'flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm',
-              isMock
-                ? 'bg-amber-500/10 border-amber-500/30'
-                : connected
-                  ? 'bg-emerald-500/10 border-emerald-500/30'
-                  : 'bg-slate-800/50 border-slate-700/50'
-            )}>
-              <div className={cn(
-                'w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full',
+            <div
+              className={cn(
+                'flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm',
                 isMock
-                  ? 'bg-amber-400 animate-pulse'
+                  ? 'bg-amber-500/10 border-amber-500/30'
                   : connected
-                    ? 'bg-emerald-400 animate-pulse'
-                    : 'bg-slate-500'
-              )} />
-              <span className={cn(
-                isMock
-                  ? 'text-amber-400'
-                  : connected
-                    ? 'text-emerald-400'
-                    : 'text-slate-400'
-              )}>
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-slate-800/50 border-slate-700/50'
+              )}
+            >
+              <div
+                className={cn(
+                  'w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full',
+                  isMock
+                    ? 'bg-amber-400 animate-pulse'
+                    : connected
+                      ? 'bg-emerald-400 animate-pulse'
+                      : 'bg-slate-500'
+                )}
+              />
+              <span
+                className={cn(
+                  isMock ? 'text-amber-400' : connected ? 'text-emerald-400' : 'text-slate-400'
+                )}
+              >
                 {/* Short text on mobile */}
-                <span className="sm:hidden">
-                  {isMock ? 'Demo' : connected ? 'Live' : '...'}
-                </span>
+                <span className="sm:hidden">{isMock ? 'Demo' : connected ? 'Live' : '...'}</span>
                 <span className="hidden sm:inline">
                   {isMock ? 'Demo Mode' : connected ? 'Connected' : 'Connecting...'}
                 </span>

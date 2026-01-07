@@ -36,7 +36,7 @@ function mapApiPlugin(p: PluginApiResponse): Plugin {
     name: p.name,
     description: p.description,
     version: p.version,
-    type: p.plugin_type === 'sources' ? 'source' : p.plugin_type as Plugin['type'],
+    type: p.plugin_type === 'sources' ? 'source' : (p.plugin_type as Plugin['type']),
     enabled: p.enabled,
     configured: p.settings ? Object.keys(p.settings).length > 0 : false,
     hasSettings: p.has_config ?? false,
@@ -74,7 +74,10 @@ async function disablePlugin(pluginId: string): Promise<void> {
   }
 }
 
-async function testPlugin(pluginId: string, settings: Record<string, unknown>): Promise<{ success: boolean; message?: string }> {
+async function testPlugin(
+  pluginId: string,
+  settings: Record<string, unknown>
+): Promise<{ success: boolean; message?: string }> {
   const response = await fetch(`/api/plugins/${pluginId}/test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -163,9 +166,7 @@ export function PluginsPanel() {
             <Puzzle className="w-6 h-6 text-orange-400" />
             Plugins
           </h2>
-          <p className="text-slate-400 mt-1">
-            Manage curriculum import plugins and enrichers
-          </p>
+          <p className="text-slate-400 mt-1">Manage curriculum import plugins and enrichers</p>
         </div>
 
         <button
@@ -228,9 +229,7 @@ export function PluginsPanel() {
                       {plugin.name}
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge className={getTypeColor(plugin.type)}>
-                        {plugin.type}
-                      </Badge>
+                      <Badge className={getTypeColor(plugin.type)}>{plugin.type}</Badge>
                       <span className="text-xs text-slate-500">v{plugin.version}</span>
                     </div>
                   </div>
@@ -251,9 +250,7 @@ export function PluginsPanel() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-400 line-clamp-2 mb-4">
-                  {plugin.description}
-                </p>
+                <p className="text-sm text-slate-400 line-clamp-2 mb-4">{plugin.description}</p>
 
                 {/* Plugin Status */}
                 <div className="flex items-center gap-2 mb-4">

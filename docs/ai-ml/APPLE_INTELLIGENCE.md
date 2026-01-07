@@ -201,5 +201,5 @@ Use Xcode Instruments with the Core ML template:
 
 ### Project Files
 - Plan: `~/.claude/plans/` (Claude Code plan files)
-- Style Guide: `docs/IOS_STYLE_GUIDE.md`
-- TDD: `docs/UnaMentis_TDD.md`
+- Style Guide: `docs/ios/IOS_STYLE_GUIDE.md`
+- TDD: `docs/architecture/UnaMentis_TDD.md`

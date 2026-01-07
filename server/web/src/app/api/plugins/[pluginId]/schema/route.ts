@@ -22,10 +22,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return NextResponse.json(
-          { success: false, error: 'Plugin not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Plugin not found' }, { status: 404 });
       }
       throw new Error(`Backend returned ${response.status}`);
     }

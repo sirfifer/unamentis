@@ -7,9 +7,5 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  return (
-    <WebSocketProvider>
-      {children}
-    </WebSocketProvider>
-  );
+  return <WebSocketProvider>{children}</WebSocketProvider>;
 }

@@ -88,7 +88,7 @@ UnaMentis/
 
 ## Mandatory Style Requirements
 
-**Read `docs/IOS_STYLE_GUIDE.md` before implementation.** Key requirements:
+**Read `docs/ios/IOS_STYLE_GUIDE.md` before implementation.** Key requirements:
 
 - Accessibility labels on all interactive elements
 - Localizable strings for all user-facing text (use LocalizedStringKey)

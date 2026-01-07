@@ -9,11 +9,24 @@ These sessions can be ad-hoc or based on proven curriculum from many well known 
 
 ## Why UnaMentis?
 
-One of my earliest experiences re-engaging with AI earlier this year was with ChatGPT's Advanced Voice Mode. Very quickly, I fell in love with the capability of having seamless, hands-free conversations with AI. Initially these were about bouncing off ideas and exploring things, but it evolved into the ultimate way of learning. I could give advanced topics to the AI and it would deliver detailed lectures on demand.
+We live in an age where AI can write essays, solve problems, and answer any question instantly. This power is extraordinary, but it's also dangerous without foundation. A calculator is useless to someone who doesn't understand what multiplication means. AI writing is hollow to someone who has never formed their own thoughts.
 
-That capability was completely killed when ChatGPT 5.0 came out. No other models or tools have matched ChatGPT's seamless user experience. It got better with 5.1, but it's been hit or miss. Lately it's been useless again.
+**UnaMentis takes a different approach: AI as tutor, not substitute.**
 
-I realized I can't rely on off-the-shelf tools to meet this need. There's a lot of more advanced things I can bring to this purpose. I really think this is ultimately a universal need: a personalized tutor that can work with you over long stretches of time, develop an understanding of your learning progress and learning style, and evolve into a true personal tutor over time.
+We use artificial intelligence to deliver personalized, voice-based instruction at scale. But our goal isn't to give you answers. It's to build genuine understanding. We challenge you to explain concepts back in your own words. We celebrate the time you spend thinking before asking for help. We revisit what you learned last week to make sure you truly remember it.
+
+This is a personalized tutor that works with you over extended sessions (60-90+ minutes), develops an understanding of your learning progress and style, and evolves into a true personal tutor over time. Quality curriculum, often from institutions like MIT, combined with AI that guides rather than replaces, creates something powerful: a tutor that makes you genuinely smarter.
+
+**This is education technology that serves learning, not shortcuts.**
+
+### Core Principles
+
+- **Genuine Understanding**: We reinforce real comprehension through teachback, productive struggle, and spaced retrieval
+- **Quality Curriculum**: Content from respected sources (MIT, CK-12, and more), designed for voice-based delivery
+- **Privacy-First**: On-device capabilities, user control, and transparent data practices
+- **Open Source Core**: The fundamental infrastructure will always remain open source
+
+See [About UnaMentis](docs/ABOUT.md) for our complete philosophy and [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) for the founding vision.
 
 ## Overview
 
@@ -83,26 +96,26 @@ See [docs/TASK_STATUS.md](docs/TASK_STATUS.md) for detailed task tracking.
 
 ### Getting Started
 - [Quick Start Guide](docs/QUICKSTART.md) - START HERE
-- [Setup Guide](docs/SETUP.md)
-- [Testing Guide](docs/TESTING.md)
-- [Debug & Testing UI](docs/DEBUG_TESTING_UI.md) - Built-in troubleshooting tools
+- [Setup Guide](docs/setup/SETUP.md)
+- [Testing Guide](docs/testing/TESTING.md)
+- [Debug & Testing UI](docs/testing/DEBUG_TESTING_UI.md) - Built-in troubleshooting tools
 
 ### Curriculum Format (UMCF)
 - [Curriculum Overview](curriculum/README.md) - **Comprehensive guide to UMCF**
 - [UMCF Specification](curriculum/spec/UMCF_SPECIFICATION.md) - Format specification
 - [Standards Traceability](curriculum/spec/STANDARDS_TRACEABILITY.md) - Standards mapping
 - [Import Architecture](curriculum/importers/IMPORTER_ARCHITECTURE.md) - Import system design
-- [Pronunciation Guide](docs/PRONUNCIATION_GUIDE.md) - TTS pronunciation enhancement system
+- [Pronunciation Guide](docs/ios/PRONUNCIATION_GUIDE.md) - TTS pronunciation enhancement system
 
 ### Architecture & Design
-- [Project Overview](docs/PROJECT_OVERVIEW.md) - High-level architecture
+- [Project Overview](docs/architecture/PROJECT_OVERVIEW.md) - High-level architecture
 - [Enterprise Architecture](docs/ENTERPRISE_ARCHITECTURE.md) - Comprehensive system design
-- [Patch Panel Architecture](docs/PATCH_PANEL_ARCHITECTURE.md) - LLM routing system
-- [Technical Design Document](docs/UnaMentis_TDD.md) - Complete TDD
+- [Patch Panel Architecture](docs/architecture/PATCH_PANEL_ARCHITECTURE.md) - LLM routing system
+- [Technical Design Document](docs/architecture/UnaMentis_TDD.md) - Complete TDD
 
 ### Standards & Guidelines
-- [iOS Style Guide](docs/IOS_STYLE_GUIDE.md) - **MANDATORY** coding standards, accessibility, i18n
-- [iOS Best Practices Review](docs/IOS_BEST_PRACTICES_REVIEW.md) - Platform compliance audit
+- [iOS Style Guide](docs/ios/IOS_STYLE_GUIDE.md) - **MANDATORY** coding standards, accessibility, i18n
+- [iOS Best Practices Review](docs/ios/IOS_BEST_PRACTICES_REVIEW.md) - Platform compliance audit
 - [AI Development Guidelines](AGENTS.md) - Guidelines for AI-assisted development
 
 ### Project
@@ -146,13 +159,24 @@ UnaMentis/
 └── UI/             # SwiftUI views
 
 server/
-├── management/     # Management Console (port 8766)
-└── web/            # Operations Console (port 3000)
+├── management/     # Management API (port 8766)
+├── web/            # Operations Console (port 3000)
+└── web-client/     # Web Client (voice tutoring for browsers)
 ```
 
 ## Web Interfaces
 
-UnaMentis includes two web-based administration interfaces:
+UnaMentis includes three web-based interfaces:
+
+### Web Client (voice tutoring)
+Browser-based voice tutoring that matches iOS app capabilities:
+- Real-time voice conversations with AI tutors (OpenAI Realtime API via WebRTC)
+- Full curriculum browser and lesson playback
+- Rich visual asset display (formulas, diagrams, maps, charts)
+- Responsive design for desktop and mobile browsers
+- Sub-500ms latency voice interaction
+
+See [server/web-client/README.md](server/web-client/README.md) for setup and documentation.
 
 ### Operations Console (port 3000)
 Backend infrastructure monitoring for DevOps:
@@ -161,7 +185,7 @@ Backend infrastructure monitoring for DevOps:
 - Power/idle profiles
 - Logs, metrics, performance data
 
-### Management Console (port 8766)
+### Management API (port 8766)
 Application and content management:
 - Curriculum management (import, browse, edit)
 - Visual asset management
@@ -259,23 +283,19 @@ The fundamental core of UnaMentis will always remain open source. This ensures t
 - All provider integrations
 - Cross-platform support (planned)
 
+### Current Platform Support
+
+- **iOS**: Primary platform, fully functional (iPhone 16/17 Pro Max optimized)
+- **Web**: Browser-based voice tutoring (Chrome, Safari, Edge recommended)
+- **Server**: Management API and Operations Console for curriculum and infrastructure management
+
 ### Future Directions
 
-- **Cross-platform**: Expand beyond iOS to Android, web, and desktop
-- **Server component**: Enable cloud-hosted sessions and curriculum management
+- **Desktop apps**: Native macOS and Windows applications
 - **Plugin architecture**: Extensible system for value-added capabilities
+- **Enhanced collaboration**: Multi-user learning sessions
 
-### Enterprise Features (Future)
-
-A separate commercial layer may offer enterprise-specific capabilities:
-
-- Single sign-on (SSO) integration
-- Advanced reporting and analytics
-- Permission controls and user management
-- Corporate curriculum publishing and management
-- Priority support
-
-These features would build on top of the open source core without restricting it.
+Note: Android support was explored but is not currently in active development. The focus is on delivering exceptional iOS and web experiences first.
 
 ## Contributing
 

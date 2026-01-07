@@ -8,6 +8,24 @@
         "ios-simulator-mcp"
       ],
       "env": {}
+    },
+    "XcodeBuildMCP": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "xcodebuildmcp@latest"
+      ],
+      "env": {}
+    },
+    "apple-docs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic/apple-docs-mcp"
+      ],
+      "env": {}
     }
   }
 }

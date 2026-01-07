@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   let filtered = [...mockMetrics];
 
   if (clientId) {
-    filtered = filtered.filter(m => m.client_id === clientId);
+    filtered = filtered.filter((m) => m.client_id === clientId);
   }
 
   filtered.sort((a, b) => b.received_at - a.received_at);
@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     metrics: filtered,
     aggregates: {
-      avg_e2e_latency: Math.round(avg(filtered.map(m => m.e2e_latency_median)) * 100) / 100,
-      avg_llm_ttft: Math.round(avg(filtered.map(m => m.llm_ttft_median)) * 100) / 100,
-      avg_stt_latency: Math.round(avg(filtered.map(m => m.stt_latency_median)) * 100) / 100,
-      avg_tts_ttfb: Math.round(avg(filtered.map(m => m.tts_ttfb_median)) * 100) / 100,
+      avg_e2e_latency: Math.round(avg(filtered.map((m) => m.e2e_latency_median)) * 100) / 100,
+      avg_llm_ttft: Math.round(avg(filtered.map((m) => m.llm_ttft_median)) * 100) / 100,
+      avg_stt_latency: Math.round(avg(filtered.map((m) => m.stt_latency_median)) * 100) / 100,
+      avg_tts_ttfb: Math.round(avg(filtered.map((m) => m.tts_ttfb_median)) * 100) / 100,
       total_cost: Math.round(filtered.reduce((sum, m) => sum + m.total_cost, 0) * 10000) / 10000,
       total_sessions: filtered.length,
       total_turns: filtered.reduce((sum, m) => sum + m.turns_total, 0),

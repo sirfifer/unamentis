@@ -57,10 +57,7 @@ export function CurriculaPanel() {
   const [error, setError] = useState<string | null>(null);
 
   // URL-synced state using nuqs for persistence across refreshes
-  const [searchQuery, setSearchQuery] = useQueryState(
-    'search',
-    parseAsString.withDefault('')
-  );
+  const [searchQuery, setSearchQuery] = useQueryState('search', parseAsString.withDefault(''));
   const [showArchived, setShowArchived] = useQueryState(
     'archived',
     parseAsBoolean.withDefault(false)
@@ -98,16 +95,18 @@ export function CurriculaPanel() {
   // If creating new, show studio
   if (isCreating) {
     const newCurriculum: Curriculum = {
-      umcf: "1.0.0",
+      umcf: '1.0.0',
       id: { value: crypto.randomUUID() },
-      title: "New Curriculum",
-      version: { number: "0.1.0" },
-      content: [{
-        id: { value: 'unit-1' },
-        title: 'Unit 1',
-        type: 'unit',
-        children: []
-      }]
+      title: 'New Curriculum',
+      version: { number: '0.1.0' },
+      content: [
+        {
+          id: { value: 'unit-1' },
+          title: 'Unit 1',
+          type: 'unit',
+          children: [],
+        },
+      ],
     };
 
     return (
@@ -173,9 +172,7 @@ export function CurriculaPanel() {
             <BookOpen className="w-6 h-6 text-orange-400" />
             Curricula
           </h2>
-          <p className="text-slate-400 mt-1">
-            Manage your curriculum library
-          </p>
+          <p className="text-slate-400 mt-1">Manage your curriculum library</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -211,10 +208,11 @@ export function CurriculaPanel() {
 
         <button
           onClick={() => setShowArchived(!showArchived)}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${showArchived
-            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
-            : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700'
-            }`}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            showArchived
+              ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+              : 'text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700'
+          }`}
         >
           <Archive className="w-4 h-4" />
           {showArchived ? 'Showing Archived' : 'Show Archived'}

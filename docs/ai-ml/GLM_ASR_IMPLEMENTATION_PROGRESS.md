@@ -60,7 +60,7 @@
 
 | File | Purpose |
 |------|---------|
-| `docs/GLM_ASR_ON_DEVICE_GUIDE.md` | Complete on-device setup and usage guide |
+| `docs/ai-ml/GLM_ASR_ON_DEVICE_GUIDE.md` | Complete on-device setup and usage guide |
 
 ### Modified Files
 

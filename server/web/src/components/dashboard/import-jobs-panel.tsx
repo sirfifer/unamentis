@@ -30,16 +30,52 @@ async function cancelImportJob(jobId: string): Promise<void> {
 }
 
 const statusConfig: Record<ImportStatus, { icon: typeof Clock; color: string; label: string }> = {
-  queued: { icon: Clock, color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', label: 'Queued' },
-  downloading: { icon: Download, color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', label: 'Downloading' },
-  validating: { icon: Loader2, color: 'bg-violet-500/20 text-violet-400 border-violet-500/30', label: 'Validating' },
-  extracting: { icon: Loader2, color: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30', label: 'Extracting' },
-  enriching: { icon: Loader2, color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', label: 'Enriching' },
-  generating: { icon: Loader2, color: 'bg-teal-500/20 text-teal-400 border-teal-500/30', label: 'Generating' },
-  storing: { icon: Loader2, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', label: 'Storing' },
-  completed: { icon: CheckCircle, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', label: 'Completed' },
+  queued: {
+    icon: Clock,
+    color: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+    label: 'Queued',
+  },
+  downloading: {
+    icon: Download,
+    color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    label: 'Downloading',
+  },
+  validating: {
+    icon: Loader2,
+    color: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+    label: 'Validating',
+  },
+  extracting: {
+    icon: Loader2,
+    color: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+    label: 'Extracting',
+  },
+  enriching: {
+    icon: Loader2,
+    color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+    label: 'Enriching',
+  },
+  generating: {
+    icon: Loader2,
+    color: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+    label: 'Generating',
+  },
+  storing: {
+    icon: Loader2,
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    label: 'Storing',
+  },
+  completed: {
+    icon: CheckCircle,
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    label: 'Completed',
+  },
   failed: { icon: XCircle, color: 'bg-red-500/20 text-red-400 border-red-500/30', label: 'Failed' },
-  cancelled: { icon: XCircle, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', label: 'Cancelled' },
+  cancelled: {
+    icon: XCircle,
+    color: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    label: 'Cancelled',
+  },
 };
 
 function formatDuration(startedAt: string, endedAt?: string): string {
@@ -120,9 +156,7 @@ export function ImportJobsPanel() {
             <Download className="w-6 h-6 text-orange-400" />
             Import Jobs
           </h2>
-          <p className="text-slate-400 mt-1">
-            Monitor and manage curriculum import jobs
-          </p>
+          <p className="text-slate-400 mt-1">Monitor and manage curriculum import jobs</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -191,18 +225,14 @@ export function ImportJobsPanel() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-medium text-slate-100">
-                                {job.courseName}
-                              </h4>
+                              <h4 className="font-medium text-slate-100">{job.courseName}</h4>
                               <Badge className={config.color}>
                                 <StatusIcon className="w-3 h-3 mr-1 animate-spin" />
                                 {config.label}
                               </Badge>
                             </div>
 
-                            <p className="text-sm text-slate-400 mb-3">
-                              {job.currentStage}
-                            </p>
+                            <p className="text-sm text-slate-400 mb-3">{job.currentStage}</p>
 
                             {/* Progress Bar */}
                             <div className="space-y-2">
@@ -220,7 +250,9 @@ export function ImportJobsPanel() {
 
                             {/* Stats */}
                             <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
-                              <span>Files: {job.stats.filesProcessed}/{job.stats.filesDownloaded}</span>
+                              <span>
+                                Files: {job.stats.filesProcessed}/{job.stats.filesDownloaded}
+                              </span>
                               <span>Topics: {job.stats.topicsCreated}</span>
                               <span>Duration: {formatDuration(job.startedAt)}</span>
                             </div>
@@ -261,20 +293,14 @@ export function ImportJobsPanel() {
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-medium text-slate-100">
-                                {job.courseName}
-                              </h4>
+                              <h4 className="font-medium text-slate-100">{job.courseName}</h4>
                               <Badge className={config.color}>
                                 <StatusIcon className="w-3 h-3 mr-1" />
                                 {config.label}
                               </Badge>
                             </div>
 
-                            {job.error && (
-                              <p className="text-sm text-red-400 mt-1">
-                                {job.error}
-                              </p>
-                            )}
+                            {job.error && <p className="text-sm text-red-400 mt-1">{job.error}</p>}
 
                             <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
                               <span>Topics: {job.stats.topicsCreated}</span>
@@ -282,9 +308,7 @@ export function ImportJobsPanel() {
                                 Duration: {formatDuration(job.startedAt, job.completedAt)}
                               </span>
                               {job.completedAt && (
-                                <span>
-                                  Finished: {new Date(job.completedAt).toLocaleString()}
-                                </span>
+                                <span>Finished: {new Date(job.completedAt).toLocaleString()}</span>
                               )}
                             </div>
                           </div>

@@ -71,6 +71,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-spm-
 
+    - name: Create placeholder model files
+      run: |
+        # Create models directory and placeholder files for large models not in git
+        mkdir -p models
+        touch models/llama-3.2-3b-instruct-q4_k_m.gguf
+        touch models/ministral-3b-instruct-q4_k_m.gguf
+        touch models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+        echo "Created placeholder model files for CI build"
+
     - name: Build
       run: |
         set -o pipefail
@@ -151,6 +160,15 @@ jobs:
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/project.yml') }}
         restore-keys: |
           ${{ runner.os }}-spm-
+
+    - name: Create placeholder model files
+      run: |
+        # Create models directory and placeholder files for large models not in git
+        mkdir -p models
+        touch models/llama-3.2-3b-instruct-q4_k_m.gguf
+        touch models/ministral-3b-instruct-q4_k_m.gguf
+        touch models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+        echo "Created placeholder model files for CI build"
 
     - name: Build
       run: |

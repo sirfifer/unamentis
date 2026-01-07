@@ -12,7 +12,10 @@ interface LogsPanelProps {
   maxHeight?: string;
 }
 
-const levelStyles: Record<string, { badge: 'default' | 'info' | 'warning' | 'error'; textClass: string }> = {
+const levelStyles: Record<
+  string,
+  { badge: 'default' | 'info' | 'warning' | 'error'; textClass: string }
+> = {
   DEBUG: { badge: 'default', textClass: 'text-slate-400' },
   INFO: { badge: 'info', textClass: 'text-blue-400' },
   WARNING: { badge: 'warning', textClass: 'text-amber-400' },
@@ -116,10 +119,12 @@ export function LogsPanel({ maxHeight = '600px' }: LogsPanelProps) {
           <span className="ml-2 text-sm font-normal text-slate-400">({total} entries)</span>
         </CardTitle>
         <div className="flex items-center gap-1.5 text-sm">
-          <div className={cn(
-            'w-2 h-2 rounded-full',
-            paused ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
-          )} />
+          <div
+            className={cn(
+              'w-2 h-2 rounded-full',
+              paused ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'
+            )}
+          />
           <span className={paused ? 'text-amber-400' : 'text-emerald-400'}>
             {paused ? 'Paused' : 'Live'}
           </span>

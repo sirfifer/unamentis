@@ -41,14 +41,27 @@ If not connected, restart the Claude Code session.
 
 | Task | MCP Tool |
 |------|----------|
-| Build for simulator | `mcp__XcodeBuildMCP__build_for_simulator` |
-| Install app | `mcp__XcodeBuildMCP__simulator_app_install` |
-| Launch app | `mcp__XcodeBuildMCP__simulator_app_launch` |
-| Capture logs | `mcp__XcodeBuildMCP__simulator_get_app_logs` |
-| Take screenshot | `mcp__ios-simulator__screenshot` |
-| Tap UI | `mcp__ios-simulator__ui_tap` |
-| Type text | `mcp__ios-simulator__ui_type` |
-| Swipe | `mcp__ios-simulator__ui_swipe` |
+| Set session defaults | `mcp__XcodeBuildMCP__session-set-defaults` |
+| Build for simulator | `mcp__XcodeBuildMCP__build_sim` |
+| Build and run | `mcp__XcodeBuildMCP__build_run_sim` |
+| Install app | `mcp__XcodeBuildMCP__install_app_sim` |
+| Launch app | `mcp__XcodeBuildMCP__launch_app_sim` |
+| Capture logs | `mcp__XcodeBuildMCP__start_sim_log_cap` / `stop_sim_log_cap` |
+| Take screenshot | `mcp__XcodeBuildMCP__screenshot` or `mcp__ios-simulator__screenshot` |
+| Describe UI | `mcp__XcodeBuildMCP__describe_ui` |
+| Tap UI | `mcp__XcodeBuildMCP__tap` or `mcp__ios-simulator__ui_tap` |
+| Type text | `mcp__XcodeBuildMCP__type_text` or `mcp__ios-simulator__ui_type` |
+| Swipe | `mcp__XcodeBuildMCP__swipe` or `mcp__ios-simulator__ui_swipe` |
+| Gestures | `mcp__XcodeBuildMCP__gesture` |
+
+**Important**: Before building, set session defaults:
+```
+mcp__XcodeBuildMCP__session-set-defaults({
+  projectPath: "/Users/ramerman/dev/unamentis/UnaMentis.xcodeproj",
+  scheme: "UnaMentis",
+  simulatorName: "iPhone 17 Pro"
+})
+```
 
 ### Round-Trip Debugging Workflow
 
@@ -172,9 +185,31 @@ Do NOT commit if either command fails. Fix the issues first.
 
 ## Key Documentation
 
-- `docs/DEV_ENVIRONMENT.md` - **Developer environment setup guide**
-- `docs/IOS_STYLE_GUIDE.md` - Mandatory iOS coding standards
-- `docs/UnaMentis_TDD.md` - Technical design document
+- `docs/setup/DEV_ENVIRONMENT.md` - **Developer environment setup guide**
+- `docs/ios/IOS_STYLE_GUIDE.md` - Mandatory iOS coding standards
+- `docs/architecture/UnaMentis_TDD.md` - Technical design document
+- `docs/architecture/PROJECT_OVERVIEW.md` - **Authoritative project overview (must be kept current)**
 - `docs/TASK_STATUS.md` - Current task status
 - `AGENTS.md` - AI development guidelines and testing philosophy
 - `curriculum/README.md` - UMCF curriculum format
+
+## MANDATORY: PROJECT_OVERVIEW.md Maintenance
+
+The file `docs/architecture/PROJECT_OVERVIEW.md` is the **authoritative project overview** used to update the website and communicate project status. Keeping it current is part of the definition of done.
+
+**Update PROJECT_OVERVIEW.md when:**
+- Adding a new AI model or provider (STT, TTS, LLM, VAD, Embeddings)
+- Adding a new client application or platform
+- Adding a new server component or API
+- Implementing a significant feature
+- Completing a roadmap phase
+
+**Required content (must always be complete):**
+- All AI models with names and characteristics
+- All client applications with status (iOS, Web, Android)
+- All server components with ports and tech stacks
+- All self-hosted server options
+- Accurate service counts
+- Current completion status
+
+This is not optional. The document is used externally and must reflect the true state of the project.

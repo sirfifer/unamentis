@@ -215,7 +215,8 @@ final class ChatterboxSettingsViewModel: ObservableObject {
         let serverIP = UserDefaults.standard.string(forKey: "selfHostedServerIP") ?? "localhost"
         let port = TTSProvider.chatterbox.defaultPort
 
-        let healthURL = URL(string: "http://\(serverIP):\(port)/health")!
+        // Use /api/model-info instead of /health since ChatterBox server doesn't have a /health endpoint
+        let healthURL = URL(string: "http://\(serverIP):\(port)/api/model-info")!
 
         do {
             var request = URLRequest(url: healthURL)

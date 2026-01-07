@@ -94,7 +94,7 @@ interface ImportJob {
 
 // Valid view modes for URL state
 const VIEW_MODES = ['sources', 'catalog', 'detail'] as const;
-type ViewMode = typeof VIEW_MODES[number];
+type ViewMode = (typeof VIEW_MODES)[number];
 
 // Use relative URLs to go through Next.js API proxy routes
 const BACKEND_URL = '';
@@ -115,7 +115,10 @@ export function SourceBrowserPanel() {
   const [selectedCourseId, setSelectedCourseId] = useQueryState('course', parseAsString);
   const [currentPage, setCurrentPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [searchQuery, setSearchQuery] = useQueryState('q', parseAsString.withDefault(''));
-  const [selectedSubject, setSelectedSubject] = useQueryState('subject', parseAsString.withDefault(''));
+  const [selectedSubject, setSelectedSubject] = useQueryState(
+    'subject',
+    parseAsString.withDefault('')
+  );
   const [selectedLevel, setSelectedLevel] = useQueryState('level', parseAsString.withDefault(''));
 
   // Local state (not URL-synced)
@@ -170,7 +173,7 @@ export function SourceBrowserPanel() {
   // Restore selected source from URL when sources are loaded
   useEffect(() => {
     if (sources.length > 0 && selectedSourceId) {
-      const source = sources.find(s => s.id === selectedSourceId);
+      const source = sources.find((s) => s.id === selectedSourceId);
       if (source) {
         setSelectedSource(source);
         // If we have a source ID in URL, fetch the catalog
@@ -190,7 +193,7 @@ export function SourceBrowserPanel() {
   // Restore selected course from URL when courses are loaded
   useEffect(() => {
     if (courses.length > 0 && selectedCourseId && selectedSource) {
-      const course = courses.find(c => c.id === selectedCourseId);
+      const course = courses.find((c) => c.id === selectedCourseId);
       if (course) {
         setSelectedCourse(course);
         if (viewMode === 'detail') {
@@ -219,46 +222,49 @@ export function SourceBrowserPanel() {
     }
   };
 
-  const fetchCatalog = useCallback(async (
-    sourceId: string,
-    page: number = 1,
-    search?: string,
-    subject?: string,
-    level?: string
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      params.set('page', String(page));
-      params.set('pageSize', '12');
-      if (search) params.set('search', search);
-      if (subject) params.set('subject', subject);
-      if (level) params.set('level', level);
+  const fetchCatalog = useCallback(
+    async (
+      sourceId: string,
+      page: number = 1,
+      search?: string,
+      subject?: string,
+      level?: string
+    ) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('pageSize', '12');
+        if (search) params.set('search', search);
+        if (subject) params.set('subject', subject);
+        if (level) params.set('level', level);
 
-      const response = await fetch(
-        `${BACKEND_URL}/api/import/sources/${sourceId}/courses?${params}`
-      );
-      const data = await response.json();
+        const response = await fetch(
+          `${BACKEND_URL}/api/import/sources/${sourceId}/courses?${params}`
+        );
+        const data = await response.json();
 
-      if (data.success) {
-        setCourses(data.courses);
-        setCurrentPage(data.pagination.page);
-        setTotalPages(data.pagination.totalPages);
-        setTotalCourses(data.pagination.total);
-        if (data.filters) {
-          setAvailableFilters(data.filters);
+        if (data.success) {
+          setCourses(data.courses);
+          setCurrentPage(data.pagination.page);
+          setTotalPages(data.pagination.totalPages);
+          setTotalCourses(data.pagination.total);
+          if (data.filters) {
+            setAvailableFilters(data.filters);
+          }
+        } else {
+          setError(data.error || 'Failed to fetch courses');
         }
-      } else {
-        setError(data.error || 'Failed to fetch courses');
+      } catch (err) {
+        setError('Failed to connect to server');
+        console.error('Error fetching catalog:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Failed to connect to server');
-      console.error('Error fetching catalog:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const fetchCourseDetail = async (sourceId: string, courseId: string) => {
     setLoading(true);
@@ -432,12 +438,18 @@ export function SourceBrowserPanel() {
   // Get feature icon
   const getFeatureIcon = (type: string) => {
     switch (type) {
-      case 'video': return Video;
-      case 'transcript': return FileText;
-      case 'lecture_notes': return BookOpen;
-      case 'assignments': return FileQuestion;
-      case 'exams': return FileQuestion;
-      default: return FileText;
+      case 'video':
+        return Video;
+      case 'transcript':
+        return FileText;
+      case 'lecture_notes':
+        return BookOpen;
+      case 'assignments':
+        return FileQuestion;
+      case 'exams':
+        return FileQuestion;
+      default:
+        return FileText;
     }
   };
 
@@ -487,9 +499,12 @@ export function SourceBrowserPanel() {
                   <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
                     <div
                       className={cn(
-                        "h-full transition-all",
-                        job.status === 'completed' ? 'bg-emerald-500' :
-                        job.status === 'failed' ? 'bg-red-500' : 'bg-orange-500'
+                        'h-full transition-all',
+                        job.status === 'completed'
+                          ? 'bg-emerald-500'
+                          : job.status === 'failed'
+                            ? 'bg-red-500'
+                            : 'bg-orange-500'
                       )}
                       style={{ width: `${job.overallProgress}%` }}
                     />
@@ -597,9 +612,7 @@ export function SourceBrowserPanel() {
         </button>
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-slate-100">{selectedSource?.name}</h3>
-          <p className="text-sm text-slate-400">
-            {totalCourses} courses available
-          </p>
+          <p className="text-sm text-slate-400">{totalCourses} courses available</p>
         </div>
         {selectedSource?.baseUrl && (
           <a
@@ -636,7 +649,9 @@ export function SourceBrowserPanel() {
           >
             <option value="">All Subjects</option>
             {availableFilters.subjects.map((subject) => (
-              <option key={subject} value={subject}>{subject}</option>
+              <option key={subject} value={subject}>
+                {subject}
+              </option>
             ))}
           </select>
         )}
@@ -649,7 +664,9 @@ export function SourceBrowserPanel() {
           >
             <option value="">All Levels</option>
             {availableFilters.levels.map((level) => (
-              <option key={level} value={level}>{level}</option>
+              <option key={level} value={level}>
+                {level}
+              </option>
             ))}
           </select>
         )}
@@ -698,24 +715,26 @@ export function SourceBrowserPanel() {
               </div>
 
               {/* Description */}
-              <p className="text-sm text-slate-400 line-clamp-2 mb-4">
-                {course.description}
-              </p>
+              <p className="text-sm text-slate-400 line-clamp-2 mb-4">{course.description}</p>
 
               {/* Features */}
               <div className="flex flex-wrap gap-1.5">
-                {course.features.filter(f => f.available).map((feature) => {
-                  const Icon = getFeatureIcon(feature.type);
-                  return (
-                    <div
-                      key={feature.type}
-                      className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-xs"
-                    >
-                      <Icon className="w-3 h-3" />
-                      {feature.count ? `${feature.count} ${feature.type.replace('_', ' ')}` : feature.type.replace('_', ' ')}
-                    </div>
-                  );
-                })}
+                {course.features
+                  .filter((f) => f.available)
+                  .map((feature) => {
+                    const Icon = getFeatureIcon(feature.type);
+                    return (
+                      <div
+                        key={feature.type}
+                        className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-xs"
+                      >
+                        <Icon className="w-3 h-3" />
+                        {feature.count
+                          ? `${feature.count} ${feature.type.replace('_', ' ')}`
+                          : feature.type.replace('_', ' ')}
+                      </div>
+                    );
+                  })}
               </div>
             </CardContent>
           </Card>
@@ -836,10 +855,10 @@ export function SourceBrowserPanel() {
                       <div
                         key={feature.type}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg",
+                          'flex items-center gap-3 p-3 rounded-lg',
                           feature.available
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-slate-800 text-slate-500"
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : 'bg-slate-800 text-slate-500'
                         )}
                       >
                         {feature.available ? (
@@ -877,9 +896,7 @@ export function SourceBrowserPanel() {
                       <p className="text-sm font-medium text-slate-100">
                         {selectedCourse.license.name}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {selectedCourse.license.type}
-                      </p>
+                      <p className="text-xs text-slate-500 mt-1">{selectedCourse.license.type}</p>
                     </div>
 
                     {selectedCourse.license.attributionFormat && (
@@ -931,30 +948,44 @@ export function SourceBrowserPanel() {
                 <div className="space-y-3">
                   <h5 className="text-sm font-medium text-slate-100">Include Content</h5>
                   <div className="space-y-2">
-                    {selectedCourse.features.filter(f => f.available).map((feature) => (
-                      <ImportOption
-                        key={feature.type}
-                        label={feature.type.replace('_', ' ')}
-                        checked={
-                          feature.type === 'transcript' ? importOptions.includeTranscripts :
-                          feature.type === 'lecture_notes' ? importOptions.includeLectureNotes :
-                          feature.type === 'assignments' ? importOptions.includeAssignments :
-                          feature.type === 'exams' ? importOptions.includeExams :
-                          feature.type === 'video' ? importOptions.includeVideos : true
-                        }
-                        onChange={(v) => {
-                          const key =
-                            feature.type === 'transcript' ? 'includeTranscripts' :
-                            feature.type === 'lecture_notes' ? 'includeLectureNotes' :
-                            feature.type === 'assignments' ? 'includeAssignments' :
-                            feature.type === 'exams' ? 'includeExams' :
-                            feature.type === 'video' ? 'includeVideos' : null;
-                          if (key) {
-                            setImportOptions(prev => ({ ...prev, [key]: v }));
+                    {selectedCourse.features
+                      .filter((f) => f.available)
+                      .map((feature) => (
+                        <ImportOption
+                          key={feature.type}
+                          label={feature.type.replace('_', ' ')}
+                          checked={
+                            feature.type === 'transcript'
+                              ? importOptions.includeTranscripts
+                              : feature.type === 'lecture_notes'
+                                ? importOptions.includeLectureNotes
+                                : feature.type === 'assignments'
+                                  ? importOptions.includeAssignments
+                                  : feature.type === 'exams'
+                                    ? importOptions.includeExams
+                                    : feature.type === 'video'
+                                      ? importOptions.includeVideos
+                                      : true
                           }
-                        }}
-                      />
-                    ))}
+                          onChange={(v) => {
+                            const key =
+                              feature.type === 'transcript'
+                                ? 'includeTranscripts'
+                                : feature.type === 'lecture_notes'
+                                  ? 'includeLectureNotes'
+                                  : feature.type === 'assignments'
+                                    ? 'includeAssignments'
+                                    : feature.type === 'exams'
+                                      ? 'includeExams'
+                                      : feature.type === 'video'
+                                        ? 'includeVideos'
+                                        : null;
+                            if (key) {
+                              setImportOptions((prev) => ({ ...prev, [key]: v }));
+                            }
+                          }}
+                        />
+                      ))}
                   </div>
                 </div>
 
@@ -965,22 +996,30 @@ export function SourceBrowserPanel() {
                     <ImportOption
                       label="Generate learning objectives"
                       checked={importOptions.generateObjectives}
-                      onChange={(v) => setImportOptions(prev => ({ ...prev, generateObjectives: v }))}
+                      onChange={(v) =>
+                        setImportOptions((prev) => ({ ...prev, generateObjectives: v }))
+                      }
                     />
                     <ImportOption
                       label="Create checkpoints"
                       checked={importOptions.createCheckpoints}
-                      onChange={(v) => setImportOptions(prev => ({ ...prev, createCheckpoints: v }))}
+                      onChange={(v) =>
+                        setImportOptions((prev) => ({ ...prev, createCheckpoints: v }))
+                      }
                     />
                     <ImportOption
                       label="Generate spoken text"
                       checked={importOptions.generateSpokenText}
-                      onChange={(v) => setImportOptions(prev => ({ ...prev, generateSpokenText: v }))}
+                      onChange={(v) =>
+                        setImportOptions((prev) => ({ ...prev, generateSpokenText: v }))
+                      }
                     />
                     <ImportOption
                       label="Build knowledge graph"
                       checked={importOptions.buildKnowledgeGraph}
-                      onChange={(v) => setImportOptions(prev => ({ ...prev, buildKnowledgeGraph: v }))}
+                      onChange={(v) =>
+                        setImportOptions((prev) => ({ ...prev, buildKnowledgeGraph: v }))
+                      }
                     />
                   </div>
                 </div>
@@ -1070,8 +1109,8 @@ function ImportOption({
   return (
     <label
       className={cn(
-        "flex items-center gap-3 cursor-pointer group",
-        disabled && "opacity-50 cursor-not-allowed"
+        'flex items-center gap-3 cursor-pointer group',
+        disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
       <input
@@ -1081,9 +1120,7 @@ function ImportOption({
         disabled={disabled}
         className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-900"
       />
-      <span className="text-sm text-slate-300 capitalize group-hover:text-slate-100">
-        {label}
-      </span>
+      <span className="text-sm text-slate-300 capitalize group-hover:text-slate-100">{label}</span>
     </label>
   );
 }

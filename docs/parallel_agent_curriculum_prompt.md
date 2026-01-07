@@ -12,7 +12,7 @@ Implement the Curriculum Management System as specified in the TDD (Technical De
 
 Read these files before starting:
 
-1. **Primary Reference:** `docs/UnaMentis_TDD.md`
+1. **Primary Reference:** `docs/architecture/UnaMentis_TDD.md`
    - Section 4: Curriculum Management System (lines ~1200-1600)
    - Section 4.2: Data Models (Curriculum, Topic, Document, TopicProgress entities)
    - Section 4.3: CurriculumEngine implementation
@@ -20,7 +20,7 @@ Read these files before starting:
 
 2. **Project Structure:** `README.md`
 
-3. **Testing Guidelines:** `docs/TESTING.md`
+3. **Testing Guidelines:** `docs/testing/TESTING.md`
    - Follow TDD approach: write tests first, then implement
 
 ## Files to Create

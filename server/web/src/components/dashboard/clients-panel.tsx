@@ -36,11 +36,12 @@ export function ClientsPanel() {
     return () => clearInterval(interval);
   }, []);
 
-  const statusStyles: Record<string, { color: string; badge: 'success' | 'warning' | 'default' }> = {
-    online: { color: 'bg-emerald-400', badge: 'success' },
-    idle: { color: 'bg-amber-400', badge: 'warning' },
-    offline: { color: 'bg-slate-500', badge: 'default' },
-  };
+  const statusStyles: Record<string, { color: string; badge: 'success' | 'warning' | 'default' }> =
+    {
+      online: { color: 'bg-emerald-400', badge: 'success' },
+      idle: { color: 'bg-amber-400', badge: 'warning' },
+      offline: { color: 'bg-slate-500', badge: 'default' },
+    };
 
   return (
     <div className="space-y-6">
@@ -177,13 +178,22 @@ export function ClientsPanelCompact() {
                 className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30"
               >
                 <div className="flex items-center gap-3">
-                  <div className={cn('w-2 h-2 rounded-full', statusStyles[client.status] || statusStyles.offline)} />
+                  <div
+                    className={cn(
+                      'w-2 h-2 rounded-full',
+                      statusStyles[client.status] || statusStyles.offline
+                    )}
+                  />
                   <div>
                     <div className="font-medium text-slate-100">{client.name}</div>
-                    <div className="text-xs text-slate-400">{client.device_model} • {client.os_version}</div>
+                    <div className="text-xs text-slate-400">
+                      {client.device_model} • {client.os_version}
+                    </div>
                   </div>
                 </div>
-                <span className="text-sm text-slate-400">{formatRelativeTime(client.last_seen)}</span>
+                <span className="text-sm text-slate-400">
+                  {formatRelativeTime(client.last_seen)}
+                </span>
               </div>
             ))}
           </div>

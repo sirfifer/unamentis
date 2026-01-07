@@ -1,8 +1,8 @@
 # Una Mentis Curriculum Format (UMCF) Specification
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Status:** Draft
-**Date:** 2025-12-17
+**Date:** 2026-01-03
 **MIME Type:** `application/vnd.unamentis.curriculum+json`
 **File Extension:** `.umcf`
 
@@ -319,8 +319,10 @@ Each content node can include a `media` object with two categories:
 |------|-------------|----------|
 | `image` | Static images (PNG, JPEG, WebP) | Photos, screenshots, illustrations |
 | `diagram` | Architectural/flow diagrams | System design, process flows |
-| `equation` | Mathematical formulas (LaTeX) | Formulas, derivations |
+| `equation` | Mathematical formulas (LaTeX) | Simple formulas, derivations |
+| `formula` | Enhanced mathematical formulas | Complex formulas with semantics |
 | `chart` | Data visualizations | Graphs, statistics |
+| `map` | Geographic maps | History, geography, spatial content |
 | `slideImage` | Single slide from a deck | Key presentation slides |
 | `slideDeck` | Full presentation reference | Complete slide sets |
 | `video` | Video content (MP4, WebM) | Demonstrations, animations |
@@ -432,6 +434,160 @@ For lecture videos from external sources (MIT OCW, Stanford, etc.):
 
 Video lectures are intended for in-app playback (windowed or fullscreen) and link back to the original source for proper attribution.
 
+### Map Format (v1.1.0)
+
+Maps are first-class media types for geographic and historical content:
+
+```json
+{
+  "id": "map-italian-city-states",
+  "type": "map",
+  "title": "Italian City-States in 1494",
+  "alt": "Map showing major Renaissance city-states including Florence, Venice, and Milan",
+  "geography": {
+    "center": { "latitude": 42.5, "longitude": 12.5 },
+    "zoom": 6
+  },
+  "mapStyle": "historical",
+  "timePeriod": {
+    "year": 1494,
+    "era": "CE",
+    "displayLabel": "Renaissance Italy, 1494"
+  },
+  "markers": [
+    {
+      "id": "marker-florence",
+      "latitude": 43.7696,
+      "longitude": 11.2558,
+      "label": "Florence",
+      "description": "Center of the Renaissance, ruled by the Medici family",
+      "markerType": "city",
+      "color": "#D4AF37"
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-trade",
+      "label": "Trade Route",
+      "points": [
+        { "latitude": 45.44, "longitude": 12.31 },
+        { "latitude": 43.77, "longitude": 11.26 }
+      ],
+      "color": "#8B4513",
+      "style": "dashed"
+    }
+  ],
+  "regions": [
+    {
+      "id": "region-florence",
+      "label": "Republic of Florence",
+      "fillColor": "#FFD700",
+      "opacity": 0.3
+    }
+  ],
+  "interactive": true,
+  "fallbackImageUrl": "media/maps/italian-city-states.png",
+  "segmentTiming": {
+    "startSegment": "seg-city-states",
+    "displayMode": "persistent"
+  }
+}
+```
+
+**Map-Specific Fields:**
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `geography` | Yes | object | Center coordinates and zoom level |
+| `mapStyle` | No | string | Visual style: political, historical, satellite, terrain |
+| `timePeriod` | No | object | Historical period for the map |
+| `markers` | No | array | Points of interest with labels |
+| `routes` | No | array | Paths/routes to display |
+| `regions` | No | array | Highlighted geographic areas |
+| `interactive` | No | boolean | Enable pan/zoom interaction (default: false) |
+| `fallbackImageUrl` | No | string | Static image for non-interactive display |
+
+### Diagram with Source Code (v1.1.0)
+
+Diagrams can include source code for server-side generation:
+
+```json
+{
+  "id": "diag-neural-network",
+  "type": "diagram",
+  "title": "Multi-Layer Perceptron Architecture",
+  "alt": "Diagram showing input, hidden, and output layers",
+  "diagramSubtype": "architecture",
+  "sourceCode": {
+    "format": "mermaid",
+    "code": "graph LR\n  I1((x₁)) --> H1((h₁))\n  I1 --> H2((h₂))\n  H1 --> O1((y))\n  H2 --> O1",
+    "version": "10.6.0"
+  },
+  "url": "media/diagrams/mlp-architecture.svg",
+  "mimeType": "image/svg+xml",
+  "generationSource": "ai_generated",
+  "generationMetadata": {
+    "model": "claude-opus-4-5",
+    "humanReviewed": true
+  }
+}
+```
+
+**Diagram Source Code Fields:**
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `diagramSubtype` | No | string | Type: flowchart, sequence, class, architecture, mindmap |
+| `sourceCode.format` | Yes | string | Diagram language: mermaid, graphviz, plantuml |
+| `sourceCode.code` | Yes | string | The diagram source code |
+| `generationSource` | No | string | How created: ai_generated, author_provided |
+| `generationMetadata` | No | object | AI generation details |
+
+**Supported Diagram Formats:**
+- `mermaid` - Flowcharts, sequence diagrams, class diagrams, state diagrams
+- `graphviz` - DOT language for graphs and trees
+- `plantuml` - UML diagrams
+- `d2` - Modern declarative diagramming
+
+### Enhanced Formula Format (v1.1.0)
+
+The `formula` type extends `equation` with semantic meaning and accessibility:
+
+```json
+{
+  "id": "eq-quadratic",
+  "type": "formula",
+  "latex": "x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}",
+  "alt": "x equals negative b plus or minus the square root of b squared minus 4ac, all over 2a",
+  "displayMode": "block",
+  "semanticMeaning": {
+    "category": "algebraic",
+    "commonName": "Quadratic Formula",
+    "purpose": "Finds the roots of a quadratic equation ax² + bx + c = 0",
+    "variables": [
+      { "symbol": "x", "meaning": "solutions (roots) of the equation" },
+      { "symbol": "a", "meaning": "coefficient of x²" },
+      { "symbol": "b", "meaning": "coefficient of x" },
+      { "symbol": "c", "meaning": "constant term" }
+    ],
+    "spokenForm": "x equals negative b, plus or minus the square root of b squared minus four a c, all divided by two a"
+  },
+  "fallbackImageUrl": "media/formulas/quadratic.png"
+}
+```
+
+**Formula-Specific Fields:**
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `displayMode` | No | string | inline, block, or display |
+| `semanticMeaning` | No | object | Semantic interpretation |
+| `semanticMeaning.category` | No | string | Math category: algebraic, calculus, etc. |
+| `semanticMeaning.commonName` | No | string | Well-known name for the formula |
+| `semanticMeaning.variables` | No | array | Variable descriptions |
+| `semanticMeaning.spokenForm` | No | string | TTS-optimized verbal form |
+| `fallbackImageUrl` | No | string | Pre-rendered image for fallback |
+
 ### Accessibility Requirements
 
 All visual content MUST include:
@@ -530,6 +686,63 @@ Interactive verification:
 }
 ```
 
+### Checkpoint Types
+
+| Type | Purpose | Evaluation Approach |
+|------|---------|---------------------|
+| `simple_confirmation` | Quick "does that make sense?" check | Accept acknowledgment |
+| `comprehension_check` | Verify basic understanding | Pattern matching on response |
+| `knowledge_check` | Test recall of facts | Match against expected answers |
+| `application_check` | Verify ability to apply concept | Evaluate worked example |
+| `teachback` | Have learner explain concept in own words | AI evaluates depth and accuracy |
+
+### Teachback Checkpoints (v1.1.0)
+
+Teachback is a pedagogically powerful checkpoint type that asks learners to explain concepts in their own words. This reinforces genuine understanding rather than surface-level recognition.
+
+```json
+{
+  "checkpoint": {
+    "type": "teachback",
+    "prompt": "Now I'd like you to explain neural network backpropagation in your own words. Imagine you're teaching it to a friend who knows basic calculus.",
+    "conceptId": "backpropagation",
+    "evaluationCriteria": {
+      "requiredConcepts": ["error", "gradient", "weights", "backwards"],
+      "bonusConcepts": ["chain rule", "partial derivatives"],
+      "minimumDepth": "surface",
+      "maxAttempts": 3
+    },
+    "feedbackTiers": {
+      "excellent": {
+        "threshold": 0.9,
+        "feedbackText": "That's an excellent explanation! You clearly understand the core concepts.",
+        "nextAction": "continue"
+      },
+      "good": {
+        "threshold": 0.7,
+        "feedbackText": "Good! You've got the main idea. Let me add one clarification...",
+        "nextAction": "supplement"
+      },
+      "partial": {
+        "threshold": 0.4,
+        "feedbackText": "You're on the right track. Let's work through this together...",
+        "nextAction": "guided_review"
+      },
+      "struggling": {
+        "threshold": 0.0,
+        "feedbackText": "No worries, this is a tricky concept. Let me explain it a different way...",
+        "nextAction": "reteach"
+      }
+    },
+    "struggleMetrics": {
+      "trackThinkTime": true,
+      "encourageAttempts": true,
+      "celebrateEffort": true
+    }
+  }
+}
+```
+
 ### Alternative Explanations
 
 For rephrasing the same concept:
@@ -570,6 +783,51 @@ Detect and correct common errors:
   ]
 }
 ```
+
+### Key Concepts for Spaced Retrieval (v1.1.0)
+
+Content nodes can flag key concepts that should be revisited across sessions to verify long-term retention. This supports spaced retrieval practice, a learning science technique that strengthens memory through periodic recall.
+
+```json
+{
+  "id": { "value": "topic-backpropagation" },
+  "title": "Backpropagation Algorithm",
+  "type": "topic",
+  "keyConceptForRetrieval": true,
+  "retrievalConfig": {
+    "difficulty": "medium",
+    "retrievalPrompts": [
+      "What is backpropagation and why is it important in neural networks?",
+      "How does the gradient flow backwards through the network?",
+      "What role does the chain rule play in backpropagation?"
+    ],
+    "minimumRetention": 0.7,
+    "spacingAlgorithm": "leitner",
+    "initialInterval": "P1D",
+    "maxInterval": "P30D"
+  }
+}
+```
+
+**Key Concept Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `keyConceptForRetrieval` | boolean | Flag this concept for spaced retrieval |
+| `retrievalConfig.difficulty` | string | easy, medium, or hard |
+| `retrievalConfig.retrievalPrompts` | string[] | Questions to ask during retrieval checks |
+| `retrievalConfig.minimumRetention` | number | Target retention rate (0-1) |
+| `retrievalConfig.spacingAlgorithm` | string | Algorithm: leitner, sm2, or custom |
+| `retrievalConfig.initialInterval` | string | First retrieval interval (ISO 8601) |
+| `retrievalConfig.maxInterval` | string | Maximum interval between retrievals |
+
+**Spacing Algorithms:**
+
+| Algorithm | Description |
+|-----------|-------------|
+| `leitner` | Box-based system: success increases interval, failure resets |
+| `sm2` | SuperMemo 2 algorithm with easiness factor |
+| `custom` | Use `customSpacingConfig` for application-specific logic |
 
 ### Time Estimates
 

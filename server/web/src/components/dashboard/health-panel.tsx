@@ -169,7 +169,8 @@ export function HealthPanel() {
   const cpu = metrics?.cpu;
   const thermalStyle = thermal ? thermalColors[thermal.pressure] : thermalColors.nominal;
   const idleState = idleStatus?.current_state || 'active';
-  const idleStyle = idleStateColors[idleState as keyof typeof idleStateColors] || idleStateColors.active;
+  const idleStyle =
+    idleStateColors[idleState as keyof typeof idleStateColors] || idleStateColors.active;
   const IdleIcon = idleStyle.icon;
 
   return (
@@ -180,7 +181,9 @@ export function HealthPanel() {
         <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="pt-4">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${power?.battery_charging ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}>
+              <div
+                className={`p-2 rounded-lg ${power?.battery_charging ? 'bg-emerald-500/20' : 'bg-amber-500/20'}`}
+              >
                 {power?.battery_charging ? (
                   <BatteryCharging className="w-5 h-5 text-emerald-400" />
                 ) : (
@@ -188,9 +191,13 @@ export function HealthPanel() {
                 )}
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-100">{power?.battery_percent?.toFixed(0) || '--'}%</p>
+                <p className="text-2xl font-bold text-slate-100">
+                  {power?.battery_percent?.toFixed(0) || '--'}%
+                </p>
                 <p className="text-xs text-slate-400">
-                  {power?.battery_charging ? 'Charging' : `${power?.current_battery_draw_w?.toFixed(1) || '--'}W draw`}
+                  {power?.battery_charging
+                    ? 'Charging'
+                    : `${power?.current_battery_draw_w?.toFixed(1) || '--'}W draw`}
                 </p>
               </div>
             </div>
@@ -206,7 +213,8 @@ export function HealthPanel() {
               </div>
               <div>
                 <p className={`text-2xl font-bold ${thermalStyle.text}`}>
-                  {thermal?.pressure?.charAt(0).toUpperCase()}{thermal?.pressure?.slice(1) || 'Unknown'}
+                  {thermal?.pressure?.charAt(0).toUpperCase()}
+                  {thermal?.pressure?.slice(1) || 'Unknown'}
                 </p>
                 <p className="text-xs text-slate-400">
                   {thermal?.cpu_temp_c ? `${thermal.cpu_temp_c.toFixed(0)}°C CPU` : 'Thermal state'}
@@ -224,7 +232,9 @@ export function HealthPanel() {
                 <Cpu className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-100">{cpu?.total_percent?.toFixed(1) || '--'}%</p>
+                <p className="text-2xl font-bold text-slate-100">
+                  {cpu?.total_percent?.toFixed(1) || '--'}%
+                </p>
                 <p className="text-xs text-slate-400">Total CPU usage</p>
               </div>
             </div>
@@ -262,29 +272,28 @@ export function HealthPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {powerModes && Object.entries(powerModes.modes).map(([key, mode]) => (
-              <button
-                key={key}
-                onClick={() => handleSetMode(key)}
-                disabled={actionLoading !== null}
-                className={`w-full p-3 rounded-lg border text-left transition-all ${
-                  powerModes.current === key
-                    ? 'border-indigo-500 bg-indigo-500/20'
-                    : 'border-slate-600 bg-slate-700/50 hover:bg-slate-700'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-100">{mode.name}</span>
-                  {powerModes.current === key && (
-                    <Check className="w-4 h-4 text-indigo-400" />
-                  )}
-                  {actionLoading === `mode-${key}` && (
-                    <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
-                  )}
-                </div>
-                <p className="text-xs text-slate-400 mt-1">{mode.description}</p>
-              </button>
-            ))}
+            {powerModes &&
+              Object.entries(powerModes.modes).map(([key, mode]) => (
+                <button
+                  key={key}
+                  onClick={() => handleSetMode(key)}
+                  disabled={actionLoading !== null}
+                  className={`w-full p-3 rounded-lg border text-left transition-all ${
+                    powerModes.current === key
+                      ? 'border-indigo-500 bg-indigo-500/20'
+                      : 'border-slate-600 bg-slate-700/50 hover:bg-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-slate-100">{mode.name}</span>
+                    {powerModes.current === key && <Check className="w-4 h-4 text-indigo-400" />}
+                    {actionLoading === `mode-${key}` && (
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">{mode.description}</p>
+                </button>
+              ))}
 
             <div className="pt-3 border-t border-slate-700">
               <p className="text-xs text-slate-400 mb-2">Quick Actions</p>
@@ -334,33 +343,40 @@ export function HealthPanel() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {metrics?.services && Object.entries(metrics.services).map(([key, service]) => (
-              <div
-                key={key}
-                className="p-3 rounded-lg bg-slate-700/50 border border-slate-600/50"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-slate-100">{service.service_name}</span>
-                  <Badge variant={service.model_loaded ? 'success' : 'default'}>
-                    {service.model_loaded ? 'Loaded' : 'Idle'}
-                  </Badge>
+            {metrics?.services &&
+              Object.entries(metrics.services).map(([key, service]) => (
+                <div
+                  key={key}
+                  className="p-3 rounded-lg bg-slate-700/50 border border-slate-600/50"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-slate-100">{service.service_name}</span>
+                    <Badge variant={service.model_loaded ? 'success' : 'default'}>
+                      {service.model_loaded ? 'Loaded' : 'Idle'}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-slate-400">CPU</p>
+                      <p className="text-slate-100 font-medium">
+                        {service.cpu_percent?.toFixed(1) || 0}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Memory</p>
+                      <p className="text-slate-100 font-medium">
+                        {service.memory_mb?.toFixed(0) || 0} MB
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Power</p>
+                      <p className="text-slate-100 font-medium">
+                        {service.estimated_power_w?.toFixed(1) || 0}W
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div>
-                    <p className="text-slate-400">CPU</p>
-                    <p className="text-slate-100 font-medium">{service.cpu_percent?.toFixed(1) || 0}%</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400">Memory</p>
-                    <p className="text-slate-100 font-medium">{service.memory_mb?.toFixed(0) || 0} MB</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400">Power</p>
-                    <p className="text-slate-100 font-medium">{service.estimated_power_w?.toFixed(1) || 0}W</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
 
             {(!metrics?.services || Object.keys(metrics.services).length === 0) && (
               <p className="text-center text-slate-400 py-4">No services detected</p>
@@ -437,19 +453,27 @@ export function HealthPanel() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Warm:</span>
-                  <span className="text-slate-300">{formatDuration(idleStatus?.thresholds?.warm || 0)}</span>
+                  <span className="text-slate-300">
+                    {formatDuration(idleStatus?.thresholds?.warm || 0)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Cool:</span>
-                  <span className="text-slate-300">{formatDuration(idleStatus?.thresholds?.cool || 0)}</span>
+                  <span className="text-slate-300">
+                    {formatDuration(idleStatus?.thresholds?.cool || 0)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Cold:</span>
-                  <span className="text-slate-300">{formatDuration(idleStatus?.thresholds?.cold || 0)}</span>
+                  <span className="text-slate-300">
+                    {formatDuration(idleStatus?.thresholds?.cold || 0)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Dormant:</span>
-                  <span className="text-slate-300">{formatDuration(idleStatus?.thresholds?.dormant || 0)}</span>
+                  <span className="text-slate-300">
+                    {formatDuration(idleStatus?.thresholds?.dormant || 0)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -474,21 +498,35 @@ export function HealthPanel() {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg CPU</span>
-                      <span className="text-slate-100">{historySummary.today.avg_cpu_percent?.toFixed(1) || 0}%</span>
+                      <span className="text-slate-100">
+                        {historySummary.today.avg_cpu_percent?.toFixed(1) || 0}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg Power</span>
-                      <span className="text-slate-100">{historySummary.today.avg_battery_draw_w?.toFixed(1) || 0}W</span>
+                      <span className="text-slate-100">
+                        {historySummary.today.avg_battery_draw_w?.toFixed(1) || 0}W
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Max Thermal</span>
-                      <span className={historySummary.today.max_thermal_level > 1 ? 'text-amber-400' : 'text-slate-100'}>
-                        {['Nominal', 'Fair', 'Serious', 'Critical'][historySummary.today.max_thermal_level] || 'Unknown'}
+                      <span
+                        className={
+                          historySummary.today.max_thermal_level > 1
+                            ? 'text-amber-400'
+                            : 'text-slate-100'
+                        }
+                      >
+                        {['Nominal', 'Fair', 'Serious', 'Critical'][
+                          historySummary.today.max_thermal_level
+                        ] || 'Unknown'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Requests</span>
-                      <span className="text-slate-100">{historySummary.today.total_requests || 0}</span>
+                      <span className="text-slate-100">
+                        {historySummary.today.total_requests || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -500,19 +538,27 @@ export function HealthPanel() {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg CPU</span>
-                      <span className="text-slate-100">{historySummary.yesterday.avg_cpu_percent?.toFixed(1) || 0}%</span>
+                      <span className="text-slate-100">
+                        {historySummary.yesterday.avg_cpu_percent?.toFixed(1) || 0}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg Power</span>
-                      <span className="text-slate-100">{historySummary.yesterday.avg_battery_draw_w?.toFixed(1) || 0}W</span>
+                      <span className="text-slate-100">
+                        {historySummary.yesterday.avg_battery_draw_w?.toFixed(1) || 0}W
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Active Hours</span>
-                      <span className="text-slate-100">{historySummary.yesterday.active_hours || 0}</span>
+                      <span className="text-slate-100">
+                        {historySummary.yesterday.active_hours || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Requests</span>
-                      <span className="text-slate-100">{historySummary.yesterday.total_requests || 0}</span>
+                      <span className="text-slate-100">
+                        {historySummary.yesterday.total_requests || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -524,20 +570,34 @@ export function HealthPanel() {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Days Recorded</span>
-                      <span className="text-slate-100">{historySummary.this_week.days_recorded || 0}</span>
+                      <span className="text-slate-100">
+                        {historySummary.this_week.days_recorded || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg CPU</span>
-                      <span className="text-slate-100">{historySummary.this_week.avg_cpu_percent?.toFixed(1) || 0}%</span>
+                      <span className="text-slate-100">
+                        {historySummary.this_week.avg_cpu_percent?.toFixed(1) || 0}%
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Total Requests</span>
-                      <span className="text-slate-100">{historySummary.this_week.total_requests || 0}</span>
+                      <span className="text-slate-100">
+                        {historySummary.this_week.total_requests || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Max Thermal</span>
-                      <span className={historySummary.this_week.max_thermal_level > 1 ? 'text-amber-400' : 'text-slate-100'}>
-                        {['Nominal', 'Fair', 'Serious', 'Critical'][historySummary.this_week.max_thermal_level] || 'Unknown'}
+                      <span
+                        className={
+                          historySummary.this_week.max_thermal_level > 1
+                            ? 'text-amber-400'
+                            : 'text-slate-100'
+                        }
+                      >
+                        {['Nominal', 'Fair', 'Serious', 'Critical'][
+                          historySummary.this_week.max_thermal_level
+                        ] || 'Unknown'}
                       </span>
                     </div>
                   </div>
@@ -547,11 +607,10 @@ export function HealthPanel() {
 
             {historySummary.total_days_tracked > 0 && (
               <div className="mt-4 pt-3 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
+                <span>Tracking since {historySummary.oldest_record || 'unknown'}</span>
                 <span>
-                  Tracking since {historySummary.oldest_record || 'unknown'}
-                </span>
-                <span>
-                  {historySummary.total_days_tracked} days, {historySummary.total_hours_tracked} hours recorded
+                  {historySummary.total_days_tracked} days, {historySummary.total_hours_tracked}{' '}
+                  hours recorded
                 </span>
               </div>
             )}

@@ -181,10 +181,10 @@ xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
 ## Working with This Codebase
 
 ### Before Implementation
-1. **Read the iOS Style Guide**: `docs/IOS_STYLE_GUIDE.md` (MANDATORY)
+1. **Read the iOS Style Guide**: `docs/ios/IOS_STYLE_GUIDE.md` (MANDATORY)
 2. Read relevant tests first - they document expected behavior
 3. Check existing patterns in similar components
-4. Reference `docs/UnaMentis_TDD.md` for architectural decisions
+4. Reference `docs/architecture/UnaMentis_TDD.md` for architectural decisions
 
 ### During Implementation
 1. Write tests first (TDD)
@@ -298,7 +298,7 @@ cd server/web && npm run dev
 - Balanced preset: <$3/hour
 - Cost-optimized: <$1.50/hour
 
-See `docs/UnaMentis_TDD.md` for complete specifications.
+See `docs/architecture/UnaMentis_TDD.md` for complete specifications.
 
 ---
 
@@ -512,6 +512,48 @@ actor FaithfulMockLLM: LLMService {
 - `createProgress(in:for:timeSpent:quizScores:)` - Creates test progress records
 
 These are NOT mocks. They create real Core Data entities in an in-memory store.
+
+---
+
+## MANDATORY: Documentation Maintenance
+
+### PROJECT_OVERVIEW.md Standard
+
+The file `docs/architecture/PROJECT_OVERVIEW.md` is the **authoritative project overview** used to update the website and communicate project status externally. It must be kept comprehensive and current.
+
+**When to update PROJECT_OVERVIEW.md:**
+- Adding a new AI model or provider (STT, TTS, LLM, VAD, Embeddings)
+- Adding a new client application or platform
+- Adding a new server component or API
+- Implementing a new major feature
+- Changing the tech stack or architecture
+- Completing a roadmap phase
+
+**What must be included:**
+1. **All AI models and providers** with model names, types, and key characteristics
+2. **All client applications** (iOS, Web, Android) with status and technology
+3. **All server components** with ports, purposes, and tech stacks
+4. **All self-hosted server options** with ports and purposes
+5. **Service counts** that accurately reflect current implementation
+6. **Current status** reflecting actual completion state
+7. **Key files** for important service implementations
+
+**Completeness standards:**
+- Every STT provider must be listed with its model name
+- Every TTS provider must be listed (including new models like Chatterbox, VibeVoice)
+- Every LLM provider and model must be listed
+- Every client platform must be listed with development status
+- Every server port and service must be documented
+
+**After making significant changes:**
+1. Review PROJECT_OVERVIEW.md for accuracy
+2. Update any sections affected by your changes
+3. Verify service counts and provider lists are current
+4. Ensure "Current Status" reflects completion state
+
+This document is not optional to maintain. Keeping it current is part of the definition of done for feature work.
+
+---
 
 ### MANDATORY: Clean Up Test Data
 

@@ -31,6 +31,15 @@ from import_api import register_import_routes, init_import_system, set_import_co
 # Import plugin management system
 from plugin_api import register_plugin_routes
 
+# Import media generation system
+from media_api import register_media_routes
+
+# Import authentication system
+from auth import (
+    AuthAPI, register_auth_routes, auth_middleware, rate_limit_middleware,
+    TokenService, TokenConfig, RateLimiter, setup_token_service
+)
+
 # Import diagnostic logging system
 from diagnostic_logging import diag_logger, get_diagnostic_config, set_diagnostic_config
 
@@ -44,6 +53,14 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "aiohttp"])
     from aiohttp import web
     import aiohttp
+
+try:
+    import asyncpg
+except ImportError:
+    print("Installing asyncpg for database support...")
+    import subprocess
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "asyncpg"])
+    import asyncpg
 
 # Configuration
 HOST = os.environ.get("VOICELEARN_MGMT_HOST", "0.0.0.0")
@@ -3374,6 +3391,147 @@ async def handle_duplicate_profile(request: web.Request) -> web.Response:
         return web.json_response({"error": str(e)}, status=500)
 
 
+# =============================================================================
+# Admin User Management
+# =============================================================================
+
+async def handle_get_admin_users(request: web.Request) -> web.Response:
+    """Get all users for admin panel."""
+    try:
+        auth_api = request.app.get("auth_api")
+        if not auth_api:
+            return web.json_response({"error": "Auth not configured"}, status=503)
+
+        async with auth_api.db.acquire() as conn:
+            rows = await conn.fetch("""
+                SELECT id, email, display_name, role, is_active, is_locked, created_at, last_login_at
+                FROM users
+                ORDER BY created_at DESC
+            """)
+
+            def get_status(row):
+                if row.get("is_locked"):
+                    return "suspended"
+                elif row.get("is_active", True):
+                    return "active"
+                else:
+                    return "inactive"
+
+            users = [
+                {
+                    "id": str(row["id"]),
+                    "email": row["email"],
+                    "display_name": row["display_name"],
+                    "role": row.get("role", "user"),
+                    "status": get_status(row),
+                    "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                    "last_login": row["last_login_at"].isoformat() if row.get("last_login_at") else None,
+                }
+                for row in rows
+            ]
+
+            return web.json_response({"users": users, "count": len(users)})
+
+    except Exception as e:
+        logger.error(f"Error getting users: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_create_admin_user(request: web.Request) -> web.Response:
+    """Create a new user via admin panel."""
+    try:
+        auth_api = request.app.get("auth_api")
+        if not auth_api:
+            return web.json_response({"error": "Auth not configured"}, status=503)
+
+        data = await request.json()
+        email = data.get("email", "").strip().lower()
+        password = data.get("password", "")
+        display_name = data.get("display_name", "").strip()
+        role = data.get("role", "user")
+
+        if not email or not password:
+            return web.json_response(
+                {"error": "Email and password required"},
+                status=400
+            )
+
+        if len(password) < 8:
+            return web.json_response(
+                {"error": "Password must be at least 8 characters"},
+                status=400
+            )
+
+        password_hash = auth_api.password_service.hash_password(password)
+        user_id = str(uuid.uuid4())
+
+        async with auth_api.db.acquire() as conn:
+            # Check if email exists
+            existing = await conn.fetchval(
+                "SELECT id FROM users WHERE email = $1", email
+            )
+            if existing:
+                return web.json_response(
+                    {"error": "Email already registered"},
+                    status=409
+                )
+
+            # Create user
+            await conn.execute("""
+                INSERT INTO users (id, email, password_hash, display_name, role, is_active, created_at)
+                VALUES ($1, $2, $3, $4, $5, true, NOW())
+            """, uuid.UUID(user_id), email, password_hash, display_name or email.split("@")[0], role)
+
+            return web.json_response({
+                "status": "created",
+                "user": {
+                    "id": user_id,
+                    "email": email,
+                    "display_name": display_name or email.split("@")[0],
+                    "role": role,
+                }
+            }, status=201)
+
+    except json.JSONDecodeError:
+        return web.json_response({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_delete_admin_user(request: web.Request) -> web.Response:
+    """Delete a user via admin panel."""
+    try:
+        auth_api = request.app.get("auth_api")
+        if not auth_api:
+            return web.json_response({"error": "Auth not configured"}, status=503)
+
+        user_id = request.match_info.get("user_id")
+        if not user_id:
+            return web.json_response({"error": "User ID required"}, status=400)
+
+        async with auth_api.db.acquire() as conn:
+            # Delete user sessions first
+            await conn.execute(
+                "DELETE FROM sessions WHERE user_id = $1",
+                uuid.UUID(user_id)
+            )
+            # Delete user
+            result = await conn.execute(
+                "DELETE FROM users WHERE id = $1",
+                uuid.UUID(user_id)
+            )
+
+            if result == "DELETE 0":
+                return web.json_response({"error": "User not found"}, status=404)
+
+            return web.json_response({"status": "deleted", "user_id": user_id})
+
+    except Exception as e:
+        logger.error(f"Error deleting user: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def handle_get_metrics_history_hourly(request: web.Request) -> web.Response:
     """Get hourly aggregated metrics history."""
     try:
@@ -3492,6 +3650,40 @@ async def _metrics_recording_loop():
 # Application Setup
 # =============================================================================
 
+def setup_auth_routes(app: web.Application, db_pool) -> bool:
+    """
+    Initialize auth routes with database connection.
+
+    Call this function after database pool is created to enable auth endpoints.
+    Requires AUTH_SECRET_KEY to be set in environment.
+
+    Args:
+        app: The aiohttp application
+        db_pool: asyncpg connection pool
+
+    Returns:
+        True if auth routes were registered, False otherwise
+    """
+    if "token_service" not in app:
+        logger.warning("Auth not initialized - AUTH_SECRET_KEY not set")
+        return False
+
+    token_service = app["token_service"]
+    rate_limiter = app.get("rate_limiter")
+
+    auth_api = AuthAPI(
+        db_pool=db_pool,
+        token_service=token_service,
+        rate_limiter=rate_limiter,
+    )
+
+    register_auth_routes(app, auth_api)
+    app["auth_api"] = auth_api
+
+    logger.info("Authentication routes registered")
+    return True
+
+
 def create_app() -> web.Application:
     """Create and configure the aiohttp application."""
     app = web.Application()
@@ -3575,6 +3767,40 @@ def create_app() -> web.Application:
     # Curriculum Import System (Source Browser)
     register_import_routes(app)
 
+    # Media Generation System (Diagrams, Formulas, Maps)
+    register_media_routes(app)
+
+    # Authentication System
+    # Note: Auth requires a database pool. For now, we set up the routes but
+    # auth_api initialization with db pool happens in main() after db setup.
+    # The auth routes are registered here as placeholders; full initialization
+    # happens when AUTH_SECRET_KEY is set in environment.
+    auth_secret = os.environ.get("AUTH_SECRET_KEY")
+    if auth_secret:
+        token_config = TokenConfig(
+            secret_key=auth_secret,
+            algorithm=os.environ.get("AUTH_ALGORITHM", "HS256"),
+            access_token_lifetime_minutes=int(os.environ.get("AUTH_ACCESS_TOKEN_MINUTES", "15")),
+            refresh_token_lifetime_days=int(os.environ.get("AUTH_REFRESH_TOKEN_DAYS", "30")),
+        )
+        token_service = TokenService(token_config)
+        rate_limiter = RateLimiter()
+
+        # Store in app for later use when db pool is available
+        app["token_service"] = token_service
+        app["rate_limiter"] = rate_limiter
+
+        # Set up token service for middleware
+        setup_token_service(app, auth_secret)
+
+        # Add auth middleware (applies JWT validation to protected routes)
+        app.middlewares.append(auth_middleware)
+        app.middlewares.append(rate_limit_middleware)
+
+        logger.info("Authentication system initialized (routes pending database connection)")
+    else:
+        logger.warning("AUTH_SECRET_KEY not set - authentication disabled")
+
     # Set up callback to reload curricula when import completes
     def on_import_complete(progress):
         """Called when an import job completes successfully."""
@@ -3619,6 +3845,11 @@ def create_app() -> web.Application:
     app.router.add_delete("/api/system/profiles/{profile_id}", handle_delete_profile)
     app.router.add_post("/api/system/profiles/{profile_id}/duplicate", handle_duplicate_profile)
 
+    # Admin User Management
+    app.router.add_get("/api/admin/users", handle_get_admin_users)
+    app.router.add_post("/api/admin/users", handle_create_admin_user)
+    app.router.add_delete("/api/admin/users/{user_id}", handle_delete_admin_user)
+
     # Historical Metrics (persisted)
     app.router.add_get("/api/system/history/hourly", handle_get_metrics_history_hourly)
     app.router.add_get("/api/system/history/daily", handle_get_metrics_history_daily)
@@ -3642,6 +3873,21 @@ def create_app() -> web.Application:
         await detect_existing_processes()
         state._load_curricula()  # Load all UMCF curricula on startup
 
+        # Initialize database connection for auth
+        database_url = os.environ.get("DATABASE_URL")
+        if database_url and "token_service" in app:
+            try:
+                db_pool = await asyncpg.create_pool(database_url, min_size=2, max_size=10)
+                app["db_pool"] = db_pool
+                if setup_auth_routes(app, db_pool):
+                    logger.info("[Startup] Database connected and auth routes initialized")
+                else:
+                    logger.warning("[Startup] Auth routes setup failed")
+            except Exception as e:
+                logger.error(f"[Startup] Database connection failed: {e}")
+        elif "token_service" in app:
+            logger.warning("[Startup] DATABASE_URL not set, auth database features disabled")
+
         # Start resource monitoring and idle management
         await resource_monitor.start()
         await idle_manager.start()
@@ -3661,6 +3907,11 @@ def create_app() -> web.Application:
 
     # Cleanup hook to stop background tasks
     async def on_cleanup(app):
+        # Close database pool if it exists
+        if "db_pool" in app:
+            await app["db_pool"].close()
+            logger.info("[Cleanup] Database pool closed")
+
         await resource_monitor.stop()
         await idle_manager.stop()
         await metrics_history.stop()

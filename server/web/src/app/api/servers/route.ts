@@ -25,9 +25,9 @@ export async function GET() {
   return NextResponse.json({
     servers,
     total: servers.length,
-    healthy: servers.filter(s => s.status === 'healthy').length,
-    degraded: servers.filter(s => s.status === 'degraded').length,
-    unhealthy: servers.filter(s => s.status === 'unhealthy').length,
+    healthy: servers.filter((s) => s.status === 'healthy').length,
+    degraded: servers.filter((s) => s.status === 'degraded').length,
+    unhealthy: servers.filter((s) => s.status === 'unhealthy').length,
   });
 }
 

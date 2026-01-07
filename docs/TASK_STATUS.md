@@ -125,7 +125,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 9.7 | Add URL scheme for deep links | completed | UnaMentis/Info.plist | unamentis:// scheme |
 | 9.8 | Add deep link handler | completed | UnaMentis/UnaMentisApp.swift | .onOpenURL handler |
 | 9.9 | Write App Intents tests | completed | UnaMentisTests/Unit/Intents/AppIntentsTests.swift | 23 tests passing |
-| 9.10 | Create Apple Intelligence docs | completed | docs/APPLE_INTELLIGENCE.md | Integration guide |
+| 9.10 | Create Apple Intelligence docs | completed | docs/ai-ml/APPLE_INTELLIGENCE.md | Integration guide |
 
 ### 10. Graceful Degradation & Fallback Architecture
 
@@ -135,7 +135,7 @@ This document tracks all tasks for completing the UnaMentis iOS project. Tasks a
 | 10.2 | Add TTS fallback to Apple TTS | completed | UnaMentis/UI/Session/SessionView.swift | ElevenLabs/Deepgram → Apple TTS |
 | 10.3 | Add LLM multi-tier fallback | completed | UnaMentis/UI/Session/SessionView.swift | Cloud → Self-Hosted → On-Device |
 | 10.4 | Enable OnDeviceLLMService integration | completed | UnaMentis/UI/Session/SessionView.swift | localMLX uses real on-device LLM |
-| 10.5 | Document fallback architecture | completed | docs/FALLBACK_ARCHITECTURE.md | Complete degradation guide |
+| 10.5 | Document fallback architecture | completed | docs/architecture/FALLBACK_ARCHITECTURE.md | Complete degradation guide |
 
 ---
 

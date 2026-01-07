@@ -433,7 +433,8 @@ public actor ChatterboxTTSService: TTSService {
 
     /// Check if the Chatterbox server is healthy
     public func checkHealth() async -> Bool {
-        let healthURL = baseURL.appendingPathComponent("health")
+        // Use /api/model-info instead of /health since ChatterBox server doesn't have a /health endpoint
+        let healthURL = baseURL.appendingPathComponent("api/model-info")
 
         do {
             var request = URLRequest(url: healthURL)

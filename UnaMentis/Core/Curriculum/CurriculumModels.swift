@@ -224,7 +224,9 @@ public enum VisualAssetType: String, Codable, Sendable, CaseIterable {
     case image = "image"              // Static images (PNG, JPEG, WebP)
     case diagram = "diagram"          // Architectural/flow diagrams (often SVG)
     case equation = "equation"        // Mathematical formulas (LaTeX/MathML)
+    case formula = "formula"          // Enhanced formula with semantics (LaTeX)
     case chart = "chart"              // Data visualizations
+    case map = "map"                  // Geographic/educational maps
     case slideImage = "slideImage"    // Single slide from a presentation
     case slideDeck = "slideDeck"      // Full presentation reference
     case generated = "generated"      // AI-generated on-demand visual
@@ -235,7 +237,9 @@ public enum VisualAssetType: String, Codable, Sendable, CaseIterable {
         case .image: return "Image"
         case .diagram: return "Diagram"
         case .equation: return "Equation"
+        case .formula: return "Formula"
         case .chart: return "Chart"
+        case .map: return "Map"
         case .slideImage: return "Slide"
         case .slideDeck: return "Slide Deck"
         case .generated: return "Generated"
@@ -248,7 +252,9 @@ public enum VisualAssetType: String, Codable, Sendable, CaseIterable {
         case .image: return "photo"
         case .diagram: return "flowchart"
         case .equation: return "function"
+        case .formula: return "x.squareroot"
         case .chart: return "chart.bar"
+        case .map: return "map"
         case .slideImage: return "rectangle.on.rectangle"
         case .slideDeck: return "doc.richtext"
         case .generated: return "sparkles"
@@ -262,10 +268,12 @@ public enum VisualAssetType: String, Codable, Sendable, CaseIterable {
             return ["image/png", "image/jpeg", "image/webp", "image/gif"]
         case .diagram:
             return ["image/svg+xml", "image/png", "image/webp"]
-        case .equation:
-            return ["text/latex", "application/mathml+xml", "image/png"]
+        case .equation, .formula:
+            return ["text/latex", "application/mathml+xml", "image/png", "image/svg+xml"]
         case .chart:
             return ["image/svg+xml", "image/png", "application/json"]
+        case .map:
+            return ["image/png", "image/svg+xml", "text/html"]
         case .slideImage:
             return ["image/png", "image/jpeg", "image/webp"]
         case .slideDeck:
@@ -292,6 +300,378 @@ public enum VisualDisplayMode: String, Codable, Sendable, CaseIterable {
         case .highlight: return "Appears prominently, then becomes a thumbnail"
         case .popup: return "Appears as an overlay that can be dismissed"
         case .inline: return "Displayed inline with the transcript text"
+        }
+    }
+}
+
+// MARK: - Checkpoint Type
+
+/// Type of interactive checkpoint during tutoring
+/// Source: UMCF Specification 1.1.0
+public enum CheckpointType: String, Codable, Sendable, CaseIterable {
+    case simpleConfirmation = "simple_confirmation"  // Quick "does that make sense?" check
+    case comprehensionCheck = "comprehension_check"  // Verify basic understanding
+    case knowledgeCheck = "knowledge_check"          // Test recall of facts
+    case applicationCheck = "application_check"      // Verify ability to apply concept
+    case teachback = "teachback"                     // Have learner explain in own words
+
+    /// Human-readable display name
+    public var displayName: String {
+        switch self {
+        case .simpleConfirmation: return "Quick Confirmation"
+        case .comprehensionCheck: return "Comprehension Check"
+        case .knowledgeCheck: return "Knowledge Check"
+        case .applicationCheck: return "Application Check"
+        case .teachback: return "Teach Back"
+        }
+    }
+
+    /// Description of the evaluation approach
+    public var evaluationApproach: String {
+        switch self {
+        case .simpleConfirmation: return "Accept acknowledgment"
+        case .comprehensionCheck: return "Pattern matching on response"
+        case .knowledgeCheck: return "Match against expected answers"
+        case .applicationCheck: return "Evaluate worked example"
+        case .teachback: return "AI evaluates depth and accuracy of explanation"
+        }
+    }
+
+    /// Whether this checkpoint type requires LLM evaluation
+    public var requiresLLMEvaluation: Bool {
+        switch self {
+        case .simpleConfirmation: return false
+        case .comprehensionCheck: return false
+        case .knowledgeCheck: return false
+        case .applicationCheck: return true
+        case .teachback: return true
+        }
+    }
+}
+
+// MARK: - Teachback Evaluation Result
+
+/// Result of evaluating a teachback response
+public struct TeachbackResult: Codable, Sendable {
+    /// Overall score from 0.0 to 1.0
+    public let score: Double
+
+    /// Score tier: excellent, good, partial, struggling
+    public let tier: TeachbackTier
+
+    /// Concepts correctly mentioned
+    public let correctConcepts: [String]
+
+    /// Concepts missed in the explanation
+    public let missedConcepts: [String]
+
+    /// Bonus concepts mentioned
+    public let bonusConcepts: [String]
+
+    /// Feedback to give the learner
+    public let feedback: String
+
+    /// Recommended next action
+    public let nextAction: TeachbackNextAction
+
+    /// Time spent thinking before responding (seconds)
+    public let thinkTime: TimeInterval
+
+    public init(
+        score: Double,
+        tier: TeachbackTier,
+        correctConcepts: [String],
+        missedConcepts: [String],
+        bonusConcepts: [String],
+        feedback: String,
+        nextAction: TeachbackNextAction,
+        thinkTime: TimeInterval
+    ) {
+        self.score = score
+        self.tier = tier
+        self.correctConcepts = correctConcepts
+        self.missedConcepts = missedConcepts
+        self.bonusConcepts = bonusConcepts
+        self.feedback = feedback
+        self.nextAction = nextAction
+        self.thinkTime = thinkTime
+    }
+}
+
+/// Tier classification for teachback results
+public enum TeachbackTier: String, Codable, Sendable, CaseIterable {
+    case excellent = "excellent"    // Score >= 0.9
+    case good = "good"              // Score >= 0.7
+    case partial = "partial"        // Score >= 0.4
+    case struggling = "struggling"  // Score < 0.4
+
+    /// Threshold score for this tier
+    public var threshold: Double {
+        switch self {
+        case .excellent: return 0.9
+        case .good: return 0.7
+        case .partial: return 0.4
+        case .struggling: return 0.0
+        }
+    }
+
+    /// Create tier from score
+    public static func from(score: Double) -> TeachbackTier {
+        if score >= 0.9 { return .excellent }
+        if score >= 0.7 { return .good }
+        if score >= 0.4 { return .partial }
+        return .struggling
+    }
+}
+
+/// Next action after teachback evaluation
+public enum TeachbackNextAction: String, Codable, Sendable, CaseIterable {
+    case continueProgress = "continue"      // Move forward
+    case supplement = "supplement"          // Add clarification, then continue
+    case guidedReview = "guided_review"     // Work through concept together
+    case reteach = "reteach"                // Explain differently from scratch
+}
+
+// MARK: - Spaced Retrieval
+
+/// Configuration for spaced retrieval of a key concept
+public struct RetrievalConfig: Codable, Sendable {
+    /// Difficulty level for retrieval
+    public let difficulty: RetrievalDifficulty
+
+    /// Questions to ask during retrieval checks
+    public let retrievalPrompts: [String]
+
+    /// Target retention rate (0.0 to 1.0)
+    public let minimumRetention: Double
+
+    /// Spacing algorithm to use
+    public let spacingAlgorithm: SpacingAlgorithm
+
+    /// Initial interval after learning
+    public let initialInterval: TimeInterval
+
+    /// Maximum interval between retrievals
+    public let maxInterval: TimeInterval
+
+    public init(
+        difficulty: RetrievalDifficulty = .medium,
+        retrievalPrompts: [String],
+        minimumRetention: Double = 0.8,
+        spacingAlgorithm: SpacingAlgorithm = .leitner,
+        initialInterval: TimeInterval = 86400, // 1 day
+        maxInterval: TimeInterval = 2592000    // 30 days
+    ) {
+        self.difficulty = difficulty
+        self.retrievalPrompts = retrievalPrompts
+        self.minimumRetention = minimumRetention
+        self.spacingAlgorithm = spacingAlgorithm
+        self.initialInterval = initialInterval
+        self.maxInterval = maxInterval
+    }
+}
+
+/// Difficulty level for retrieval
+public enum RetrievalDifficulty: String, Codable, Sendable, CaseIterable {
+    case easy = "easy"
+    case medium = "medium"
+    case hard = "hard"
+
+    /// Adjustment factor for spacing intervals
+    public var intervalFactor: Double {
+        switch self {
+        case .easy: return 1.3
+        case .medium: return 1.0
+        case .hard: return 0.7
+        }
+    }
+}
+
+/// Spacing algorithm for retrieval scheduling
+public enum SpacingAlgorithm: String, Codable, Sendable, CaseIterable {
+    case leitner = "leitner"  // Box-based system
+    case sm2 = "sm2"          // SuperMemo 2 algorithm
+    case custom = "custom"    // Application-specific
+
+    /// Human-readable description
+    public var description: String {
+        switch self {
+        case .leitner: return "Box-based: success increases interval, failure resets"
+        case .sm2: return "SuperMemo 2 algorithm with easiness factor"
+        case .custom: return "Custom application-specific logic"
+        }
+    }
+}
+
+/// Tracking state for a single concept's retrieval schedule
+public struct RetrievalSchedule: Codable, Sendable, Identifiable {
+    public let id: UUID
+    public let conceptId: UUID
+    public let conceptTitle: String
+    public var nextRetrievalDate: Date
+    public var currentInterval: TimeInterval
+    public var successCount: Int
+    public var attemptCount: Int
+    public var easinessFactor: Double  // For SM2 algorithm
+    public var leitnerBox: Int         // For Leitner system (1-5)
+
+    /// Success rate as a percentage
+    public var successRate: Double {
+        guard attemptCount > 0 else { return 0.0 }
+        return Double(successCount) / Double(attemptCount)
+    }
+
+    /// Whether a retrieval is due
+    public var isDue: Bool {
+        Date() >= nextRetrievalDate
+    }
+
+    public init(
+        id: UUID = UUID(),
+        conceptId: UUID,
+        conceptTitle: String,
+        nextRetrievalDate: Date = Date().addingTimeInterval(86400),
+        currentInterval: TimeInterval = 86400,
+        successCount: Int = 0,
+        attemptCount: Int = 0,
+        easinessFactor: Double = 2.5,
+        leitnerBox: Int = 1
+    ) {
+        self.id = id
+        self.conceptId = conceptId
+        self.conceptTitle = conceptTitle
+        self.nextRetrievalDate = nextRetrievalDate
+        self.currentInterval = currentInterval
+        self.successCount = successCount
+        self.attemptCount = attemptCount
+        self.easinessFactor = easinessFactor
+        self.leitnerBox = leitnerBox
+    }
+
+    /// Update schedule after a retrieval attempt
+    public mutating func recordAttempt(success: Bool, algorithm: SpacingAlgorithm, maxInterval: TimeInterval) {
+        attemptCount += 1
+        if success {
+            successCount += 1
+        }
+
+        switch algorithm {
+        case .leitner:
+            updateLeitner(success: success, maxInterval: maxInterval)
+        case .sm2:
+            updateSM2(success: success, maxInterval: maxInterval)
+        case .custom:
+            // Custom logic handled externally
+            break
+        }
+    }
+
+    private mutating func updateLeitner(success: Bool, maxInterval: TimeInterval) {
+        if success {
+            leitnerBox = min(leitnerBox + 1, 5)
+        } else {
+            leitnerBox = 1 // Reset to first box
+        }
+
+        // Interval doubles with each box: 1d, 2d, 4d, 8d, 16d
+        let baseInterval: TimeInterval = 86400 // 1 day
+        currentInterval = min(baseInterval * pow(2.0, Double(leitnerBox - 1)), maxInterval)
+        nextRetrievalDate = Date().addingTimeInterval(currentInterval)
+    }
+
+    private mutating func updateSM2(success: Bool, maxInterval: TimeInterval) {
+        if success {
+            // SuperMemo 2 formula for easiness factor
+            // EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+            // Using quality = 4 for correct, 2 for struggling
+            let quality = 4.0
+            let efDelta = 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)
+            easinessFactor = max(1.3, easinessFactor + efDelta)
+
+            if attemptCount == 1 {
+                currentInterval = 86400 // 1 day
+            } else if attemptCount == 2 {
+                currentInterval = 6 * 86400 // 6 days
+            } else {
+                currentInterval = min(currentInterval * easinessFactor, maxInterval)
+            }
+        } else {
+            // Failed: reset to 1 day, reduce easiness
+            currentInterval = 86400
+            easinessFactor = max(1.3, easinessFactor - 0.2)
+        }
+
+        nextRetrievalDate = Date().addingTimeInterval(currentInterval)
+    }
+}
+
+// MARK: - Productive Struggle Metrics
+
+/// Metrics for tracking productive struggle in a learning session
+public struct ProductiveStruggleMetrics: Codable, Sendable {
+    /// Total think time before responding (seconds)
+    public var totalThinkTime: TimeInterval
+
+    /// Number of teachback attempts
+    public var teachbackAttempts: Int
+
+    /// Number of successful teachbacks
+    public var teachbackSuccesses: Int
+
+    /// Number of times learner asked for clarification
+    public var clarificationRequests: Int
+
+    /// Number of times learner asked for repetition
+    public var repetitionRequests: Int
+
+    /// Average think time per concept (seconds)
+    public var averageThinkTimePerConcept: TimeInterval {
+        guard teachbackAttempts > 0 else { return 0 }
+        return totalThinkTime / Double(teachbackAttempts)
+    }
+
+    /// Teachback success rate
+    public var teachbackSuccessRate: Double {
+        guard teachbackAttempts > 0 else { return 0 }
+        return Double(teachbackSuccesses) / Double(teachbackAttempts)
+    }
+
+    /// Encouragement message based on metrics
+    public var encouragementMessage: String? {
+        if totalThinkTime > 180 { // 3+ minutes of thinking
+            return "You invested \(Int(totalThinkTime / 60)) minutes of deep thinking. That's how real learning happens."
+        } else if teachbackSuccessRate >= 0.8 {
+            return "Excellent explanations! You're really grasping these concepts."
+        } else if teachbackAttempts >= 3 && teachbackSuccessRate >= 0.5 {
+            return "Good effort working through these explanations. Each attempt strengthens your understanding."
+        }
+        return nil
+    }
+
+    public init(
+        totalThinkTime: TimeInterval = 0,
+        teachbackAttempts: Int = 0,
+        teachbackSuccesses: Int = 0,
+        clarificationRequests: Int = 0,
+        repetitionRequests: Int = 0
+    ) {
+        self.totalThinkTime = totalThinkTime
+        self.teachbackAttempts = teachbackAttempts
+        self.teachbackSuccesses = teachbackSuccesses
+        self.clarificationRequests = clarificationRequests
+        self.repetitionRequests = repetitionRequests
+    }
+
+    /// Record a think time period
+    public mutating func recordThinkTime(_ duration: TimeInterval) {
+        totalThinkTime += duration
+    }
+
+    /// Record a teachback attempt
+    public mutating func recordTeachbackAttempt(success: Bool) {
+        teachbackAttempts += 1
+        if success {
+            teachbackSuccesses += 1
         }
     }
 }

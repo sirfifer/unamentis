@@ -164,7 +164,7 @@ UnaMentis/
 | `UnaMentis/Core/Session/SessionManager.swift` | Main conversation orchestrator |
 | `UnaMentis/Core/Audio/AudioEngine.swift` | Audio capture & playback |
 | `UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift` | On-device STT |
-| `docs/UnaMentis_TDD.md` | Technical design document |
+| `docs/architecture/UnaMentis_TDD.md` | Technical design document |
 
 ---
 

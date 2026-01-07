@@ -103,35 +103,35 @@ public actor CurriculumSuggestionService {
 
         let context = PersistenceController.shared.newBackgroundContext()
 
-        return await context.perform {
+        // Build predicate outside the closure to avoid capturing self
+        let words = query.lowercased().split(separator: " ").map { String($0) }
+        var predicates: [NSPredicate] = []
+
+        for word in words {
+            let namePredicate = NSPredicate(format: "name CONTAINS[cd] %@", word)
+            let summaryPredicate = NSPredicate(format: "summary CONTAINS[cd] %@", word)
+            predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: [namePredicate, summaryPredicate]))
+        }
+
+        let compoundPredicate: NSCompoundPredicate? = predicates.isEmpty
+            ? nil
+            : NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+
+        let ids: [String] = await context.perform {
             let request = Curriculum.fetchRequest()
-
-            // Search in name and summary fields
-            let words = query.lowercased().split(separator: " ").map { String($0) }
-            var predicates: [NSPredicate] = []
-
-            for word in words {
-                let namePredicate = NSPredicate(format: "name CONTAINS[cd] %@", word)
-                let summaryPredicate = NSPredicate(format: "summary CONTAINS[cd] %@", word)
-                predicates.append(NSCompoundPredicate(orPredicateWithSubpredicates: [namePredicate, summaryPredicate]))
-            }
-
-            if !predicates.isEmpty {
-                request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
-            }
-
+            request.predicate = compoundPredicate
             request.fetchLimit = 5
 
             do {
                 let results = try context.fetch(request)
-                let ids = results.compactMap { $0.id?.uuidString }
-                self.logger.info("Found \(ids.count) local curriculum matches")
-                return ids
+                return results.compactMap { $0.id?.uuidString }
             } catch {
-                self.logger.error("Local search failed: \(error)")
                 return []
             }
         }
+
+        logger.info("Found \(ids.count) local curriculum matches")
+        return ids
     }
 
     // MARK: - Update Todo Item

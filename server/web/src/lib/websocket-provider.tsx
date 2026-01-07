@@ -1,13 +1,6 @@
 'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 
 // WebSocket message types from the Python backend
 export type WebSocketMessageType =
@@ -79,7 +72,11 @@ export function WebSocketProvider({
   // Create socket connection - defined as a regular function, not useCallback
   // to avoid circular dependency issues
   const createConnection = useCallback(function doConnect(): void {
-    const { url: wsUrl, maxReconnectAttempts: maxAttempts, reconnectInterval: interval } = configRef.current;
+    const {
+      url: wsUrl,
+      maxReconnectAttempts: maxAttempts,
+      reconnectInterval: interval,
+    } = configRef.current;
 
     // Don't connect if we're already connected or connecting
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -117,10 +114,7 @@ export function WebSocketProvider({
           console.log('[WebSocket] Connection closed unexpectedly, attempting reconnect...');
           // Schedule reconnect using the function recursively
           reconnectAttemptsRef.current += 1;
-          const delay = Math.min(
-            interval * Math.pow(1.5, reconnectAttemptsRef.current - 1),
-            30000
-          );
+          const delay = Math.min(interval * Math.pow(1.5, reconnectAttemptsRef.current - 1), 30000);
           reconnectTimeoutRef.current = setTimeout(() => {
             if (mountedRef.current) {
               doConnect();
@@ -234,11 +228,7 @@ export function WebSocketProvider({
     reconnect,
   };
 
-  return (
-    <WebSocketContext.Provider value={value}>
-      {children}
-    </WebSocketContext.Provider>
-  );
+  return <WebSocketContext.Provider value={value}>{children}</WebSocketContext.Provider>;
 }
 
 /**

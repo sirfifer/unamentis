@@ -22,10 +22,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return NextResponse.json(
-          { success: false, error: 'Plugin not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Plugin not found' }, { status: 404 });
       }
       throw new Error(`Backend returned ${response.status}`);
     }
@@ -34,10 +31,7 @@ export async function GET(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching plugin:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch plugin' },
-      { status: 503 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch plugin' }, { status: 503 });
   }
 }
 
@@ -70,9 +64,6 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error updating plugin:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update plugin' },
-      { status: 503 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to update plugin' }, { status: 503 });
   }
 }

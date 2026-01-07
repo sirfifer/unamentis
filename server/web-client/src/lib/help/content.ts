@@ -416,10 +416,168 @@ export const generalHelp: Record<string, HelpContent> = {
       'Transcript can be navigated with arrow keys',
     ],
   },
+  onboarding: {
+    title: 'Welcome to UnaMentis',
+    description:
+      'This app lets you learn through voice conversations with an AI tutor. Get started by selecting a curriculum, configuring your audio settings, and starting a session.',
+    tips: [
+      'Go to Settings to configure your audio devices',
+      'Import or browse available curricula',
+      'Start a lesson or free conversation',
+    ],
+  },
 };
 
 // =============================================================================
-// Help Modal Sections
+// Session View Help (matches iOS HelpContent.Session)
+// =============================================================================
+
+export const sessionViewHelp: Record<string, HelpContent> = {
+  overview: {
+    title: 'Session Overview',
+    description: 'This is your voice conversation interface. Speak naturally and the AI tutor will respond.',
+  },
+  statusIndicator: {
+    title: 'Status Indicator',
+    description: 'The status indicator shows the current state of your conversation.',
+    tips: [
+      'Gray (Idle): Ready to start',
+      'Green (Listening): Hearing your voice',
+      'Orange (Thinking): Processing your request',
+      'Blue (Speaking): AI is responding',
+      'Yellow (Interrupted): You interrupted the AI',
+    ],
+  },
+  progressBar: {
+    title: 'Progress Bar',
+    description: 'Shows your progress through the current lesson. Each segment represents a topic or concept being covered.',
+  },
+  vuMeter: {
+    title: 'Audio Level Meter',
+    description: 'The audio level meter shows voice activity.',
+    tips: [
+      'Blue: AI is speaking',
+      'Green: Your voice is detected',
+      'Higher levels indicate louder audio',
+    ],
+  },
+  interrupt: {
+    title: 'Interruption',
+    description: 'You can interrupt the AI at any time by simply speaking. The AI will pause and listen to your question or comment.',
+  },
+  pauseResume: {
+    title: 'Pause/Resume',
+    description: 'Pause to take a break without ending the session. Resume to continue where you left off.',
+  },
+  latencyMetric: {
+    title: 'Response Latency',
+    description: 'Response latency shows how quickly the system responds. Lower is better. Target: under 500ms.',
+  },
+  costMetric: {
+    title: 'Session Cost',
+    description: 'Estimated cost for this session based on API usage. On-device and self-hosted options are free.',
+  },
+};
+
+// =============================================================================
+// History View Help (matches iOS HelpContent.History)
+// =============================================================================
+
+export const historyHelp: Record<string, HelpContent> = {
+  overview: {
+    title: 'Session History',
+    description: 'Review your past learning sessions. Each entry shows duration, turn count, and cost.',
+  },
+  turns: {
+    title: 'Conversation Turns',
+    description: 'A "turn" is one exchange: you speak, then the AI responds. More turns indicate a longer, more interactive conversation.',
+  },
+  avgLatency: {
+    title: 'Average Latency',
+    description: 'Average response time for this session. Lower latency means faster, more natural conversations.',
+  },
+  totalCost: {
+    title: 'Total Cost',
+    description: 'Total API costs for this session. Includes speech recognition, language model, and text-to-speech fees.',
+  },
+  export: {
+    title: 'Export History',
+    description: 'Export your session history as JSON for backup or analysis.',
+  },
+};
+
+// =============================================================================
+// Analytics Help (matches iOS HelpContent.Analytics)
+// =============================================================================
+
+export const analyticsHelp: Record<string, HelpContent> = {
+  overview: {
+    title: 'Analytics Overview',
+    description: 'Track your learning progress and system performance metrics. Use this data to optimize your experience.',
+  },
+  sttLatency: {
+    title: 'STT Latency',
+    description: 'Speech-to-Text latency measures how long it takes to convert your speech to text. Target: under 150ms.',
+  },
+  llmTTFT: {
+    title: 'LLM Time-To-First-Token',
+    description: 'Measures how quickly the language model starts generating a response. Target: under 200ms.',
+  },
+  ttsTTFB: {
+    title: 'TTS Time-To-First-Byte',
+    description: 'Measures how quickly text-to-speech audio starts playing. Target: under 100ms.',
+  },
+  e2eLatency: {
+    title: 'End-to-End Latency',
+    description: 'Total time from when you stop speaking to when you hear a response. Target: under 500ms (median), under 1000ms (P99).',
+  },
+  medianVsP99: {
+    title: 'Median vs P99',
+    description: 'Median: The typical (50th percentile) response time. P99: The worst-case (99th percentile) response time. 99% of responses are faster than this.',
+  },
+  costPerHour: {
+    title: 'Cost Per Hour',
+    description: 'Estimated hourly cost based on your usage patterns. Use on-device or self-hosted providers to reduce costs.',
+  },
+  interruptions: {
+    title: 'Interruptions',
+    description: 'Times you interrupted the AI while it was speaking. Interruptions are normal and show active engagement.',
+  },
+};
+
+// =============================================================================
+// Hands-Free Learning Help (matches iOS HandsFreeHelpView)
+// =============================================================================
+
+export const handsFreeHelp: Record<string, HelpContent> = {
+  overview: {
+    title: 'Hands-Free Learning',
+    description: 'UnaMentis is designed for hands-free learning. Start a session and continue without touching your device.',
+  },
+  useCases: {
+    title: 'Perfect For',
+    description: 'Hands-free learning works great while multitasking.',
+    tips: [
+      'Walking: Learn during your daily walk or commute',
+      'Exercise: Keep your mind active during workouts',
+      'Housework: Learn while doing chores',
+      'Working: Background learning while performing tasks',
+    ],
+  },
+  bestPractices: {
+    title: 'Best Practices',
+    description: 'Optimize your hands-free learning experience.',
+    tips: [
+      'Use headphones for best audio quality',
+      'Position your device within speaking distance',
+      'Reduce background noise when possible',
+      'Use keyboard shortcuts (Space to pause/resume)',
+    ],
+  },
+};
+
+// =============================================================================
+// Help Modal Sections (matches iOS HelpView structure)
 // =============================================================================
 
 export const helpModalSections = [
@@ -427,9 +585,31 @@ export const helpModalSections = [
     id: 'getting-started',
     title: 'Getting Started',
     content: [
+      generalHelp.onboarding,
       generalHelp.voiceLearning,
       curriculumHelp.browse,
       sessionControlsHelp.startSession,
+    ],
+  },
+  {
+    id: 'voice-conversations',
+    title: 'Voice Conversations',
+    content: [
+      sessionViewHelp.overview,
+      sessionViewHelp.statusIndicator,
+      sessionViewHelp.interrupt,
+      sessionViewHelp.vuMeter,
+    ],
+  },
+  {
+    id: 'curriculum-lessons',
+    title: 'Curriculum Lessons',
+    content: [
+      curriculumHelp.browse,
+      curriculumHelp.selectTopic,
+      curriculumHelp.curriculumCard,
+      curriculumHelp.difficulty,
+      curriculumHelp.prerequisites,
     ],
   },
   {
@@ -440,6 +620,16 @@ export const helpModalSections = [
       sessionControlsHelp.muteAudio,
       sessionControlsHelp.muteMicrophone,
       generalHelp.visualAssets,
+      sessionViewHelp.progressBar,
+    ],
+  },
+  {
+    id: 'hands-free',
+    title: 'Hands-Free Learning',
+    content: [
+      handsFreeHelp.overview,
+      handsFreeHelp.useCases,
+      handsFreeHelp.bestPractices,
     ],
   },
   {
@@ -447,8 +637,20 @@ export const helpModalSections = [
     title: 'Customization',
     content: [
       settingsHelp.voiceSettings,
+      settingsHelp.audioInput,
+      settingsHelp.audioOutput,
       settingsHelp.displaySettings,
       settingsHelp.sessionPreferences,
+    ],
+  },
+  {
+    id: 'analytics',
+    title: 'Analytics & Metrics',
+    content: [
+      analyticsHelp.overview,
+      analyticsHelp.e2eLatency,
+      analyticsHelp.sttLatency,
+      analyticsHelp.costPerHour,
     ],
   },
   {
@@ -474,7 +676,11 @@ export function getHelpContent(key: string): HelpContent | undefined {
     curriculumHelp[key] ||
     settingsHelp[key] ||
     authHelp[key] ||
-    generalHelp[key]
+    generalHelp[key] ||
+    sessionViewHelp[key] ||
+    historyHelp[key] ||
+    analyticsHelp[key] ||
+    handsFreeHelp[key]
   );
 }
 

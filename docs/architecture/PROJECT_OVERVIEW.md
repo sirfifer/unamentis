@@ -10,7 +10,34 @@ UnaMentis is an AI-powered voice tutoring platform that enables extended (60-90+
 
 **Development Model:** 100% AI-assisted development (Claude Code mostly).
 
-See [About UnaMentis](ABOUT.md) for our complete philosophy and values. 
+See [About UnaMentis](ABOUT.md) for our complete philosophy and values.
+
+---
+
+## Client Applications
+
+UnaMentis provides voice tutoring across multiple platforms:
+
+| Client | Platform | Technology | Status | Repository |
+|--------|----------|------------|--------|------------|
+| **iOS App** | iPhone/iPad | Swift 6.0, SwiftUI | Primary, feature-complete | This repo (`UnaMentis/`) |
+| **Web Client** | Browsers | Next.js 15+, React 19, TypeScript | Feature-complete | This repo (`server/web-client/`) |
+| **Android App** | Android | Kotlin | In development | Separate repo |
+
+### iOS App (Primary)
+- **Target Devices:** iPhone 16/17 Pro Max (optimized), iPad
+- **Minimum OS:** iOS 18.0
+- **Features:** Full voice pipeline, on-device inference, Siri integration, offline capability
+
+### Web Client
+- **Browsers:** Chrome, Safari, Edge (desktop and mobile)
+- **Real-time Voice:** OpenAI Realtime API via WebRTC
+- **Features:** Voice conversations, curriculum browser, visual assets, responsive design
+
+### Android App
+- **Status:** Active development in separate repository
+- **Technology:** Kotlin with on-device inference support
+- **Note:** Feature parity with iOS is the goal; currently implementing core voice pipeline
 
 ---
 
@@ -22,7 +49,8 @@ unamentis/
 ├── UnaMentisTests/            # iOS Test Suite (126+ tests)
 ├── server/                    # Backend Infrastructure
 │   ├── management/            # Management API (Python/aiohttp, port 8766)
-│   ├── web/                   # UnaMentis Server (Next.js/React, port 3000)
+│   ├── web/                   # Operations Console (Next.js/React, port 3000)
+│   ├── web-client/            # Web Client (Next.js, voice tutoring for browsers)
 │   ├── database/              # Shared SQLite curriculum database
 │   └── importers/             # Curriculum import framework
 ├── curriculum/                # UMCF specification and examples
@@ -35,28 +63,81 @@ unamentis/
 
 | Component | Location | Technology | Purpose |
 |-----------|----------|------------|---------|
-| iOS App | `UnaMentis/` | Swift 6.0, SwiftUI | Voice tutoring client |
+| iOS App | `UnaMentis/` | Swift 6.0, SwiftUI | Voice tutoring client (primary) |
 | iOS Tests | `UnaMentisTests/` | XCTest | 126+ unit, 16+ integration tests |
+| Web Client | `server/web-client/` | Next.js 15+, React, TypeScript | Voice tutoring for browsers |
 | Management API | `server/management/` | Python, aiohttp | Backend API (port 8766) |
-| UnaMentis Server | `server/web/` | Next.js 16.1, React 19 | Web interface (port 3000) |
+| Operations Console | `server/web/` | Next.js 16.1, React 19 | System/content management (port 3000) |
 | Importers | `server/importers/` | Python | Plugin-based curriculum import |
 | Curriculum | `curriculum/` | UMCF JSON | Format specification |
 
 ---
 
-## Architecture
+## AI Models & Providers
 
-### Voice Pipeline
+All components are **protocol-based and swappable**. The system supports multiple providers for each capability, enabling cost optimization, offline operation, and graceful degradation.
 
-All components are **protocol-based and swappable**:
+### Speech-to-Text (STT) Models
 
-| Component | On-Device | Cloud | Self-Hosted |
-|-----------|-----------|-------|-------------|
-| **STT** | Apple Speech, GLM-ASR-Nano | Deepgram Nova-3, AssemblyAI, OpenAI Whisper, Groq Whisper | GLM-ASR server |
-| **TTS** | Apple TTS | ElevenLabs Turbo v2.5, Deepgram Aura-2 | Piper TTS |
-| **LLM** | Ministral-3B (llama.cpp) | Anthropic Claude, OpenAI GPT-4o | Ollama, llama.cpp server, vLLM |
-| **VAD** | Silero (CoreML on Neural Engine) | - | - |
-| **Embeddings** | - | OpenAI text-embedding-3-small | - |
+| Provider | Model | Type | Notes |
+|----------|-------|------|-------|
+| **Apple Speech** | Native | On-device | Zero cost, always available, ~150ms latency |
+| **GLM-ASR** | GLM-ASR-Nano | On-device (CoreML) | Requires A17+ chip, ~2.4GB download |
+| **Deepgram** | Nova-3 | Cloud (WebSocket) | ~300ms latency, streaming |
+| **AssemblyAI** | Universal-2 | Cloud | Word-level timestamps |
+| **Groq** | Whisper-large-v3-turbo | Cloud | Free tier (14,400 req/day), 300x real-time |
+| **OpenAI** | Whisper | Cloud | High accuracy, batch processing |
+| **Self-hosted** | whisper.cpp, faster-whisper | Local server | OpenAI-compatible API |
+
+### Text-to-Speech (TTS) Models
+
+| Provider | Model | Type | Notes |
+|----------|-------|------|-------|
+| **Apple TTS** | AVSpeechSynthesizer | On-device | Zero cost, ~50ms TTFB, always available |
+| **Chatterbox** | Chatterbox-turbo (350M) | Self-hosted | Emotion control, voice cloning, paralinguistic tags |
+| **Chatterbox** | Chatterbox-multilingual (500M) | Self-hosted | 23 languages, expressive speech |
+| **VibeVoice** | VibeVoice-Realtime-0.5B | Self-hosted | Microsoft model, 0.5B parameters, real-time |
+| **ElevenLabs** | Turbo v2.5 | Cloud | Premium quality, WebSocket streaming |
+| **Deepgram** | Aura-2 | Cloud | Multiple voices, 24kHz, streaming |
+| **Piper** | Various voices | Self-hosted | OpenAI-compatible endpoint |
+
+#### Chatterbox TTS (Resemble AI)
+
+Chatterbox is our featured self-hosted TTS model with advanced capabilities:
+
+- **Emotion Control:** Exaggeration parameter (0.0-1.5) controls emotional intensity
+- **Generation Fidelity:** CFG weight (0.0-1.0) for output consistency
+- **Paralinguistic Tags:** `[laugh]`, `[cough]`, `[chuckle]`, `[sigh]`, `[gasp]`
+- **Voice Cloning:** Zero-shot cloning from reference audio
+- **Languages:** 23 languages supported
+- **Modes:** Streaming and non-streaming
+- **Presets:** Default, Natural, Expressive, Low Latency
+
+### Large Language Models (LLM)
+
+| Provider | Model | Type | Notes |
+|----------|-------|------|-------|
+| **On-Device** | Ministral-3B-Instruct-Q4_K_M | On-device (llama.cpp) | ~2.1GB, primary on-device |
+| **On-Device** | TinyLlama-1.1B-Chat | On-device (llama.cpp) | Fallback, smaller footprint |
+| **Anthropic** | Claude 3.5 Sonnet | Cloud | Primary cloud model |
+| **OpenAI** | GPT-4o, GPT-4o-mini | Cloud | Alternative cloud option |
+| **OpenAI Realtime** | gpt-4o-realtime-preview | Cloud (WebRTC) | Web client real-time voice |
+| **Ollama** | Mistral 7B, Qwen2.5:32B, Llama3.2:3B | Self-hosted | OpenAI-compatible API |
+| **llama.cpp server** | Any GGUF model | Self-hosted | Custom OpenAI-compatible |
+| **vLLM** | Any HuggingFace model | Self-hosted | High-throughput inference |
+
+### Voice Activity Detection (VAD)
+
+| Provider | Model | Type | Notes |
+|----------|-------|------|-------|
+| **Silero VAD** | CoreML model | On-device (Neural Engine) | Apple Silicon optimized |
+| **RMS-based** | Custom | On-device | Energy-based fallback |
+
+### Embedding Models
+
+| Provider | Model | Type | Purpose |
+|----------|-------|------|---------|
+| **OpenAI** | text-embedding-3-small | Cloud | Semantic search, retrieval |
 
 ### Graceful Degradation
 
@@ -69,36 +150,9 @@ The app works on any device, even without API keys or servers:
 | **LLM** | OnDeviceLLMService | Requires bundled models |
 | **VAD** | RMS-based detection | Yes |
 
-### Session Flow
-
-```
-Microphone -> AudioEngine -> VAD -> STT (streaming)
-    -> SessionManager (turn-taking, context)
-    -> PatchPanel (route to LLM endpoint)
-    -> LLM (streaming) -> TTS (streaming)
-    -> AudioEngine -> Speaker
-```
-
-**Session States:** Idle -> User Speaking -> Processing -> AI Thinking -> AI Speaking -> (loop)
-
-### LLM Routing (Patch Panel)
-
-A switchboard system for routing LLM calls to any endpoint:
-
-**Routing Priority:**
-1. Global override (debugging)
-2. Manual task-type override
-3. Auto-routing rules (thermal, network, cost conditions)
-4. Default routes per task type
-5. Fallback chain
-
-**20+ Task Types:** Tutoring, content generation, navigation, classification, and simple responses.
-
-**Condition-Based Routing:** Device conditions (thermal, memory, battery), network conditions, cost thresholds, and time conditions.
-
 ---
 
-## iOS App Structure
+## iOS App Architecture
 
 **Target:** iPhone 16/17 Pro Max | **Minimum:** iOS 18.0 | **Language:** Swift 6.0
 
@@ -117,8 +171,8 @@ UnaMentis/
 │   └── Telemetry/       # TelemetryEngine (latency, cost, events)
 ├── Services/
 │   ├── LLM/             # OpenAI, Anthropic, Self-Hosted, On-Device
-│   ├── STT/             # AssemblyAI, Deepgram, Apple, GLM-ASR, Router
-│   ├── TTS/             # ElevenLabs, Deepgram, Apple, Self-Hosted
+│   ├── STT/             # AssemblyAI, Deepgram, Groq, Apple, GLM-ASR, Router
+│   ├── TTS/             # Chatterbox, ElevenLabs, Deepgram, Apple, VibeVoice
 │   ├── VAD/             # SileroVADService (CoreML)
 │   ├── Embeddings/      # OpenAIEmbeddingService
 │   └── Curriculum/      # CurriculumService, VisualAssetCache
@@ -131,18 +185,49 @@ UnaMentis/
 └── UI/
     ├── Session/         # SessionView, VisualAssetView
     ├── Curriculum/      # CurriculumView
-    ├── Settings/        # SettingsView, ServerSettingsView
+    ├── Settings/        # SettingsView, ServerSettingsView, ChatterboxSettingsView
     ├── History/         # HistoryView
     ├── Analytics/       # AnalyticsView
     └── Debug/           # DeviceMetricsView, DebugConversationTestView
 ```
 
 ### Service Counts
-- **LLM Providers:** 5 (OpenAI, Anthropic, Self-Hosted, On-Device, Mock)
-- **STT Providers:** 9 (AssemblyAI, Deepgram, Groq, Apple, GLM-ASR server, GLM-ASR on-device, Self-Hosted, Router, Health Monitor)
-- **TTS Providers:** 5 (ElevenLabs, Deepgram, Apple, Self-Hosted, Pronunciation Processor)
-- **UI Views:** 11 major views with supporting subviews
-- **Swift Files:** 80+ source files, 26 test files
+
+| Category | Count | Providers |
+|----------|-------|-----------|
+| **STT Providers** | 9 | AssemblyAI, Deepgram, Groq, Apple, GLM-ASR server, GLM-ASR on-device, Self-Hosted, Router, Health Monitor |
+| **TTS Providers** | 7 | Chatterbox, VibeVoice, ElevenLabs, Deepgram, Apple, Self-Hosted, Pronunciation Processor |
+| **LLM Providers** | 5 | OpenAI, Anthropic, Self-Hosted, On-Device, Mock |
+| **UI Views** | 11+ | Session, Curriculum, History, Analytics, Settings, Debug, and supporting views |
+| **Swift Files** | 80+ | Source files across Core, Services, UI |
+| **Test Files** | 26 | Unit and integration tests |
+
+### Session Flow
+
+```
+Microphone -> AudioEngine -> VAD -> STT (streaming)
+    -> SessionManager (turn-taking, context)
+    -> PatchPanel (route to LLM endpoint)
+    -> LLM (streaming) -> TTS (streaming)
+    -> AudioEngine -> Speaker
+```
+
+**Session States:** Idle → User Speaking → Processing → AI Thinking → AI Speaking → (loop)
+
+### LLM Routing (Patch Panel)
+
+A switchboard system for routing LLM calls to any endpoint:
+
+**Routing Priority:**
+1. Global override (debugging)
+2. Manual task-type override
+3. Auto-routing rules (thermal, network, cost conditions)
+4. Default routes per task type
+5. Fallback chain
+
+**20+ Task Types:** Tutoring, content generation, navigation, classification, and simple responses.
+
+**Condition-Based Routing:** Device conditions (thermal, memory, battery), network conditions, cost thresholds, and time conditions.
 
 ### Data Persistence
 
@@ -157,23 +242,38 @@ UnaMentis/
 
 ---
 
+## Web Client Architecture
+
+**Technology:** Next.js 15+, React 19, TypeScript 5, Tailwind CSS
+
+### Features
+
+- **Real-time Voice:** OpenAI Realtime API via WebRTC for low-latency conversations
+- **Curriculum Browser:** Full UMCF content navigation with hierarchy
+- **Visual Assets:** Rich display of formulas, maps, diagrams, charts with LaTeX rendering
+- **Cost Tracking:** Real-time session cost display
+- **Responsive Design:** Desktop and mobile optimized
+- **Theme Support:** Light/dark mode with comprehensive theming
+
+### Provider Support
+
+| Function | Providers |
+|----------|-----------|
+| **STT** | OpenAI Realtime, Deepgram, AssemblyAI, Groq, Self-hosted |
+| **TTS** | OpenAI Realtime, ElevenLabs, Self-hosted |
+| **LLM** | OpenAI Realtime, Anthropic Claude, Groq |
+
+### Key Components
+
+- `VoiceSession` - Real-time voice conversation management
+- `CurriculumBrowser` - Hierarchical curriculum navigation
+- `VisualAssetDisplay` - Formula, diagram, chart rendering
+- `SessionContext` - Global state management
+- `ConnectionState` - Real-time connection handling
+
+---
+
 ## Server Infrastructure
-
-### UnaMentis Server (Port 3000)
-
-**Purpose:** Unified web interface for system and content management
-
-**Tech Stack:** Next.js 16.1.0, React 19.2.3, TypeScript 5, Tailwind CSS 4
-
-**Features:**
-- System health monitoring (CPU, memory, thermal, battery)
-- Service status dashboard (Ollama, VibeVoice, Piper, Gateway)
-- Power/idle management profiles
-- Performance metrics (E2E latency, STT/LLM/TTS latencies, costs)
-- Logs and diagnostics with real-time filtering
-- Client connection monitoring
-- **Curriculum Studio** for viewing/editing UMCF content
-- **Plugin Manager** for configuring content sources
 
 ### Management API (Port 8766)
 
@@ -188,12 +288,51 @@ UnaMentis/
 - AI enrichment pipeline (7 stages)
 - User progress tracking and analytics
 - Plugin management API
+- Authentication (JWT tokens, rate limiting)
+- Diagnostic logging and resource monitoring
+
+### Operations Console (Port 3000)
+
+**Purpose:** Unified web interface for system and content management
+
+**Tech Stack:** Next.js 16.1.0, React 19.2.3, TypeScript 5, Tailwind CSS 4
+
+**Features:**
+- System health monitoring (CPU, memory, thermal, battery)
+- Service status dashboard (Ollama, Chatterbox, VibeVoice, Piper, Gateway)
+- Power/idle management profiles
+- Performance metrics (E2E latency, STT/LLM/TTS latencies, costs)
+- Logs and diagnostics with real-time filtering
+- Client connection monitoring
+- **Curriculum Studio** for viewing/editing UMCF content
+- **Plugin Manager** for configuring content sources
+- **Users Dashboard** for user and session management
+
+### Self-Hosted Server Support
+
+UnaMentis can connect to local/LAN servers for zero-cost inference:
+
+| Server Type | Port | Purpose |
+|-------------|------|---------|
+| Ollama | 11434 | LLM inference (primary) |
+| llama.cpp | 8080 | LLM inference |
+| vLLM | 8000 | High-throughput LLM |
+| GLM-ASR server | 11401 | STT (WebSocket streaming) |
+| Chatterbox TTS | 8004 | Expressive TTS |
+| VibeVoice TTS | 11403 | Real-time TTS |
+| Piper TTS | 11402 | Lightweight TTS |
+| UnaMentis Gateway | 11400 | Unified API gateway |
+
+**Features:**
+- Auto-discovery of available models/voices
+- Health monitoring with automatic fallback
+- OpenAI-compatible API support
 
 ### Architecture Relationship
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              UnaMentis Server (Port 3000)               │
+│              Operations Console (Port 3000)             │
 │              Next.js/React Frontend                     │
 └────────────────────────┬────────────────────────────────┘
                          │ Proxy requests
@@ -301,25 +440,6 @@ The framework uses **filesystem-based plugin discovery** with explicit enable/di
 
 ---
 
-## Self-Hosted Server Support
-
-UnaMentis can connect to local/LAN servers for zero-cost inference:
-
-| Server Type | Port | Purpose |
-|-------------|------|---------|
-| Ollama | 11434 | LLM inference (primary target) |
-| llama.cpp | 8080 | LLM inference |
-| vLLM | 8000 | High-throughput LLM |
-| GLM-ASR server | 11401 | STT (with WebSocket streaming) |
-| Piper TTS | 11402 | TTS |
-
-**Features:**
-- Auto-discovery of available models/voices
-- Health monitoring with automatic fallback
-- OpenAI-compatible API support
-
----
-
 ## Current Status
 
 ### Complete
@@ -333,17 +453,21 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 - Patch Panel LLM routing system
 - GLM-ASR implementation (server + on-device)
 - Groq STT integration (Whisper API)
+- Chatterbox TTS integration with emotion control
+- VibeVoice TTS integration
 - STT Provider Router with automatic failover
 - Visual asset support design
 - Import architecture with 4 complete importers (MIT OCW, CK-12, EngageNY, MERLOT)
-- UnaMentis Server (React/TypeScript) with Curriculum Studio
+- Operations Console (React/TypeScript) with Curriculum Studio
 - Management API (Python/aiohttp)
+- Web Client (Next.js) with voice tutoring, curriculum browser, visual assets
 - iOS Simulator MCP for AI-driven testing
 - Siri & App Intents integration (voice commands, deep links)
 - Graceful degradation architecture
 - Plugin-based importer framework
 
 ### In Progress
+- Android client (separate repository)
 - Visual asset caching optimization
 - AI enrichment pipeline implementation
 - Fast.ai and Stanford SEE importers
@@ -391,7 +515,16 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 | Inference | llama.cpp, CoreML |
 | Testing | XCTest (real > mock philosophy) |
 
-### UnaMentis Server
+### Web Client
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15+ (App Router) |
+| UI Library | React 19 |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS |
+| Real-time | OpenAI Realtime API (WebRTC) |
+
+### Operations Console
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 16.1.0 (App Router) |
@@ -424,6 +557,8 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 | `UnaMentis/Core/Curriculum/CurriculumEngine.swift` | Curriculum context generation |
 | `UnaMentis/Core/Routing/PatchPanelService.swift` | LLM endpoint routing |
 | `UnaMentis/Services/STT/STTProviderRouter.swift` | STT failover routing |
+| `UnaMentis/Services/STT/GroqSTTService.swift` | Groq Whisper integration |
+| `UnaMentis/Services/TTS/ChatterboxTTSService.swift` | Chatterbox TTS with emotion control |
 | `UnaMentis/Services/LLM/SelfHostedLLMService.swift` | Ollama/llama.cpp integration |
 | `UnaMentis/Services/STT/GLMASROnDeviceSTTService.swift` | On-device speech recognition |
 | `curriculum/spec/umcf-schema.json` | UMCF JSON Schema (1,905 lines) |
@@ -431,6 +566,7 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 | `server/management/server.py` | Management API backend |
 | `server/importers/plugins/sources/mit_ocw.py` | MIT OCW course handler |
 | `server/web/src/components/curriculum/` | Curriculum Studio components |
+| `server/web-client/src/app/` | Web client application |
 
 ---
 
@@ -482,13 +618,17 @@ UnaMentis can connect to local/LAN servers for zero-cost inference:
 - AI enrichment pipeline (in progress)
 - Fast.ai and Stanford SEE importers (spec complete)
 
-### Phase 7: Advanced Features (Planned)
+### Phase 7: Cross-Platform Expansion (In Progress)
+- Android client development
+- Feature parity across iOS, Web, Android
+- Shared curriculum sync
+
+### Phase 8: Advanced Features (Planned)
 - Knowledge graph construction
 - Interactive visual diagrams
 - Collaborative annotations
-- Cross-platform expansion
 
-### Phase 8: Production Hardening (Pending)
+### Phase 9: Production Hardening (Pending)
 - Performance optimization based on device testing
 - 90-minute session stability
 - TestFlight distribution
@@ -502,7 +642,7 @@ The fundamental core of UnaMentis will always remain open source:
 - Core voice pipeline and session management
 - Curriculum system and progress tracking
 - All provider integrations
-- Cross-platform support (planned)
+- Cross-platform support
 
 ### Enterprise Features (Future)
 A separate commercial layer may offer:
@@ -518,11 +658,12 @@ A separate commercial layer may offer:
 
 | Component | Language | Files | Purpose |
 |-----------|----------|-------|---------|
-| iOS App | Swift | 80+ | Voice tutoring client |
+| iOS App | Swift | 80+ | Voice tutoring client (primary) |
 | iOS Tests | Swift | 26 | Unit & integration tests |
-| Management API | Python | 10+ | Content administration |
-| UnaMentis Server | TypeScript/React | 67 | Web interface |
+| Web Client | TypeScript/React | 50+ | Voice tutoring for browsers |
+| Management API | Python | 10+ | Backend API |
+| Operations Console | TypeScript/React | 67 | System/content management |
 | Importers | Python | 25+ | Curriculum ingestion |
 | Curriculum Spec | Markdown/JSON | 19 | Format specification |
 | Documentation | Markdown | 40+ | Comprehensive guides |
-| **TOTAL** | Mixed | 267+ | Full system |
+| **TOTAL** | Mixed | 317+ | Full system |

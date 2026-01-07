@@ -159,13 +159,24 @@ UnaMentis/
 └── UI/             # SwiftUI views
 
 server/
-├── management/     # Management Console (port 8766)
-└── web/            # Operations Console (port 3000)
+├── management/     # Management API (port 8766)
+├── web/            # Operations Console (port 3000)
+└── web-client/     # Web Client (voice tutoring for browsers)
 ```
 
 ## Web Interfaces
 
-UnaMentis includes two web-based administration interfaces:
+UnaMentis includes three web-based interfaces:
+
+### Web Client (voice tutoring)
+Browser-based voice tutoring that matches iOS app capabilities:
+- Real-time voice conversations with AI tutors (OpenAI Realtime API via WebRTC)
+- Full curriculum browser and lesson playback
+- Rich visual asset display (formulas, diagrams, maps, charts)
+- Responsive design for desktop and mobile browsers
+- Sub-500ms latency voice interaction
+
+See [server/web-client/README.md](server/web-client/README.md) for setup and documentation.
 
 ### Operations Console (port 3000)
 Backend infrastructure monitoring for DevOps:
@@ -174,7 +185,7 @@ Backend infrastructure monitoring for DevOps:
 - Power/idle profiles
 - Logs, metrics, performance data
 
-### Management Console (port 8766)
+### Management API (port 8766)
 Application and content management:
 - Curriculum management (import, browse, edit)
 - Visual asset management
@@ -275,15 +286,16 @@ The fundamental core of UnaMentis will always remain open source. This ensures t
 ### Current Platform Support
 
 - **iOS**: Primary platform, fully functional (iPhone 16/17 Pro Max optimized)
-- **Server**: Management Console and Operations Console for curriculum and infrastructure management
+- **Web**: Browser-based voice tutoring (Chrome, Safari, Edge recommended)
+- **Server**: Management API and Operations Console for curriculum and infrastructure management
 
 ### Future Directions
 
-- **Web interface**: Browser-based access to tutoring sessions
 - **Desktop apps**: Native macOS and Windows applications
 - **Plugin architecture**: Extensible system for value-added capabilities
+- **Enhanced collaboration**: Multi-user learning sessions
 
-Note: Android support was explored but is not currently in active development. The focus is on delivering an exceptional iOS experience first.
+Note: Android support was explored but is not currently in active development. The focus is on delivering exceptional iOS and web experiences first.
 
 ## Contributing
 

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/images/logo-expanded.png" alt="UnaMentis" width="400">
+</p>
+
 # UnaMentis Web Client
 
 Voice AI tutoring platform for the web, providing 60-90+ minute learning sessions with sub-500ms latency.
@@ -128,6 +132,14 @@ web-client/
 │   └── WEBSOCKET_PROTOCOL.md   # Real-time protocols
 │
 ├── public/                     # Static assets
+│   ├── images/                 # Logo and branding assets
+│   │   ├── logo.png            # Compact logo (app icon style)
+│   │   ├── logo-expanded.png   # Full logo with text
+│   │   ├── logo-icon.png       # Icon-only version
+│   │   └── logo-text.png       # Text-only version
+│   ├── favicon-16x16.png       # Favicon small
+│   ├── favicon-32x32.png       # Favicon medium
+│   └── apple-touch-icon.png    # iOS home screen icon
 │
 ├── .env.example                # Environment variable template
 ├── .env.local                  # Local environment (git-ignored)
@@ -297,4 +309,4 @@ All API requests are proxied through Next.js API routes to avoid CORS issues and
 
 ## License
 
-Proprietary - UnaMentis
+MIT License - see the [LICENSE](../../LICENSE) file in the repository root.

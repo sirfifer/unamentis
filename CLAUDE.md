@@ -188,6 +188,28 @@ Do NOT commit if either command fails. Fix the issues first.
 - `docs/setup/DEV_ENVIRONMENT.md` - **Developer environment setup guide**
 - `docs/ios/IOS_STYLE_GUIDE.md` - Mandatory iOS coding standards
 - `docs/architecture/UnaMentis_TDD.md` - Technical design document
+- `docs/architecture/PROJECT_OVERVIEW.md` - **Authoritative project overview (must be kept current)**
 - `docs/TASK_STATUS.md` - Current task status
 - `AGENTS.md` - AI development guidelines and testing philosophy
 - `curriculum/README.md` - UMCF curriculum format
+
+## MANDATORY: PROJECT_OVERVIEW.md Maintenance
+
+The file `docs/architecture/PROJECT_OVERVIEW.md` is the **authoritative project overview** used to update the website and communicate project status. Keeping it current is part of the definition of done.
+
+**Update PROJECT_OVERVIEW.md when:**
+- Adding a new AI model or provider (STT, TTS, LLM, VAD, Embeddings)
+- Adding a new client application or platform
+- Adding a new server component or API
+- Implementing a significant feature
+- Completing a roadmap phase
+
+**Required content (must always be complete):**
+- All AI models with names and characteristics
+- All client applications with status (iOS, Web, Android)
+- All server components with ports and tech stacks
+- All self-hosted server options
+- Accurate service counts
+- Current completion status
+
+This is not optional. The document is used externally and must reflect the true state of the project.

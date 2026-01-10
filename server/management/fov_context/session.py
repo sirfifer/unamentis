@@ -292,7 +292,8 @@ class FOVSession:
         analysis = self.confidence_monitor.analyze_response(response)
 
         self._log_event("confidence_analysis", {
-            "confidence": analysis.confidence_score,
+            "confidence_score": analysis.confidence_score,
+            "uncertainty_score": analysis.uncertainty_score,
             "markers": [m.value for m in analysis.detected_markers],
             "trend": analysis.trend.value
         })

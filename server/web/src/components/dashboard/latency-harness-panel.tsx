@@ -74,6 +74,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { getLatencyColor } from '@/components/charts';
 import {
   LatencyDashboard,
   TestTargetSelector,
@@ -287,16 +288,6 @@ function formatDuration(seconds: number): string {
 function formatTime(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
-
-/**
- * Get color class for latency value based on target.
- * Emerald: meets target, Amber: within 1.5x, Red: exceeds 1.5x.
- */
-function getLatencyColor(ms: number, target = 500): string {
-  if (ms <= target) return 'text-emerald-400';
-  if (ms <= target * 1.5) return 'text-amber-400';
-  return 'text-red-400';
 }
 
 // ============================================================================

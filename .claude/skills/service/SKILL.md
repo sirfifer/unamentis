@@ -141,3 +141,13 @@ The USM API provides:
 - Proper state management
 - Health monitoring
 - Dependency handling
+
+## Exception: Restarting USM Itself
+
+The ONE exception to the "never use pkill" rule is restarting the USM (Server Manager) app itself. Since USM cannot restart itself via its own API, you must use:
+
+```bash
+pkill -f "USM.app" 2>/dev/null
+```
+
+Then relaunch USM manually. This is documented in `server/server-manager/FRESH_SESSION_TASKS.md`.

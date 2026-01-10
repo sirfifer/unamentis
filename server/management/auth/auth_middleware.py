@@ -56,11 +56,18 @@ PUBLIC_PREFIXES: List[str] = [
 
 
 def is_public_route(path: str) -> bool:
-    """Check if a route is public (doesn't require auth)."""
+    """Check if a route is public (doesn't require auth).
+
+    Uses strict prefix matching to avoid matching unintended paths.
+    For example, '/api/services' should match '/api/services/foo'
+    but not '/api/servicesX'.
+    """
     if path in PUBLIC_ROUTES:
         return True
     for prefix in PUBLIC_PREFIXES:
-        if path.startswith(prefix):
+        # Require exact match or slash-delimited boundary
+        normalized_prefix = prefix.rstrip('/')
+        if path == normalized_prefix or path.startswith(normalized_prefix + '/'):
             return True
     return False
 

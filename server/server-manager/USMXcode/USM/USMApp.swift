@@ -322,7 +322,7 @@ class ServiceManager: ObservableObject {
                 displayName: "Management API",
                 processName: "server.py",
                 port: 8766,
-                startCommand: "AUTH_SECRET_KEY=466EB0C062CD48768B409697AFC251E9 DATABASE_URL=postgresql://ramerman@localhost/unamentis python3 management/server.py",
+                startCommand: "python3 management/server.py",  // Expects AUTH_SECRET_KEY and DATABASE_URL from environment
                 workingDirectory: serverPath
             ),
             Service(

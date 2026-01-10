@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { getLatencyColor } from '@/components/charts';
 
 // ============================================================================
 // Types
@@ -158,12 +159,6 @@ function formatDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
-}
-
-function getLatencyColor(ms: number, target = 500): string {
-  if (ms <= target) return 'text-emerald-400';
-  if (ms <= target * 1.5) return 'text-amber-400';
-  return 'text-red-400';
 }
 
 function getThermalColor(pressure: string): string {

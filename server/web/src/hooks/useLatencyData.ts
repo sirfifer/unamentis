@@ -10,6 +10,11 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { TestRun, AnalysisSummary } from '@/types/latency-charts';
+import {
+  getLLMProvider,
+  getTTSProvider,
+  getSTTProvider,
+} from '@/lib/latency-harness/chart-transforms';
 
 // ============================================================================
 // Configuration
@@ -223,18 +228,19 @@ export function useAggregatedResults(runs: TestRun[]) {
     }
 
     const uniqueConfigs = [...new Set(allResults.map((r) => r.configId))];
-    const uniqueLLM = [...new Set(allResults.map((r) => r.llmConfig?.provider).filter(Boolean))];
-    const uniqueTTS = [...new Set(allResults.map((r) => r.ttsConfig?.provider).filter(Boolean))];
-    const uniqueSTT = [...new Set(allResults.map((r) => r.sttConfig?.provider).filter(Boolean))];
+    // Use helper functions that fallback to configId parsing when configs are null
+    const uniqueLLM = [...new Set(allResults.map((r) => getLLMProvider(r)))];
+    const uniqueTTS = [...new Set(allResults.map((r) => getTTSProvider(r)))];
+    const uniqueSTT = [...new Set(allResults.map((r) => getSTTProvider(r)))];
 
     return {
       results: allResults,
       count: allResults.length,
       uniqueConfigs,
       uniqueProviders: {
-        llm: uniqueLLM as string[],
-        tts: uniqueTTS as string[],
-        stt: uniqueSTT as string[],
+        llm: uniqueLLM,
+        tts: uniqueTTS,
+        stt: uniqueSTT,
       },
     };
   }, [runs]);

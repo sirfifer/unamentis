@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		61B4471D2655473793DC5702 /* BufferModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84386C897D064659B1061643 /* BufferModels.swift */; };
+		7D04B21766C449B18779EA86 /* FOVContextManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01B5BA785A644DB9C77430F /* FOVContextManager.swift */; };
+		E35EC03F98434EFAA2CF1321 /* ConfidenceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EDEAFF09F674BC98A9BF993 /* ConfidenceMonitor.swift */; };
+		9FE58B40892F457FB962CAF8 /* ContextSummarizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377C141C4ECC4F0DA78D8CCE /* ContextSummarizer.swift */; };
+		E8F3E35EAF784771A28EBB84 /* ContextExpansionTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA1A22BDCA24D03BEFFDB5C /* ContextExpansionTool.swift */; };
+		0ECC34AD80554FE88549ED12 /* SessionManager+FOVContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DB9C363A5A47A68A5009EB /* SessionManager+FOVContext.swift */; };
 		01ABAF0927B8FB3C82CB7555 /* CurriculumEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C207CAFA73C1D526B473B /* CurriculumEngine.swift */; };
 		01ADC64CC30CB163B14CA62C /* StartLessonIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C84608D516291A60F987D9B /* StartLessonIntent.swift */; };
 		02D04453683695A6354A69CF /* LMAPIProviderInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA2D0F2C7B340A0F71796A7 /* LMAPIProviderInfo.swift */; };
@@ -173,6 +179,7 @@
 		FB4536FB09E712F73760A143 /* llama-3.2-3b-instruct-q4_k_m.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */; };
 		FB59364BBC02872920BD0323 /* ref-botticelli-birth-venus.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 14F5F7B4594AB0DD6CE717E7 /* ref-botticelli-birth-venus.jpg */; };
 		FFF26AE98F6DDE371CA0B169 /* VADService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F889719749AE4061E8AD19F /* VADService.swift */; };
+		B4C3D2E1F0A54876 /* FOVContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B2C1D4E5F64789 /* FOVContextTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +214,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		84386C897D064659B1061643 /* BufferModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferModels.swift; sourceTree = "<group>"; };
+		B01B5BA785A644DB9C77430F /* FOVContextManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FOVContextManager.swift; sourceTree = "<group>"; };
+		3EDEAFF09F674BC98A9BF993 /* ConfidenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceMonitor.swift; sourceTree = "<group>"; };
+		377C141C4ECC4F0DA78D8CCE /* ContextSummarizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSummarizer.swift; sourceTree = "<group>"; };
+		EEA1A22BDCA24D03BEFFDB5C /* ContextExpansionTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextExpansionTool.swift; sourceTree = "<group>"; };
+		48DB9C363A5A47A68A5009EB /* SessionManager+FOVContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionManager+FOVContext.swift"; sourceTree = "<group>"; };
 		0036EFE850AA592D96BD5AAE /* TopicEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicEntity.swift; sourceTree = "<group>"; };
 		0122D12D71D21E39864BD351 /* RemoteLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLogHandler.swift; sourceTree = "<group>"; };
 		01C496581684518021B58948 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -372,6 +385,7 @@
 		F969DA1B3AC136EEE9F4063F /* Curriculum+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Curriculum+CoreDataClass.swift"; sourceTree = "<group>"; };
 		FD17BD85661AA22279D27BA4 /* CurriculumEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumEngineTests.swift; sourceTree = "<group>"; };
 		FEAAC040F0D5B735565FA7B1 /* AnalyticsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModelTests.swift; sourceTree = "<group>"; };
+		A3B2C1D4E5F64789 /* FOVContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FOVContextTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -388,6 +402,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B08C83EC00FF49A8A37E8CD1 /* Context */ = {
+			isa = PBXGroup;
+			children = (
+				84386C897D064659B1061643 /* BufferModels.swift */,
+				3EDEAFF09F674BC98A9BF993 /* ConfidenceMonitor.swift */,
+				EEA1A22BDCA24D03BEFFDB5C /* ContextExpansionTool.swift */,
+				377C141C4ECC4F0DA78D8CCE /* ContextSummarizer.swift */,
+				B01B5BA785A644DB9C77430F /* FOVContextManager.swift */,
+				48DB9C363A5A47A68A5009EB /* SessionManager+FOVContext.swift */,
+			);
+			path = Context;
+			sourceTree = "<group>";
+		};
 		02E786E3EAE24BBCB1C0FE23 /* Intents */ = {
 			isa = PBXGroup;
 			children = (
@@ -495,6 +522,7 @@
 			isa = PBXGroup;
 			children = (
 				4F115E0BA4EE0EE454ABDE15 /* Audio */,
+				B08C83EC00FF49A8A37E8CD1 /* Context */,
 				149563E43490CEEA514703DE /* Config */,
 				511AA855EB65917327CDEBD5 /* Curriculum */,
 				45089E1511914D07CD9E7EE8 /* Logging */,
@@ -632,6 +660,7 @@
 				3B97EDBDFA6980D8ECCAAD88 /* DeepgramSTTServiceTests.swift */,
 				4A08D5EB9552119D29780C63 /* DocumentProcessorTests.swift */,
 				6F9F99A63180C417C5EF1CB5 /* ElevenLabsTTSServiceTests.swift */,
+				A3B2C1D4E5F64789 /* FOVContextTests.swift */,
 				7255225D19D4EFBCDC467F4B /* OpenAIEmbeddingServiceTests.swift */,
 				3D7B8DEB4A2EDC95013DBE36 /* PersistenceControllerTests.swift */,
 				325F5B3EC3796EEB1E776B04 /* ProgressTrackerTests.swift */,
@@ -1168,10 +1197,14 @@
 				D2F16797C496FC64EA2C63F2 /* AudioEngineConfig.swift in Sources */,
 				BA5E327F594E870FFE4F0874 /* AutoResumeService.swift in Sources */,
 				DC0667D359165BC1E3A23B33 /* BrandLogo.swift in Sources */,
+				61B4471D2655473793DC5702 /* BufferModels.swift in Sources */,
 				E543A1C92C979283DA2D81B3 /* ChatterboxConfig.swift in Sources */,
 				B0DD2ADC603D9E1B6985C93D /* ChatterboxSettingsView.swift in Sources */,
 				C1742421F88171C3F46D4DCD /* ChatterboxSettingsViewModel.swift in Sources */,
 				253518C61D123D8F0885A43C /* ChatterboxTTSService.swift in Sources */,
+				E35EC03F98434EFAA2CF1321 /* ConfidenceMonitor.swift in Sources */,
+				E8F3E35EAF784771A28EBB84 /* ContextExpansionTool.swift in Sources */,
+				9FE58B40892F457FB962CAF8 /* ContextSummarizer.swift in Sources */,
 				5FB02016D05BE3A79498AF76 /* Curriculum+CoreDataClass.swift in Sources */,
 				55561C72144C3FCC03EF5266 /* CurriculumDownloadManager.swift in Sources */,
 				01ABAF0927B8FB3C82CB7555 /* CurriculumEngine.swift in Sources */,
@@ -1189,6 +1222,7 @@
 				61C9A310A7F76F3938D334E7 /* DocumentProcessor.swift in Sources */,
 				80116AD1D76A21BADBA26485 /* ElevenLabsTTSService.swift in Sources */,
 				A0698371DD250D62946947C2 /* FormulaRendererView.swift in Sources */,
+				7D04B21766C449B18779EA86 /* FOVContextManager.swift in Sources */,
 				2677ACF9A194F6325F5EB743 /* GLMASRHealthMonitor.swift in Sources */,
 				6620DE1B619B9F29F9CFEE0B /* GLMASROnDeviceSTTService.swift in Sources */,
 				979AE8F5878DBD378FADD22F /* GLMASRSTTService.swift in Sources */,
@@ -1227,6 +1261,7 @@
 				0B6020AB9F06FFBC1663C6DF /* SessionCommand.swift in Sources */,
 				1DA453924E57428F4DFC2BFD /* SessionControlComponents.swift in Sources */,
 				6F50A372D09225D61514CFC0 /* SessionManager.swift in Sources */,
+				0ECC34AD80554FE88549ED12 /* SessionManager+FOVContext.swift in Sources */,
 				6D6A809176045CAED36B1183 /* SessionView.swift in Sources */,
 				C2E5F80652C1FF9482E7DDF3 /* SettingsView.swift in Sources */,
 				9150A0337BD842CAD6285836 /* ShowProgressIntent.swift in Sources */,
@@ -1295,6 +1330,7 @@
 				EF909E8968CB77CD30D50BD8 /* DeepgramSTTServiceTests.swift in Sources */,
 				F1D139E573DF042F4B238CBB /* DocumentProcessorTests.swift in Sources */,
 				714C752BBDA10867789EA0AA /* ElevenLabsTTSServiceTests.swift in Sources */,
+				B4C3D2E1F0A54876 /* FOVContextTests.swift in Sources */,
 				CA17BDFD573A1985E44D00FC /* GLMASRHealthMonitorTests.swift in Sources */,
 				FAD3F8A6F3DD20E8B474CF37 /* GLMASRIntegrationTests.swift in Sources */,
 				D9D1BDD567A4B8954699628C /* GLMASRSTTServiceTests.swift in Sources */,

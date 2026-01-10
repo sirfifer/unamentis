@@ -118,61 +118,48 @@ python -m latency_harness.cli --suite quick_validation --mock
 python -m latency_harness.cli --suite quick_validation --no-mock  # Real providers
 ```
 
-## MANDATORY: Log Server Must Always Be Running
+## Server Management
 
-**The log server MUST be running whenever the iOS app or any server is running.** This is non-negotiable.
+**Use the `/service` skill for all service control.** Never use bash commands like pkill.
 
-```bash
-# Start log server FIRST, before anything else
-python3 scripts/log_server.py &
-
-# Verify it's running
-curl -s http://localhost:8765/health  # Returns "OK"
+```
+/service status              # Show all services
+/service restart management-api  # Restart specific service
+/service start-all           # Start all services
 ```
 
-**Access logs:**
-- Web interface: http://localhost:8765/
-- JSON API: `curl -s http://localhost:8765/logs`
-- Clear logs: `curl -s -X POST http://localhost:8765/clear`
+The USM menu bar app must be running. See `.claude/skills/service/SKILL.md` for full documentation.
 
-**When debugging issues:**
-1. Ensure log server is running
-2. Clear logs: `curl -s -X POST http://localhost:8765/clear`
-3. Reproduce the issue
-4. Fetch logs: `curl -s http://localhost:8765/logs | python3 -m json.tool`
-5. The last log message before a freeze identifies the blocking point
+## MANDATORY: Log Server for Debugging
 
-Without the log server, debugging is guesswork. Always start it first.
+**The log server MUST be running for debugging.** Use the `/debug-logs` skill for structured debugging:
+
+```
+/debug-logs              # Check log server and view recent logs
+/debug-logs capture      # Clear, reproduce issue, then analyze
+/debug-logs analyze      # Analyze current logs for issues
+```
+
+Log server runs on port 8765. Web UI at http://localhost:8765/
+
+See `.claude/skills/debug-logs/SKILL.md` for the complete debugging workflow.
 
 ## MANDATORY: Definition of Done
 
-**NO IMPLEMENTATION IS COMPLETE UNTIL TESTS PASS.** This is the single most important rule.
+**NO IMPLEMENTATION IS COMPLETE UNTIL `/validate` PASSES.** This is the single most important rule.
 
 ### The Golden Rule
-You MUST run `./scripts/test-quick.sh` (or `./scripts/test-all.sh` for significant changes) and verify ALL tests pass BEFORE:
-- Telling the user the work is "done" or "complete"
-- Summarizing what you accomplished
-- Moving on to the next task
-- Committing any changes
 
-### What "Complete" Means
-1. Code is written and compiles
-2. `./scripts/lint.sh` passes with no violations
-3. `./scripts/test-quick.sh` passes with ALL tests green
-4. You have ACTUALLY RUN these commands and seen the results yourself
-
-### Failure Mode to Avoid
-**WRONG:** Write code, see it compiles, tell user "implementation is complete"
-**RIGHT:** Write code, run tests, verify all pass, THEN tell user "implementation is complete"
-
-If you tell the user "tests are passing" or "implementation is complete" when tests are actually failing, you have failed at your job. Always verify by running tests locally.
-
-### Pre-Commit Checklist
-```bash
-./scripts/lint.sh && ./scripts/test-quick.sh
+Before marking any work "complete", run:
+```
+/validate           # Lint + quick tests
+/validate --full    # For significant changes
 ```
 
-If either command fails, fix the issues before proceeding.
+**WRONG:** Write code, see it compiles, tell user "implementation is complete"
+**RIGHT:** Write code, run `/validate`, verify PASS, THEN tell user "implementation is complete"
+
+See `.claude/skills/validate/SKILL.md` for the complete validation workflow.
 
 ## Key Technical Requirements
 
@@ -194,12 +181,7 @@ Check `docs/TASK_STATUS.md` before starting work. Claim tasks before working to 
 
 Follow Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `perf:`, `ci:`, `chore:`
 
-**BEFORE EVERY COMMIT:**
-```bash
-./scripts/lint.sh && ./scripts/test-quick.sh
-```
-
-Do NOT commit if either command fails. Fix the issues first.
+**BEFORE EVERY COMMIT:** Run `/validate` and ensure it passes. Do NOT commit if validation fails.
 
 ## Key Documentation
 
@@ -316,3 +298,50 @@ For explicit read-only mode, invoke `/read-external`. This restricts tools to Re
 ### Adding New Repos
 
 See `.claude/skills/read-external/TEMPLATE.md` for instructions on adding additional external repositories.
+
+## Available Skills
+
+Skills are focused workflows that provide consistency and predictability. Invoke with `/skill-name`.
+
+| Skill | Purpose | Usage |
+|-------|---------|-------|
+| `/validate` | Pre-commit validation (lint + tests) | Before marking work complete |
+| `/service` | Manage services via USM API | Service control operations |
+| `/debug-logs` | Log server debugging workflow | Troubleshooting issues |
+| `/review` | Code review for changes | Before PRs or code review |
+| `/mcp-setup` | Configure MCP session defaults | Start of dev session |
+| `/read-external` | Cross-repo read access | Reference external repos |
+
+### Key Skills
+
+**`/validate`** - Enforces "Definition of Done"
+```
+/validate           # Lint + quick tests
+/validate --full    # Lint + full test suite
+```
+
+**`/service`** - USM API service management (never use pkill!)
+```
+/service status              # Show all services
+/service restart management-api  # Restart specific service
+```
+
+**`/debug-logs`** - Structured debugging with log server
+```
+/debug-logs capture    # Clear, wait, analyze
+/debug-logs analyze    # Analyze current logs
+```
+
+**`/review`** - Code review workflow
+```
+/review              # Review all changes vs main
+/review staged       # Review staged changes only
+```
+
+**`/mcp-setup`** - Configure MCP for iOS/USM development
+```
+/mcp-setup ios       # Main iOS app
+/mcp-setup usm       # Server Manager app
+```
+
+See `.claude/skills/*/SKILL.md` for detailed documentation on each skill.

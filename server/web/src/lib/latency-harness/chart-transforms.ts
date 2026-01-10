@@ -197,9 +197,9 @@ export function transformToBoxPlot(
     if (groupBy === 'config') {
       key = result.configId;
     } else {
-      // Group by provider combination
-      const llm = result.llmConfig?.provider || 'unknown';
-      const tts = result.ttsConfig?.provider || 'unknown';
+      // Group by provider combination (use helper functions for fallback)
+      const llm = getLLMProvider(result);
+      const tts = getTTSProvider(result);
       key = `${llm} + ${tts}`;
     }
 
@@ -246,9 +246,9 @@ export function transformToHeatmap(
   results: TestResult[],
   metric: MetricType = 'e2e'
 ): HeatmapData {
-  // Extract unique providers
-  const llmProviders = [...new Set(results.map((r) => r.llmConfig?.provider || 'unknown'))].sort();
-  const ttsProviders = [...new Set(results.map((r) => r.ttsConfig?.provider || 'unknown'))].sort();
+  // Extract unique providers using helper functions that fallback to configId parsing
+  const llmProviders = [...new Set(results.map((r) => getLLMProvider(r)))].sort();
+  const ttsProviders = [...new Set(results.map((r) => getTTSProvider(r)))].sort();
 
   // Calculate median for each combination
   const data: [number, number, number][] = [];
@@ -256,7 +256,7 @@ export function transformToHeatmap(
   llmProviders.forEach((llm, x) => {
     ttsProviders.forEach((tts, y) => {
       const matching = results.filter(
-        (r) => (r.llmConfig?.provider || 'unknown') === llm && (r.ttsConfig?.provider || 'unknown') === tts
+        (r) => getLLMProvider(r) === llm && getTTSProvider(r) === tts
       );
 
       if (matching.length > 0) {
@@ -337,6 +337,66 @@ export function transformToNetworkProjections(results: TestResult[]): NetworkPro
 // ============================================================================
 // Utility Functions
 // ============================================================================
+
+/**
+ * Extract provider info from configId when config objects are null.
+ * ConfigId format: "{stt}_{llm}_{model}_{tts}"
+ * Example: "deepgram_anthropic_claude-3-5-haiku-20241022_chatterbox"
+ */
+export function parseConfigId(configId: string): {
+  stt: string;
+  llm: string;
+  model: string;
+  tts: string;
+} {
+  const parts = configId.split('_');
+  if (parts.length >= 4) {
+    // Format: stt_llm_model_tts (model may contain underscores)
+    const stt = parts[0];
+    const llm = parts[1];
+    const tts = parts[parts.length - 1];
+    // Model is everything between llm and tts
+    const model = parts.slice(2, -1).join('_');
+    return { stt, llm, model, tts };
+  }
+  // Fallback for unexpected formats
+  return {
+    stt: parts[0] || 'unknown',
+    llm: parts[1] || 'unknown',
+    model: parts[2] || 'unknown',
+    tts: parts[3] || parts[parts.length - 1] || 'unknown',
+  };
+}
+
+/**
+ * Get LLM provider from result, falling back to configId parsing.
+ */
+export function getLLMProvider(result: TestResult): string {
+  if (result.llmConfig?.provider) {
+    return result.llmConfig.provider;
+  }
+  return parseConfigId(result.configId).llm;
+}
+
+/**
+ * Get TTS provider from result, falling back to configId parsing.
+ */
+export function getTTSProvider(result: TestResult): string {
+  if (result.ttsConfig?.provider) {
+    return result.ttsConfig.provider;
+  }
+  return parseConfigId(result.configId).tts;
+}
+
+/**
+ * Get STT provider from result, falling back to configId parsing.
+ */
+export function getSTTProvider(result: TestResult): string {
+  if (result.sttConfig?.provider) {
+    return result.sttConfig.provider;
+  }
+  return parseConfigId(result.configId).stt;
+}
 
 /**
  * Shorten a config ID for display.

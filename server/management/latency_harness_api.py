@@ -583,6 +583,214 @@ async def handle_export_results(request: web.Request) -> web.Response:
 
 
 # =============================================================================
+# Test Target Discovery Endpoints
+# =============================================================================
+
+async def handle_list_test_targets(request: web.Request) -> web.Response:
+    """GET /api/latency-tests/targets - List available test targets.
+
+    Returns all available test targets including:
+    - iOS Simulators (from xcrun simctl)
+    - Physical iOS devices (from xcrun xctrace)
+    - Connected clients (already registered with orchestrator)
+
+    Response format:
+    {
+        "targets": [
+            {
+                "id": "unique-identifier",
+                "name": "iPhone 17 Pro",
+                "type": "ios_simulator" | "ios_device" | "android_simulator" | "android_device" | "web",
+                "platform": "iOS 26.1",
+                "model": "iPhone18,1",
+                "udid": "F5BC44F3-65B1-4822-84F0-62D8D5449297",
+                "status": "available" | "booted" | "connected" | "offline",
+                "isConnected": true/false (registered with orchestrator),
+                "capabilities": { ... } (if connected)
+            }
+        ],
+        "categories": {
+            "ios_simulators": [...],
+            "ios_devices": [...],
+            "connected_clients": [...]
+        }
+    }
+    """
+    import subprocess
+    import json as json_module
+
+    targets = []
+    categories = {
+        "ios_simulators": [],
+        "ios_devices": [],
+        "android_simulators": [],
+        "android_devices": [],
+        "connected_clients": [],
+    }
+
+    # Get connected clients from orchestrator
+    orchestrator = get_orchestrator()
+    connected_client_ids = set()
+    for client in orchestrator.clients.values():
+        connected_client_ids.add(client.client_id)
+        target = {
+            "id": client.client_id,
+            "name": client.client_id,
+            "type": client.client_type.value,
+            "platform": "Connected Client",
+            "model": None,
+            "udid": None,
+            "status": "connected" if client.status.is_connected else "offline",
+            "isConnected": client.status.is_connected,
+            "isRunningTest": client.status.is_running_test,
+            "capabilities": {
+                "supportedSTTProviders": client.capabilities.supported_stt_providers,
+                "supportedLLMProviders": client.capabilities.supported_llm_providers,
+                "supportedTTSProviders": client.capabilities.supported_tts_providers,
+                "hasHighPrecisionTiming": client.capabilities.has_high_precision_timing,
+                "hasDeviceMetrics": client.capabilities.has_device_metrics,
+                "hasOnDeviceML": client.capabilities.has_on_device_ml,
+                "maxConcurrentTests": client.capabilities.max_concurrent_tests,
+            },
+        }
+        targets.append(target)
+        categories["connected_clients"].append(target)
+
+    # Get iOS Simulators
+    try:
+        result = subprocess.run(
+            ["xcrun", "simctl", "list", "devices", "-j"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode == 0:
+            sim_data = json_module.loads(result.stdout)
+            for runtime, devices in sim_data.get("devices", {}).items():
+                # Extract iOS version from runtime identifier
+                # e.g., "com.apple.CoreSimulator.SimRuntime.iOS-26-1" -> "iOS 26.1"
+                platform = "iOS"
+                if "iOS" in runtime:
+                    version_part = runtime.split("iOS-")[-1] if "iOS-" in runtime else ""
+                    if version_part:
+                        platform = f"iOS {version_part.replace('-', '.')}"
+                elif "watchOS" in runtime:
+                    continue  # Skip watchOS for now
+                elif "tvOS" in runtime:
+                    continue  # Skip tvOS for now
+
+                for device in devices:
+                    if not device.get("isAvailable", True):
+                        continue
+
+                    device_name = device.get("name", "Unknown")
+                    udid = device.get("udid", "")
+                    state = device.get("state", "Shutdown").lower()
+
+                    # Determine device category (iPhone vs iPad)
+                    device_type = "iphone" if "iPhone" in device_name else "ipad" if "iPad" in device_name else "other"
+
+                    target = {
+                        "id": f"sim_{udid}",
+                        "name": device_name,
+                        "type": "ios_simulator",
+                        "platform": platform,
+                        "model": device.get("deviceTypeIdentifier", "").split(".")[-1],
+                        "udid": udid,
+                        "status": "booted" if state == "booted" else "available",
+                        "isConnected": f"sim_{udid}" in connected_client_ids,
+                        "deviceCategory": device_type,
+                        "capabilities": None,
+                    }
+                    targets.append(target)
+                    categories["ios_simulators"].append(target)
+    except Exception as e:
+        logger.warning(f"Failed to list iOS simulators: {e}")
+
+    # Get Physical iOS Devices
+    try:
+        result = subprocess.run(
+            ["xcrun", "xctrace", "list", "devices"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode == 0:
+            lines = result.stdout.strip().split("\n")
+            in_devices_section = False
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                if "== Devices ==" in line:
+                    in_devices_section = True
+                    continue
+                if "== Simulators ==" in line:
+                    in_devices_section = False
+                    continue
+
+                if in_devices_section and "(" in line and ")" in line:
+                    # Parse device line: "Device Name (version) (UDID)"
+                    # Format: "REA iPhone 17 Pro Max (26.2) (00008150-000614A12100401C)"
+                    try:
+                        # Extract UDID from the last parentheses
+                        parts = line.rsplit("(", 1)
+                        if len(parts) == 2:
+                            udid = parts[1].rstrip(")").strip()
+                            rest = parts[0].strip()
+
+                            # Skip the Mac itself (Mac has UUID format UDID)
+                            if "Mac" in rest:
+                                continue
+
+                            # Extract device name (remove version if present)
+                            # rest is like "REA iPhone 17 Pro Max (26.2)"
+                            if "(" in rest and ")" in rest:
+                                # Has version number, extract name
+                                name_parts = rest.rsplit("(", 1)
+                                device_name = name_parts[0].strip()
+                                platform = f"iOS {name_parts[1].rstrip(')').strip()}"
+                            else:
+                                device_name = rest
+                                platform = "iOS Device"
+
+                            target = {
+                                "id": f"device_{udid}",
+                                "name": device_name,
+                                "type": "ios_device",
+                                "platform": platform,
+                                "model": None,
+                                "udid": udid,
+                                "status": "connected",
+                                "isConnected": f"device_{udid}" in connected_client_ids,
+                                "capabilities": None,
+                            }
+                            targets.append(target)
+                            categories["ios_devices"].append(target)
+                    except Exception:
+                        pass
+    except Exception as e:
+        logger.warning(f"Failed to list physical iOS devices: {e}")
+
+    # Sort simulators by name
+    categories["ios_simulators"].sort(key=lambda x: (x["platform"], x["name"]))
+
+    return web.json_response({
+        "targets": targets,
+        "categories": categories,
+        "summary": {
+            "totalTargets": len(targets),
+            "iosSimulators": len(categories["ios_simulators"]),
+            "iosDevices": len(categories["ios_devices"]),
+            "androidSimulators": len(categories["android_simulators"]),
+            "androidDevices": len(categories["android_devices"]),
+            "connectedClients": len(categories["connected_clients"]),
+        }
+    })
+
+
+# =============================================================================
 # Client Management Endpoints
 # =============================================================================
 
@@ -1124,6 +1332,162 @@ async def handle_latency_websocket(request: web.Request) -> web.WebSocketRespons
 
 
 # =============================================================================
+# Mass Test Orchestrator Endpoints
+# =============================================================================
+
+# Global mass test orchestrator instance
+_mass_orchestrator = None
+
+
+def get_mass_orchestrator():
+    """Get the global mass test orchestrator instance."""
+    global _mass_orchestrator
+    if _mass_orchestrator is None:
+        from latency_harness.test_orchestrator import MassTestOrchestrator
+        _mass_orchestrator = MassTestOrchestrator()
+    return _mass_orchestrator
+
+
+async def handle_start_mass_test(request: web.Request) -> web.Response:
+    """
+    POST /api/test-orchestrator/start - Start a mass automated test run.
+
+    Request body:
+    {
+        "webClients": 4,
+        "totalSessions": 500,
+        "providerConfigs": {
+            "llm": "anthropic",
+            "llmModel": "claude-3-5-haiku-20241022",
+            "tts": "chatterbox"
+        },
+        "utterances": ["Hello", "Explain history"],
+        "turnsPerSession": 3
+    }
+    """
+    try:
+        data = await request.json()
+
+        orchestrator = get_mass_orchestrator()
+
+        # Parse provider config
+        provider_config = None
+        if "providerConfigs" in data:
+            from latency_harness.test_orchestrator import ProviderConfig
+            pc = data["providerConfigs"]
+            provider_config = ProviderConfig(
+                stt=pc.get("stt", "deepgram"),
+                llm=pc.get("llm", "anthropic"),
+                llm_model=pc.get("llmModel", "claude-3-5-haiku-20241022"),
+                tts=pc.get("tts", "chatterbox"),
+                tts_voice=pc.get("ttsVoice"),
+            )
+
+        run_id = await orchestrator.start_mass_test(
+            total_sessions=data.get("totalSessions", 100),
+            web_clients=data.get("webClients", 4),
+            provider_config=provider_config,
+            utterances=data.get("utterances"),
+            turns_per_session=data.get("turnsPerSession", 3),
+        )
+
+        return web.json_response({
+            "runId": run_id,
+            "status": "running",
+            "message": f"Started mass test with {data.get('webClients', 4)} web clients",
+        })
+
+    except ImportError as e:
+        return web.json_response({
+            "error": f"Playwright not available: {e}. Install with: pip install playwright && playwright install chromium",
+        }, status=500)
+    except Exception as e:
+        logger.exception("Failed to start mass test")
+        return web.json_response({
+            "error": str(e),
+        }, status=500)
+
+
+async def handle_get_mass_test_status(request: web.Request) -> web.Response:
+    """GET /api/test-orchestrator/status/{run_id} - Get mass test progress."""
+    run_id = request.match_info["run_id"]
+
+    try:
+        orchestrator = get_mass_orchestrator()
+        progress = await orchestrator.get_progress(run_id)
+
+        return web.json_response({
+            "runId": progress.run_id,
+            "status": progress.status.value,
+            "progress": {
+                "sessionsCompleted": progress.sessions_completed,
+                "sessionsTotal": progress.sessions_total,
+                "activeClients": progress.active_clients,
+                "elapsedSeconds": progress.elapsed_seconds,
+                "estimatedRemainingSeconds": progress.estimated_remaining_seconds,
+            },
+            "latencyStats": progress.latency_stats,
+            "errors": progress.errors,
+            "systemResources": progress.system_resources,
+        })
+
+    except ValueError as e:
+        return web.json_response({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.exception("Failed to get mass test status")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_stop_mass_test(request: web.Request) -> web.Response:
+    """POST /api/test-orchestrator/stop/{run_id} - Stop a mass test run."""
+    run_id = request.match_info["run_id"]
+
+    try:
+        orchestrator = get_mass_orchestrator()
+        progress = await orchestrator.stop_test(run_id)
+
+        return web.json_response({
+            "runId": progress.run_id,
+            "status": progress.status.value,
+            "sessionsCompleted": progress.sessions_completed,
+            "sessionsTotal": progress.sessions_total,
+            "message": "Test stopped",
+        })
+
+    except ValueError as e:
+        return web.json_response({"error": str(e)}, status=404)
+    except Exception as e:
+        logger.exception("Failed to stop mass test")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_list_mass_tests(request: web.Request) -> web.Response:
+    """GET /api/test-orchestrator/runs - List mass test runs."""
+    try:
+        orchestrator = get_mass_orchestrator()
+        limit = int(request.query.get("limit", "50"))
+        runs = await orchestrator.list_runs(limit=limit)
+
+        return web.json_response({
+            "runs": [
+                {
+                    "runId": r.run_id,
+                    "status": r.status.value,
+                    "sessionsCompleted": r.sessions_completed,
+                    "sessionsTotal": r.sessions_total,
+                    "elapsedSeconds": r.elapsed_seconds,
+                    "latencyStats": r.latency_stats,
+                }
+                for r in runs
+            ]
+        })
+
+    except Exception as e:
+        logger.exception("Failed to list mass tests")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# =============================================================================
 # Route Registration
 # =============================================================================
 
@@ -1148,7 +1512,10 @@ def register_latency_harness_routes(app: web.Application):
     app.router.add_post("/api/latency-tests/compare", handle_compare_runs)
     app.router.add_get("/api/latency-tests/runs/{run_id}/export", handle_export_results)
 
-    # Clients
+    # Test Targets (available simulators and devices)
+    app.router.add_get("/api/latency-tests/targets", handle_list_test_targets)
+
+    # Clients (connected/registered clients)
     app.router.add_get("/api/latency-tests/clients", handle_list_test_clients)
     app.router.add_post("/api/latency-tests/heartbeat", handle_client_heartbeat_latency)
     app.router.add_post("/api/latency-tests/results", handle_submit_result)
@@ -1160,5 +1527,11 @@ def register_latency_harness_routes(app: web.Application):
 
     # WebSocket for real-time updates
     app.router.add_get("/api/latency-tests/ws", handle_latency_websocket)
+
+    # Mass Test Orchestrator
+    app.router.add_post("/api/test-orchestrator/start", handle_start_mass_test)
+    app.router.add_get("/api/test-orchestrator/status/{run_id}", handle_get_mass_test_status)
+    app.router.add_post("/api/test-orchestrator/stop/{run_id}", handle_stop_mass_test)
+    app.router.add_get("/api/test-orchestrator/runs", handle_list_mass_tests)
 
     logger.info("Latency harness API routes registered")

@@ -1,6 +1,253 @@
 import SwiftUI
 import Foundation
 import AppKit
+import Network
+
+// MARK: - API Server for AI Agent Access
+
+/// HTTP API Server that allows AI agents to control services programmatically
+/// Runs on port 8767 and exposes REST endpoints for service management
+@MainActor
+class APIServer {
+    private var listener: NWListener?
+    private let port: UInt16 = 8767
+    private weak var serviceManager: ServiceManager?
+
+    init(serviceManager: ServiceManager) {
+        self.serviceManager = serviceManager
+    }
+
+    func start() {
+        do {
+            let parameters = NWParameters.tcp
+            parameters.allowLocalEndpointReuse = true
+
+            listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port)!)
+
+            listener?.stateUpdateHandler = { state in
+                switch state {
+                case .ready:
+                    print("USM API Server listening on port 8767")
+                case .failed(let error):
+                    print("USM API Server failed: \(error)")
+                default:
+                    break
+                }
+            }
+
+            listener?.newConnectionHandler = { [weak self] connection in
+                Task { @MainActor in
+                    self?.handleConnection(connection)
+                }
+            }
+
+            listener?.start(queue: .main)
+        } catch {
+            print("Failed to start API server: \(error)")
+        }
+    }
+
+    func stop() {
+        listener?.cancel()
+        listener = nil
+    }
+
+    private func handleConnection(_ connection: NWConnection) {
+        connection.start(queue: .main)
+
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+            Task { @MainActor in
+                if let data = data, !data.isEmpty {
+                    self?.processRequest(data: data, connection: connection)
+                }
+                if isComplete || error != nil {
+                    connection.cancel()
+                }
+            }
+        }
+    }
+
+    private func processRequest(data: Data, connection: NWConnection) {
+        guard let request = String(data: data, encoding: .utf8) else {
+            sendResponse(connection: connection, status: "400 Bad Request", body: #"{"error": "Invalid request"}"#)
+            return
+        }
+
+        // Parse HTTP request
+        let lines = request.components(separatedBy: "\r\n")
+        guard let requestLine = lines.first else {
+            sendResponse(connection: connection, status: "400 Bad Request", body: #"{"error": "Empty request"}"#)
+            return
+        }
+
+        let parts = requestLine.components(separatedBy: " ")
+        guard parts.count >= 2 else {
+            sendResponse(connection: connection, status: "400 Bad Request", body: #"{"error": "Malformed request"}"#)
+            return
+        }
+
+        let method = parts[0]
+        let path = parts[1]
+
+        // Route the request
+        routeRequest(method: method, path: path, connection: connection)
+    }
+
+    private func routeRequest(method: String, path: String, connection: NWConnection) {
+        guard let manager = serviceManager else {
+            sendResponse(connection: connection, status: "500 Internal Server Error", body: #"{"error": "Service manager not available"}"#)
+            return
+        }
+
+        // Health check
+        if path == "/api/health" && method == "GET" {
+            let json = #"{"status": "ok", "service": "USM API Server", "port": 8767}"#
+            sendResponse(connection: connection, status: "200 OK", body: json)
+            return
+        }
+
+        // List all services
+        if path == "/api/services" && method == "GET" {
+            Task { @MainActor in
+                manager.updateStatuses()
+                let servicesJson = manager.services.map { service -> String in
+                    let cpu = service.cpuPercent.map { String(format: "%.1f", $0) } ?? "null"
+                    let mem = service.memoryMB.map { String($0) } ?? "null"
+                    let pid = service.pid.map { String($0) } ?? "null"
+                    return """
+                    {"id": "\(service.id)", "name": "\(service.displayName)", "status": "\(service.status.rawValue.lowercased())", "port": \(service.port ?? 0), "pid": \(pid), "cpu_percent": \(cpu), "memory_mb": \(mem)}
+                    """
+                }.joined(separator: ", ")
+
+                let running = manager.services.filter { $0.status == .running }.count
+                let stopped = manager.services.filter { $0.status == .stopped }.count
+
+                let json = """
+                {"services": [\(servicesJson)], "total": \(manager.services.count), "running": \(running), "stopped": \(stopped)}
+                """
+                self.sendResponse(connection: connection, status: "200 OK", body: json)
+            }
+            return
+        }
+
+        // Start all services
+        if path == "/api/services/start-all" && method == "POST" {
+            Task { @MainActor in
+                manager.startAll()
+                // Wait a moment for services to start
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                manager.updateStatuses()
+                let running = manager.services.filter { $0.status == .running }.count
+                let json = #"{"status": "ok", "message": "Start all initiated", "running": \#(running)}"#
+                self.sendResponse(connection: connection, status: "200 OK", body: json)
+            }
+            return
+        }
+
+        // Stop all services
+        if path == "/api/services/stop-all" && method == "POST" {
+            Task { @MainActor in
+                manager.stopAll()
+                // Wait a moment for services to stop
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                manager.updateStatuses()
+                let stopped = manager.services.filter { $0.status == .stopped }.count
+                let json = #"{"status": "ok", "message": "Stop all initiated", "stopped": \#(stopped)}"#
+                self.sendResponse(connection: connection, status: "200 OK", body: json)
+            }
+            return
+        }
+
+        // Restart all services
+        if path == "/api/services/restart-all" && method == "POST" {
+            Task { @MainActor in
+                // Stop all first
+                manager.stopAll()
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                // Then start all
+                manager.startAll()
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                manager.updateStatuses()
+                let running = manager.services.filter { $0.status == .running }.count
+                let json = #"{"status": "ok", "message": "Restart all initiated", "running": \#(running)}"#
+                self.sendResponse(connection: connection, status: "200 OK", body: json)
+            }
+            return
+        }
+
+        // Individual service operations: /api/services/{id}/{action}
+        if path.hasPrefix("/api/services/") {
+            let pathParts = path.dropFirst("/api/services/".count).components(separatedBy: "/")
+
+            if pathParts.count == 2 {
+                let serviceId = pathParts[0]
+                let action = pathParts[1]
+
+                // Verify service exists
+                guard manager.services.contains(where: { $0.id == serviceId }) else {
+                    sendResponse(connection: connection, status: "404 Not Found", body: #"{"error": "Service '\#(serviceId)' not found"}"#)
+                    return
+                }
+
+                if method == "POST" {
+                    Task { @MainActor in
+                        switch action {
+                        case "start":
+                            manager.start(serviceId)
+                            try? await Task.sleep(nanoseconds: 2_000_000_000)
+                            manager.updateStatuses()
+                            let service = manager.services.first { $0.id == serviceId }
+                            let status = service?.status.rawValue.lowercased() ?? "unknown"
+                            let json = #"{"status": "ok", "message": "Start initiated for \#(serviceId)", "service_status": "\#(status)"}"#
+                            self.sendResponse(connection: connection, status: "200 OK", body: json)
+
+                        case "stop":
+                            manager.stop(serviceId)
+                            try? await Task.sleep(nanoseconds: 1_500_000_000)
+                            manager.updateStatuses()
+                            let service = manager.services.first { $0.id == serviceId }
+                            let status = service?.status.rawValue.lowercased() ?? "unknown"
+                            let json = #"{"status": "ok", "message": "Stop initiated for \#(serviceId)", "service_status": "\#(status)"}"#
+                            self.sendResponse(connection: connection, status: "200 OK", body: json)
+
+                        case "restart":
+                            manager.restart(serviceId)
+                            try? await Task.sleep(nanoseconds: 3_000_000_000)
+                            manager.updateStatuses()
+                            let service = manager.services.first { $0.id == serviceId }
+                            let status = service?.status.rawValue.lowercased() ?? "unknown"
+                            let json = #"{"status": "ok", "message": "Restart initiated for \#(serviceId)", "service_status": "\#(status)"}"#
+                            self.sendResponse(connection: connection, status: "200 OK", body: json)
+
+                        default:
+                            self.sendResponse(connection: connection, status: "400 Bad Request", body: #"{"error": "Unknown action '\#(action)'. Use start, stop, or restart."}"#)
+                        }
+                    }
+                    return
+                }
+            }
+        }
+
+        // Unknown route
+        sendResponse(connection: connection, status: "404 Not Found", body: #"{"error": "Unknown endpoint", "path": "\#(path)"}"#)
+    }
+
+    private func sendResponse(connection: NWConnection, status: String, body: String) {
+        let response = """
+        HTTP/1.1 \(status)\r
+        Content-Type: application/json\r
+        Content-Length: \(body.utf8.count)\r
+        Access-Control-Allow-Origin: *\r
+        Connection: close\r
+        \r
+        \(body)
+        """
+
+        connection.send(content: response.data(using: .utf8), completion: .contentProcessed { _ in
+            connection.cancel()
+        })
+    }
+}
 
 // MARK: - Service Model
 
@@ -37,12 +284,19 @@ struct Service: Identifiable {
 class ServiceManager: ObservableObject {
     @Published var services: [Service] = []
     private var timer: Timer?
+    private var apiServer: APIServer?
 
     private let serverPath = "/Users/ramerman/dev/unamentis/server"
 
     init() {
         setupServices()
         startMonitoring()
+        startAPIServer()
+    }
+
+    private func startAPIServer() {
+        apiServer = APIServer(serviceManager: self)
+        apiServer?.start()
     }
 
     private func setupServices() {
@@ -382,8 +636,48 @@ struct USMApp: App {
         .menuBarExtraStyle(.window)
 
         Settings {
-            Text("UnaMentis Server Manager Settings")
-                .padding()
+            VStack(alignment: .leading, spacing: 12) {
+                Text("UnaMentis Server Manager")
+                    .font(.headline)
+
+                Divider()
+
+                Text("API Server")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                HStack {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 8, height: 8)
+                    Text("http://localhost:8767")
+                        .font(.system(.body, design: .monospaced))
+                }
+
+                Text("AI agents can control services via this API.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Divider()
+
+                Text("Available Endpoints:")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("GET  /api/health")
+                    Text("GET  /api/services")
+                    Text("POST /api/services/{id}/start")
+                    Text("POST /api/services/{id}/stop")
+                    Text("POST /api/services/{id}/restart")
+                    Text("POST /api/services/start-all")
+                    Text("POST /api/services/stop-all")
+                    Text("POST /api/services/restart-all")
+                }
+                .font(.system(.caption, design: .monospaced))
+            }
+            .padding()
+            .frame(width: 320)
         }
     }
 }

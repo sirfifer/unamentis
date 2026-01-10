@@ -48,6 +48,9 @@ PUBLIC_PREFIXES: List[str] = [
     '/api/sources',         # Source management
     '/api/plugins',         # Plugin management
     '/api/models',          # Model management
+    '/api/services',        # Service management
+    '/api/fov',             # FOV context management
+    '/api/sessions',        # FOV session management
     '/ws',                  # WebSocket connections
 ]
 

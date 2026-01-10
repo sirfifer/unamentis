@@ -37,6 +37,7 @@ import { SourceBrowserPanel } from './source-browser-panel';
 import { PluginsPanel } from './plugins-panel';
 import { ImportJobsPanel } from './import-jobs-panel';
 import { LatencyHarnessPanel } from './latency-harness-panel';
+import { FOVContextPanel } from './fov-context-panel';
 import type { DashboardStats } from '@/types';
 import { getStats } from '@/lib/api-client';
 import { formatDuration } from '@/lib/utils';
@@ -49,6 +50,7 @@ const OPS_TABS = [
   'dashboard',
   'health',
   'latency',
+  'fov',
   'metrics',
   'logs',
   'clients',
@@ -238,6 +240,13 @@ export function Dashboard() {
           {activeTab === 'latency' && (
             <div className="animate-in fade-in duration-300">
               <LatencyHarnessPanel />
+            </div>
+          )}
+
+          {/* FOV Context Tab */}
+          {activeTab === 'fov' && (
+            <div className="animate-in fade-in duration-300">
+              <FOVContextPanel />
             </div>
           )}
 

@@ -1201,3 +1201,162 @@ export interface MediaCapabilitiesResponse {
   capabilities: MediaCapabilities;
   error?: string;
 }
+
+// =============================================================================
+// FOV Context Management Types
+// =============================================================================
+
+/** FOV model tier for adaptive token budgets */
+export type FOVModelTier = 'CLOUD' | 'MID_RANGE' | 'ON_DEVICE' | 'TINY';
+
+/** FOV session state */
+export type FOVSessionState = 'created' | 'active' | 'paused' | 'ended';
+
+/** FOV session summary for list views */
+export interface FOVSessionSummary {
+  session_id: string;
+  curriculum_id: string;
+  state: FOVSessionState;
+  created_at: string;
+  turn_count: number;
+  barge_in_count: number;
+}
+
+/** FOV token usage for a buffer */
+export interface FOVTokenUsage {
+  budget: number;
+  estimated_used: number;
+  percentage: number;
+}
+
+/** FOV learner signals */
+export interface FOVLearnerSignals {
+  clarifications: number;
+  repetitions: number;
+  confusions: number;
+}
+
+/** FOV buffer state for debug view */
+export interface FOVBufferState {
+  immediate: {
+    current_segment: string | null;
+    barge_in: string | null;
+    turn_count: number;
+    max_turns: number;
+  };
+  working: {
+    topic_id: string | null;
+    topic_title: string | null;
+    glossary_count: number;
+    misconception_count: number;
+  };
+  episodic: {
+    topic_summary_count: number;
+    questions_count: number;
+    learner_signals: FOVLearnerSignals;
+  };
+  semantic: {
+    curriculum_id: string | null;
+    current_topic_index: number;
+    total_topics: number;
+    has_outline: boolean;
+  };
+}
+
+/** FOV budget configuration */
+export interface FOVBudgetConfig {
+  tier: FOVModelTier;
+  immediate_budget: number;
+  working_budget: number;
+  episodic_budget: number;
+  semantic_budget: number;
+  total_budget: number;
+  max_conversation_turns: number;
+}
+
+/** FOV confidence history entry */
+export interface FOVConfidenceEntry {
+  timestamp: string;
+  score: number;
+  uncertainty: number;
+}
+
+/** FOV barge-in history entry */
+export interface FOVBargeInEntry {
+  timestamp: string;
+  utterance: string;
+  topic_id?: string;
+}
+
+/** FOV session debug information */
+export interface FOVSessionDebug {
+  session_id: string;
+  state: FOVSessionState;
+  curriculum_id: string;
+  turn_count: number;
+  barge_in_count: number;
+  model_tier: FOVModelTier;
+  buffers: FOVBufferState;
+  token_usage: {
+    immediate: FOVTokenUsage;
+    working: FOVTokenUsage;
+    episodic: FOVTokenUsage;
+    semantic: FOVTokenUsage;
+  };
+  total_context_tokens: number;
+  confidence_history: FOVConfidenceEntry[];
+  barge_in_history: FOVBargeInEntry[];
+  budget_config: FOVBudgetConfig;
+}
+
+/** FOV health status */
+export interface FOVHealthStatus {
+  status: 'healthy' | 'unavailable' | 'error';
+  sessions: {
+    total: number;
+    active: number;
+    paused: number;
+  };
+  version?: string;
+  features?: {
+    confidence_monitoring: boolean;
+    context_expansion: boolean;
+    adaptive_budgets: boolean;
+    model_tiers: FOVModelTier[];
+  };
+  error?: string;
+}
+
+/** FOV sessions list response */
+export interface FOVSessionsResponse {
+  sessions: FOVSessionSummary[];
+  error?: string;
+}
+
+/** FOV context build response */
+export interface FOVContextBuildResponse {
+  system_message: string;
+  immediate: string;
+  working: string;
+  episodic: string;
+  semantic: string;
+  total_tokens: number;
+}
+
+/** FOV confidence analysis result */
+export interface FOVConfidenceAnalysis {
+  confidence_score: number;
+  uncertainty_score: number;
+  hedging_score: number;
+  deflection_score: number;
+  knowledge_gap_score: number;
+  vague_language_score: number;
+  detected_markers: string[];
+  trend: 'improving' | 'stable' | 'declining';
+  expansion?: {
+    should_expand: boolean;
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    scope: 'narrow' | 'broad' | 'comprehensive';
+    reason: string;
+  };
+}

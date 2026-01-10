@@ -48,6 +48,7 @@ docs/
 |----------|-------------|
 | [architecture/UnaMentis_TDD.md](architecture/UnaMentis_TDD.md) | Technical Design Document |
 | [architecture/PATCH_PANEL_ARCHITECTURE.md](architecture/PATCH_PANEL_ARCHITECTURE.md) | LLM routing and task classification |
+| [architecture/FOV_CONTEXT_MANAGEMENT.md](architecture/FOV_CONTEXT_MANAGEMENT.md) | Foveated context for voice tutoring |
 | [architecture/FALLBACK_ARCHITECTURE.md](architecture/FALLBACK_ARCHITECTURE.md) | Fallback and degradation patterns |
 | [architecture/SERVER_INFRASTRUCTURE.md](architecture/SERVER_INFRASTRUCTURE.md) | Server deployment architecture |
 | [architecture/CLOUD_HOSTING_ARCHITECTURE.md](architecture/CLOUD_HOSTING_ARCHITECTURE.md) | Cloud hosting options |

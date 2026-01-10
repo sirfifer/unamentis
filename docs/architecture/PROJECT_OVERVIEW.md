@@ -208,12 +208,33 @@ UnaMentis/
 ```
 Microphone -> AudioEngine -> VAD -> STT (streaming)
     -> SessionManager (turn-taking, context)
+    -> FOV Context Manager (build hierarchical context)
     -> PatchPanel (route to LLM endpoint)
-    -> LLM (streaming) -> TTS (streaming)
+    -> LLM (streaming) -> Confidence Monitor
+    -> TTS (streaming)
     -> AudioEngine -> Speaker
 ```
 
 **Session States:** Idle → User Speaking → Processing → AI Thinking → AI Speaking → (loop)
+
+### FOV Context Management
+
+Foveated context management builds optimal LLM context for voice tutoring, inspired by VR foveated rendering where the center of attention gets full detail.
+
+**Hierarchical Buffers:**
+
+| Buffer | Purpose | Token Budget (Cloud) |
+|--------|---------|---------------------|
+| **Immediate** | Current segment, recent turns, barge-in | 4,000 |
+| **Working** | Current topic content, glossary, misconceptions | 4,000 |
+| **Episodic** | Session history, learner signals, completed topics | 2,500 |
+| **Semantic** | Curriculum outline, position, prerequisites | 1,500 |
+
+**Adaptive Scaling:** Budgets scale for model context window (Cloud 12K, Mid-range 8K, On-device 4K, Tiny 2K).
+
+**Confidence Monitoring:** Analyzes responses for hedging, deflection, knowledge gaps. Automatically expands context when uncertainty detected.
+
+See [FOV_CONTEXT_MANAGEMENT.md](FOV_CONTEXT_MANAGEMENT.md) for complete documentation.
 
 ### LLM Routing (Patch Panel)
 
@@ -291,6 +312,7 @@ A switchboard system for routing LLM calls to any endpoint:
 - Plugin management API
 - Authentication (JWT tokens, rate limiting)
 - Diagnostic logging and resource monitoring
+- **FOV Context Management** for voice tutoring sessions (see [FOV_CONTEXT_MANAGEMENT.md](FOV_CONTEXT_MANAGEMENT.md))
 
 ### Operations Console (Port 3000)
 
@@ -617,6 +639,7 @@ See [CODE_QUALITY_INITIATIVE.md](../CODE_QUALITY_INITIATIVE.md) for complete doc
 - Graceful degradation architecture
 - Plugin-based importer framework
 - Latency test harness (CLI, REST API, iOS harness, Web dashboard)
+- FOV Context Management (hierarchical cognitive buffers, confidence monitoring)
 
 ### In Progress
 - Android client (separate repository)
@@ -738,6 +761,7 @@ See [CODE_QUALITY_INITIATIVE.md](../CODE_QUALITY_INITIATIVE.md) for complete doc
 | [UnaMentis_TDD.md](UnaMentis_TDD.md) | Technical Design Document |
 | [ENTERPRISE_ARCHITECTURE.md](ENTERPRISE_ARCHITECTURE.md) | System design |
 | [PATCH_PANEL_ARCHITECTURE.md](PATCH_PANEL_ARCHITECTURE.md) | LLM routing |
+| [FOV_CONTEXT_MANAGEMENT.md](FOV_CONTEXT_MANAGEMENT.md) | Foveated context for voice tutoring |
 | [FALLBACK_ARCHITECTURE.md](FALLBACK_ARCHITECTURE.md) | Graceful degradation |
 
 ### Curriculum

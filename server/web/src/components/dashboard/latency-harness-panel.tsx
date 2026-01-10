@@ -69,11 +69,12 @@ import {
   Download,
   Settings,
   LineChart,
+  Rocket,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { LatencyDashboard } from '@/components/latency-dashboard';
+import { LatencyDashboard, TestTargetSelector, MassTestPanel } from '@/components/latency-dashboard';
 
 // ============================================================================
 // Type Definitions
@@ -313,7 +314,7 @@ export function LatencyHarnessPanel() {
   const [runs, setRuns] = useState<TestRun[]>([]);
   const [clients, setClients] = useState<TestClient[]>([]);
   const [selectedSuite, setSelectedSuite] = useState<string>('');
-  const [selectedClient, setSelectedClient] = useState<string>('');
+  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -321,7 +322,7 @@ export function LatencyHarnessPanel() {
     runId: string;
     summary: AnalysisSummary;
   } | null>(null);
-  const [view, setView] = useState<'control' | 'analytics'>('control');
+  const [view, setView] = useState<'control' | 'analytics' | 'mass-test'>('control');
 
   // Fetch data
   const fetchData = useCallback(async () => {
@@ -355,11 +356,20 @@ export function LatencyHarnessPanel() {
       return;
     }
 
+    if (selectedTargets.length === 0) {
+      setError('Please select at least one test target');
+      return;
+    }
+
     setStarting(true);
     setError(null);
 
     try {
-      await startTestRun(selectedSuite, selectedClient || undefined);
+      // Start a run for each selected target
+      // For now, just use the first selected target
+      // TODO: Support multiple concurrent runs when architecture supports it
+      const targetId = selectedTargets[0];
+      await startTestRun(selectedSuite, targetId);
       await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start test run');
@@ -428,6 +438,18 @@ export function LatencyHarnessPanel() {
             <LineChart className="w-4 h-4" />
             Analytics
           </button>
+          <button
+            onClick={() => setView('mass-test')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all',
+              view === 'mass-test'
+                ? 'bg-orange-500 text-white'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+            )}
+          >
+            <Rocket className="w-4 h-4" />
+            Mass Test
+          </button>
         </div>
       </div>
 
@@ -447,6 +469,9 @@ export function LatencyHarnessPanel() {
 
       {/* Analytics View */}
       {view === 'analytics' && <LatencyDashboard />}
+
+      {/* Mass Test View */}
+      {view === 'mass-test' && <MassTestPanel />}
 
       {/* Control View */}
       {view === 'control' && (
@@ -510,29 +535,21 @@ export function LatencyHarnessPanel() {
                 ))}
               </select>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-slate-400 mb-2">
-                Target Client (optional)
-              </label>
-              <select
-                value={selectedClient}
-                onChange={(e) => setSelectedClient(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-              >
-                <option value="">Any available client</option>
-                {connectedClients.map((client) => (
-                  <option key={client.clientId} value={client.clientId}>
-                    {client.clientId} ({client.clientType})
-                  </option>
-                ))}
-              </select>
+            <div className="flex-1 min-w-[250px]">
+              <TestTargetSelector
+                selectedTargets={selectedTargets}
+                onSelectionChange={setSelectedTargets}
+                multiSelect={false}
+                label="Test Target"
+                apiBase={API_BASE}
+              />
             </div>
             <button
               onClick={handleStartRun}
-              disabled={!selectedSuite || starting}
+              disabled={!selectedSuite || selectedTargets.length === 0 || starting}
               className={cn(
                 'flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all',
-                selectedSuite && !starting
+                selectedSuite && selectedTargets.length > 0 && !starting
                   ? 'bg-orange-500 hover:bg-orange-600 text-white'
                   : 'bg-slate-700 text-slate-400 cursor-not-allowed'
               )}

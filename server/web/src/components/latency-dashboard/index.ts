@@ -12,3 +12,6 @@ export { ProviderHeatmap } from './ProviderHeatmap';
 export { NetworkProjectionGrid } from './NetworkProjectionGrid';
 export { RunSelector } from './RunSelector';
 export { MetricSelector } from './MetricSelector';
+export { TestTargetSelector } from './TestTargetSelector';
+export type { TestTarget, TestTargetCategories } from './TestTargetSelector';
+export { MassTestPanel } from './MassTestPanel';

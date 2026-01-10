@@ -46,6 +46,9 @@ from latency_harness_api import register_latency_harness_routes, init_latency_ha
 # Import diagnostic logging system
 from diagnostic_logging import diag_logger, get_diagnostic_config, set_diagnostic_config
 
+# Import FOV context management API
+from fov_context_api import setup_fov_context_routes
+
 # Add aiohttp for async HTTP server with WebSocket support
 try:
     from aiohttp import web
@@ -4314,6 +4317,9 @@ def create_app() -> web.Application:
 
     # Latency Test Harness
     register_latency_harness_routes(app)
+
+    # FOV Context Management System
+    setup_fov_context_routes(app)
 
     # Set up callback to reload curricula when import completes
     def on_import_complete(progress):

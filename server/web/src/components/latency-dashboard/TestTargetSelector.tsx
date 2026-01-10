@@ -357,9 +357,7 @@ export function TestTargetSelector({
                     {group.targets.map((target) => {
                       const isSelected = selectedTargets.includes(target.id);
                       const isDisabled =
-                        !isSelected &&
-                        multiSelect &&
-                        selectedTargets.length >= maxSelections;
+                        !isSelected && multiSelect && selectedTargets.length >= maxSelections;
 
                       return (
                         <button
@@ -379,9 +377,7 @@ export function TestTargetSelector({
                             <div
                               className={cn(
                                 'w-4 h-4 rounded border flex items-center justify-center',
-                                isSelected
-                                  ? 'bg-orange-500 border-orange-500'
-                                  : 'border-slate-600'
+                                isSelected ? 'bg-orange-500 border-orange-500' : 'border-slate-600'
                               )}
                             >
                               {isSelected && <Check className="w-3 h-3 text-white" />}

@@ -164,7 +164,13 @@ export function TrendChart({
         {
           name: '500ms Target',
           type: 'line',
-          data: data.length > 0 ? [[data[0].timestamp, 500], [data[data.length - 1].timestamp, 500]] : [],
+          data:
+            data.length > 0
+              ? [
+                  [data[0].timestamp, 500],
+                  [data[data.length - 1].timestamp, 500],
+                ]
+              : [],
           lineStyle: {
             color: latencyColors.target,
             width: 2,

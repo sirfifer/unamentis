@@ -39,7 +39,14 @@ export interface ProviderConfig {
   stt?: 'deepgram' | 'assemblyai' | 'groq' | 'whisper' | 'web-speech';
   llm?: 'anthropic' | 'openai' | 'selfhosted';
   llmModel?: string;
-  tts?: 'chatterbox' | 'vibevoice' | 'elevenlabs-flash' | 'elevenlabs-turbo' | 'deepgram' | 'piper' | 'web-speech';
+  tts?:
+    | 'chatterbox'
+    | 'vibevoice'
+    | 'elevenlabs-flash'
+    | 'elevenlabs-turbo'
+    | 'deepgram'
+    | 'piper'
+    | 'web-speech';
   ttsVoice?: string;
 }
 
@@ -189,10 +196,12 @@ export class TestHooks {
           messages: [
             { role: 'system', content: 'You are a helpful tutor. Be concise but informative.' },
             // Include conversation history for context
-            ...this.turns.map((t) => [
-              { role: 'user', content: t.userUtterance },
-              { role: 'assistant', content: t.aiResponse },
-            ]).flat(),
+            ...this.turns
+              .map((t) => [
+                { role: 'user', content: t.userUtterance },
+                { role: 'assistant', content: t.aiResponse },
+              ])
+              .flat(),
             { role: 'user', content: text },
           ],
           maxTokens: 512,
@@ -353,9 +362,7 @@ export class TestHooks {
     };
 
     const avgLatencyMs =
-      e2eLatencies.length > 0
-        ? e2eLatencies.reduce((a, b) => a + b, 0) / e2eLatencies.length
-        : 0;
+      e2eLatencies.length > 0 ? e2eLatencies.reduce((a, b) => a + b, 0) / e2eLatencies.length : 0;
 
     const successRate =
       this.turns.length > 0

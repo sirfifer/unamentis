@@ -19,7 +19,12 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/ui/stat-card';
-import type { FOVHealthStatus, FOVSessionDebug, FOVSessionSummary, FOVConfidenceAnalysis } from '@/types';
+import type {
+  FOVHealthStatus,
+  FOVSessionDebug,
+  FOVSessionSummary,
+  FOVConfidenceAnalysis,
+} from '@/types';
 import {
   getFOVHealth,
   getFOVSessions,
@@ -131,12 +136,16 @@ function SessionListItem({
     <div
       className={cn(
         'flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors',
-        isSelected ? 'bg-blue-500/20 border border-blue-500/50' : 'bg-slate-800/30 hover:bg-slate-800/50'
+        isSelected
+          ? 'bg-blue-500/20 border border-blue-500/50'
+          : 'bg-slate-800/30 hover:bg-slate-800/50'
       )}
       onClick={onSelect}
     >
       <div className="flex items-center gap-3">
-        <div className={cn('w-2 h-2 rounded-full', stateColors[session.state] || stateColors.ended)} />
+        <div
+          className={cn('w-2 h-2 rounded-full', stateColors[session.state] || stateColors.ended)}
+        />
         <div>
           <div className="text-sm font-medium text-slate-100 truncate max-w-[150px]">
             {session.session_id.slice(0, 8)}...
@@ -420,8 +429,8 @@ export function FOVContextPanel() {
                       Session: {selectedSession.session_id.slice(0, 12)}...
                     </div>
                     <div className="text-xs text-slate-400">
-                      Tier: {selectedSession.model_tier} | Turns: {selectedSession.turn_count} | Barge-ins:{' '}
-                      {selectedSession.barge_in_count}
+                      Tier: {selectedSession.model_tier} | Turns: {selectedSession.turn_count} |
+                      Barge-ins: {selectedSession.barge_in_count}
                     </div>
                   </div>
                   <Badge variant={selectedSession.state === 'active' ? 'success' : 'default'}>
@@ -480,17 +489,32 @@ export function FOVContextPanel() {
 
                 {/* Buffer States */}
                 <div className="grid grid-cols-2 gap-3">
-                  <BufferCard title="Immediate Buffer" icon={MessageSquare} color="bg-blue-500/20 text-blue-400">
-                    <p>Turns: {selectedSession.buffers.immediate.turn_count} / {selectedSession.buffers.immediate.max_turns}</p>
+                  <BufferCard
+                    title="Immediate Buffer"
+                    icon={MessageSquare}
+                    color="bg-blue-500/20 text-blue-400"
+                  >
+                    <p>
+                      Turns: {selectedSession.buffers.immediate.turn_count} /{' '}
+                      {selectedSession.buffers.immediate.max_turns}
+                    </p>
                     <p>Segment: {selectedSession.buffers.immediate.current_segment || 'None'}</p>
                     <p>Barge-in: {selectedSession.buffers.immediate.barge_in || 'None'}</p>
                   </BufferCard>
-                  <BufferCard title="Working Buffer" icon={Brain} color="bg-purple-500/20 text-purple-400">
+                  <BufferCard
+                    title="Working Buffer"
+                    icon={Brain}
+                    color="bg-purple-500/20 text-purple-400"
+                  >
                     <p>Topic: {selectedSession.buffers.working.topic_title || 'None'}</p>
                     <p>Glossary: {selectedSession.buffers.working.glossary_count} terms</p>
                     <p>Misconceptions: {selectedSession.buffers.working.misconception_count}</p>
                   </BufferCard>
-                  <BufferCard title="Episodic Buffer" icon={Activity} color="bg-amber-500/20 text-amber-400">
+                  <BufferCard
+                    title="Episodic Buffer"
+                    icon={Activity}
+                    color="bg-amber-500/20 text-amber-400"
+                  >
                     <p>Summaries: {selectedSession.buffers.episodic.topic_summary_count}</p>
                     <p>Questions: {selectedSession.buffers.episodic.questions_count}</p>
                     <p>
@@ -499,7 +523,11 @@ export function FOVContextPanel() {
                       {selectedSession.buffers.episodic.learner_signals.confusions}X
                     </p>
                   </BufferCard>
-                  <BufferCard title="Semantic Buffer" icon={Layers} color="bg-emerald-500/20 text-emerald-400">
+                  <BufferCard
+                    title="Semantic Buffer"
+                    icon={Layers}
+                    color="bg-emerald-500/20 text-emerald-400"
+                  >
                     <p>Curriculum: {selectedSession.buffers.semantic.curriculum_id || 'None'}</p>
                     <p>
                       Position: {selectedSession.buffers.semantic.current_topic_index} /{' '}
@@ -556,11 +584,22 @@ export function FOVContextPanel() {
                     {/* Analysis Result */}
                     {analysisResult && (
                       <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 space-y-2">
-                        <div className="text-xs font-medium text-slate-300">Confidence Analysis</div>
+                        <div className="text-xs font-medium text-slate-300">
+                          Confidence Analysis
+                        </div>
                         <div className="grid grid-cols-3 gap-2 text-xs">
-                          <ConfidenceIndicator score={analysisResult.confidence_score} label="Confidence" />
-                          <ConfidenceIndicator score={1 - analysisResult.uncertainty_score} label="Certainty" />
-                          <ConfidenceIndicator score={1 - analysisResult.hedging_score} label="Directness" />
+                          <ConfidenceIndicator
+                            score={analysisResult.confidence_score}
+                            label="Confidence"
+                          />
+                          <ConfidenceIndicator
+                            score={1 - analysisResult.uncertainty_score}
+                            label="Certainty"
+                          />
+                          <ConfidenceIndicator
+                            score={1 - analysisResult.hedging_score}
+                            label="Directness"
+                          />
                         </div>
                         {analysisResult.expansion?.should_expand && (
                           <div className="text-xs p-2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300">
@@ -621,15 +660,9 @@ export function FOVContextPanelCompact() {
         </div>
         {health?.features && (
           <div className="mt-3 flex flex-wrap gap-1">
-            {health.features.confidence_monitoring && (
-              <Badge variant="default">Confidence</Badge>
-            )}
-            {health.features.context_expansion && (
-              <Badge variant="default">Expansion</Badge>
-            )}
-            {health.features.adaptive_budgets && (
-              <Badge variant="default">Adaptive</Badge>
-            )}
+            {health.features.confidence_monitoring && <Badge variant="default">Confidence</Badge>}
+            {health.features.context_expansion && <Badge variant="default">Expansion</Badge>}
+            {health.features.adaptive_budgets && <Badge variant="default">Adaptive</Badge>}
           </div>
         )}
       </CardContent>

@@ -56,8 +56,8 @@ interface SystemResources {
   memory_total_mb: number;
   memory_used_mb: number;
   memory_available_mb?: number;
-  memory_wired_mb: number;  // Includes GPU allocations on Apple Silicon
-  memory_gpu_mb?: number;   // Estimated GPU-specific memory
+  memory_wired_mb: number; // Includes GPU allocations on Apple Silicon
+  memory_gpu_mb?: number; // Estimated GPU-specific memory
   thermal_pressure: 'none' | 'nominal' | 'moderate' | 'heavy' | 'critical';
   browser_memory_mb?: number;
   // Aggregated fields (for completed runs)
@@ -380,9 +380,7 @@ export function MassTestPanel() {
             <Users className="w-4 h-4 text-blue-400" />
             <span className="text-sm text-slate-400">Web Clients</span>
           </div>
-          <div className="text-2xl font-bold text-slate-100">
-            {activeRun?.activeClients || 0}
-          </div>
+          <div className="text-2xl font-bold text-slate-100">{activeRun?.activeClients || 0}</div>
         </div>
         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
           <div className="flex items-center gap-2 mb-2">
@@ -443,8 +441,8 @@ export function MassTestPanel() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-400">Progress</span>
                   <span className="text-slate-300">
-                    {activeRun.sessionsCompleted} / {activeRun.sessionsTotal} sessions
-                    ({Math.round((activeRun.sessionsCompleted / activeRun.sessionsTotal) * 100)}%)
+                    {activeRun.sessionsCompleted} / {activeRun.sessionsTotal} sessions (
+                    {Math.round((activeRun.sessionsCompleted / activeRun.sessionsTotal) * 100)}%)
                   </span>
                 </div>
                 <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
@@ -525,7 +523,11 @@ export function MassTestPanel() {
                               <div
                                 className={cn(
                                   'h-full rounded-full',
-                                  core > 80 ? 'bg-red-400' : core > 50 ? 'bg-amber-400' : 'bg-cyan-400'
+                                  core > 80
+                                    ? 'bg-red-400'
+                                    : core > 50
+                                      ? 'bg-amber-400'
+                                      : 'bg-cyan-400'
                                 )}
                                 style={{ width: `${Math.min(100, core)}%` }}
                               />
@@ -708,9 +710,7 @@ export function MassTestPanel() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
-                    LLM Model
-                  </label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">LLM Model</label>
                   <select
                     value={llmModel}
                     onChange={(e) => setLlmModel(e.target.value)}

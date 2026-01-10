@@ -71,9 +71,7 @@ export function RunSelector({
   };
 
   if (sortedRuns.length === 0) {
-    return (
-      <div className="text-sm text-slate-500">No completed runs available</div>
-    );
+    return <div className="text-sm text-slate-500">No completed runs available</div>;
   }
 
   return (
@@ -87,9 +85,7 @@ export function RunSelector({
           disabled={multiSelect}
         >
           <option value="">
-            {multiSelect
-              ? `${selectedRuns.length} runs selected`
-              : 'Select a run...'}
+            {multiSelect ? `${selectedRuns.length} runs selected` : 'Select a run...'}
           </option>
           {!multiSelect &&
             sortedRuns.map((run) => (
@@ -129,9 +125,7 @@ export function RunSelector({
                   {isSelected && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <span className="flex-1 truncate">{formatRunLabel(run)}</span>
-                <span className="text-xs text-slate-500">
-                  {run.results?.length || 0} results
-                </span>
+                <span className="text-xs text-slate-500">{run.results?.length || 0} results</span>
               </button>
             );
           })}

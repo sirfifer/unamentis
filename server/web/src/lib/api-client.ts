@@ -1530,7 +1530,12 @@ export async function getFOVSession(
         questions_count: 0,
         learner_signals: { clarifications: 0, repetitions: 0, confusions: 0 },
       },
-      semantic: { curriculum_id: null, current_topic_index: 0, total_topics: 0, has_outline: false },
+      semantic: {
+        curriculum_id: null,
+        current_topic_index: 0,
+        total_topics: 0,
+        has_outline: false,
+      },
     },
     token_usage: {
       immediate: { budget: 0, estimated_used: 0, percentage: 0 },
@@ -1572,7 +1577,12 @@ export async function getFOVSessionDebug(sessionId: string): Promise<FOVSessionD
         questions_count: 0,
         learner_signals: { clarifications: 0, repetitions: 0, confusions: 0 },
       },
-      semantic: { curriculum_id: null, current_topic_index: 0, total_topics: 0, has_outline: false },
+      semantic: {
+        curriculum_id: null,
+        current_topic_index: 0,
+        total_topics: 0,
+        has_outline: false,
+      },
     },
     token_usage: {
       immediate: { budget: 0, estimated_used: 0, percentage: 0 },
@@ -1598,7 +1608,9 @@ export async function getFOVSessionDebug(sessionId: string): Promise<FOVSessionD
 /**
  * Start an FOV session
  */
-export async function startFOVSession(sessionId: string): Promise<{ state: string; error?: string }> {
+export async function startFOVSession(
+  sessionId: string
+): Promise<{ state: string; error?: string }> {
   if (USE_MOCK) {
     return { state: 'active' };
   }
@@ -1637,7 +1649,11 @@ export async function addFOVTurn(
 export async function handleFOVBargeIn(
   sessionId: string,
   utterance: string
-): Promise<{ context: FOVContextBuildResponse; messages: Array<{ role: string; content: string }>; error?: string }> {
+): Promise<{
+  context: FOVContextBuildResponse;
+  messages: Array<{ role: string; content: string }>;
+  error?: string;
+}> {
   if (USE_MOCK) {
     return {
       context: {
@@ -1749,7 +1765,9 @@ export async function buildFOVContext(
 /**
  * Delete an FOV session
  */
-export async function deleteFOVSession(sessionId: string): Promise<{ deleted: boolean; error?: string }> {
+export async function deleteFOVSession(
+  sessionId: string
+): Promise<{ deleted: boolean; error?: string }> {
   if (USE_MOCK) {
     return { deleted: true };
   }

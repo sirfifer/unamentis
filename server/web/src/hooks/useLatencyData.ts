@@ -77,7 +77,11 @@ interface UseRunAnalysisReturn {
  * ```
  */
 export function useLatencyData(options: UseLatencyDataOptions = {}): UseLatencyDataReturn {
-  const { autoRefresh = true, refreshInterval = DEFAULT_REFRESH_INTERVAL, limit = DEFAULT_LIMIT } = options;
+  const {
+    autoRefresh = true,
+    refreshInterval = DEFAULT_REFRESH_INTERVAL,
+    limit = DEFAULT_LIMIT,
+  } = options;
 
   const [runs, setRuns] = useState<TestRun[]>([]);
   const [loading, setLoading] = useState(true);

@@ -242,10 +242,7 @@ export function transformToBoxPlot(
 /**
  * Transform results to heatmap data for provider comparison.
  */
-export function transformToHeatmap(
-  results: TestResult[],
-  metric: MetricType = 'e2e'
-): HeatmapData {
+export function transformToHeatmap(results: TestResult[], metric: MetricType = 'e2e'): HeatmapData {
   // Extract unique providers using helper functions that fallback to configId parsing
   const llmProviders = [...new Set(results.map((r) => getLLMProvider(r)))].sort();
   const ttsProviders = [...new Set(results.map((r) => getTTSProvider(r)))].sort();
@@ -408,7 +405,9 @@ export function shortenConfigName(configId: string): string {
 
   // Try to extract meaningful parts
   const stt = parts[0];
-  const model = parts.find((p) => p.includes('claude') || p.includes('gpt') || p.includes('gemini'));
+  const model = parts.find(
+    (p) => p.includes('claude') || p.includes('gpt') || p.includes('gemini')
+  );
   const tts = parts[parts.length - 1];
 
   if (model) {

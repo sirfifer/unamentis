@@ -10,14 +10,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import {
-  TrendingUp,
-  BarChart3,
-  Grid3X3,
-  Globe,
-  RefreshCw,
-  Activity,
-} from 'lucide-react';
+import { TrendingUp, BarChart3, Grid3X3, Globe, RefreshCw, Activity } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useLatencyData, useAggregatedResults } from '@/hooks/useLatencyData';
 import { TrendChart } from './TrendChart';
@@ -173,10 +166,7 @@ export function LatencyDashboard() {
           maxSelections={5}
           label="Compare Runs"
         />
-        <MetricSelector
-          selectedMetric={selectedMetric}
-          onMetricChange={setSelectedMetric}
-        />
+        <MetricSelector selectedMetric={selectedMetric} onMetricChange={setSelectedMetric} />
       </div>
 
       {/* Chart Tabs */}

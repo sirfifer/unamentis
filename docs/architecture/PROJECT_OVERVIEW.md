@@ -742,6 +742,10 @@ See [CODE_QUALITY_INITIATIVE.md](../CODE_QUALITY_INITIATIVE.md) for complete doc
 - **TTS Caching System** (global cross-user cache, priority-based generation, 1000+ req/sec)
 - **Session Management** (UserSession, PlaybackState, SessionCacheIntegration)
 - **TTSResourcePool** (separate semaphores for live vs background, concurrency control)
+- **Self-hosted STT WebSocket streaming** (whisper.cpp, faster-whisper compatible)
+- **Voice cloning UI** (Chatterbox settings with file picker and audio recorder)
+- **Latency harness audio file loading** (full STT pipeline testing with real audio)
+- **LaTeX formula rendering** (SwiftMath integration with Unicode fallback)
 
 ### In Progress
 - Android client (separate repository)

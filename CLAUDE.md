@@ -339,6 +339,7 @@ Skills are focused workflows that provide consistency and predictability. Invoke
 | `/review` | Code review (CodeRabbit AI + manual) | Before PRs or code review |
 | `/mcp-setup` | Configure MCP session defaults | Start of dev session |
 | `/read-external` | Cross-repo read access | Reference external repos |
+| `/comms` | Post to Slack/Trello with natural language | Team communication |
 
 ### Key Skills
 

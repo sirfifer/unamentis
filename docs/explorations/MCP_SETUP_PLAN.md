@@ -52,39 +52,39 @@ Reference: [MCP_SETUP.md](MCP_SETUP.md)
 ## Phase 4: User Actions (Manual Steps)
 
 ### 4.1 Obtain Slack Credentials
-- [ ] Create Slack app at https://api.slack.com/apps
-- [ ] Add required scopes (channels:read, channels:history, chat:write, users:read, reactions:write)
-- [ ] Install to workspace
-- [ ] Copy Bot Token (`xoxb-...`)
-- [ ] Get Team ID from workspace settings
+- [x] Create Slack app at https://api.slack.com/apps
+- [x] Add required scopes (channels:read, channels:history, chat:write, users:read, reactions:write)
+- [x] Install to workspace
+- [x] Copy Bot Token (`xoxb-...`)
+- [x] Get Team ID from workspace settings
 
 ### 4.2 Obtain Trello Credentials
-- [ ] Get API Key from https://trello.com/app-key
-- [ ] Generate Token via authorization URL
-- [ ] Copy Token
+- [x] Get API Key from https://trello.com/app-key
+- [x] Generate Token via authorization URL
+- [x] Copy Token
 
 ### 4.3 Add Secrets to Private Repository
-- [ ] `gh secret set TRELLO_API_KEY -R sirfifer/unamentis-learning`
-- [ ] `gh secret set TRELLO_TOKEN -R sirfifer/unamentis-learning`
-- [ ] `gh secret set SLACK_BOT_TOKEN -R sirfifer/unamentis-learning`
-- [ ] `gh secret set SLACK_TEAM_ID -R sirfifer/unamentis-learning`
+- [x] `gh secret set TRELLO_API_KEY -R sirfifer/unamentis-learning`
+- [x] `gh secret set TRELLO_TOKEN -R sirfifer/unamentis-learning`
+- [x] `gh secret set SLACK_BOT_TOKEN -R sirfifer/unamentis-learning`
+- [x] `gh secret set SLACK_TEAM_ID -R sirfifer/unamentis-learning`
 
 ### 4.4 Create GitHub Actions Workflow
-- [ ] Create `.github/workflows/get-mcp-creds.yml` in `sirfifer/unamentis-learning`
-- [ ] Commit and push workflow
+- [x] Create `.github/workflows/get-mcp-creds.yml` in `sirfifer/unamentis-learning`
+- [x] Commit and push workflow
 
 ---
 
 ## Phase 5: Testing and Verification
 
-- [ ] Run `./scripts/refresh-mcp-creds.sh` to test credential fetch
-- [ ] Verify cache file exists at `~/.cache/unamentis/creds.json`
-- [ ] Test Trello server starts manually
-- [ ] Test Slack server starts manually
-- [ ] Restart IDE/Claude Code
-- [ ] Verify `claude mcp list` shows slack and trello
-- [ ] Test "List my Trello boards" in Claude
-- [ ] Test "List Slack channels" in Claude
+- [x] Run `./scripts/refresh-mcp-creds.sh` to test credential fetch
+- [x] Verify cache file exists at `~/.cache/unamentis/creds.json`
+- [x] Test Trello server starts manually
+- [x] Test Slack server starts manually
+- [x] Restart IDE/Claude Code
+- [x] Verify `claude mcp list` shows slack and trello
+- [x] Test "List my Trello boards" in Claude
+- [x] Test "List Slack channels" in Claude
 
 ---
 
@@ -102,6 +102,6 @@ Reference: [MCP_SETUP.md](MCP_SETUP.md)
 
 ## Current Progress
 
-**Completed:** Phase 1, Phase 2, Phase 3
+**Completed:** All phases complete. MCP setup is fully operational.
 
-**Next:** Phase 4 (user actions: obtain credentials, add secrets, create workflow)
+**Status:** Slack and Trello MCP servers are working. Credentials are securely managed via GitHub Actions + age encryption.

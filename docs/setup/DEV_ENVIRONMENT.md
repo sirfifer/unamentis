@@ -143,6 +143,83 @@ If servers show as disconnected, restart your Claude Code session.
 |--------|-------------|
 | **XcodeBuildMCP** | Build, test, clean, install apps, capture logs, device management |
 | **ios-simulator** | Screenshots, UI taps, swipes, typing, accessibility info |
+| **slack** | Post messages, read channels, reply to threads, add reactions |
+| **trello** | Create/update cards, add comments, manage boards and lists |
+
+### 3.4 Slack & Trello MCP Setup (Team Communication)
+
+These MCP servers enable Claude to post to Slack channels and manage Trello cards. Credentials are securely managed via GitHub Actions and age encryption.
+
+#### Prerequisites
+
+```bash
+# Install age encryption tool
+brew install age jq
+
+# Verify gh CLI is authenticated
+gh auth status
+```
+
+#### Generate Encryption Keypair (One-time per machine)
+
+```bash
+mkdir -p ~/.config/unamentis
+age-keygen -o ~/.config/unamentis/age-key.txt
+chmod 600 ~/.config/unamentis/age-key.txt
+```
+
+**Important:** Back up this key securely. Without it, you cannot decrypt credentials.
+
+#### Fetch Credentials
+
+The project includes scripts that fetch encrypted credentials from the private `sirfifer/unamentis-learning` repository:
+
+```bash
+# First-time or refresh credentials
+./scripts/refresh-mcp-creds.sh
+
+# Verify credentials are cached
+cat ~/.cache/unamentis/creds.json | jq 'keys'
+# Should show: ["slack_bot_token", "slack_team_id", "trello_api_key", "trello_token"]
+```
+
+#### Verify Slack & Trello MCP Servers
+
+```bash
+claude mcp list
+
+# Expected output should include:
+# slack: ./scripts/mcp-slack.sh - ✓ Connected
+# trello: ./scripts/mcp-trello.sh - ✓ Connected
+```
+
+If servers show as disconnected, restart your Claude Code session.
+
+### 3.5 The /comms Skill
+
+The `/comms` skill enables natural language communication with Slack and Trello without requiring exact channel names or board IDs.
+
+#### Usage
+
+```
+/comms post to android: feature complete
+/comms create card on server list: fix API bug
+/comms add comment to card: resolved
+```
+
+#### Key Behaviors
+
+- **Fuzzy Matching**: "android" resolves to tech-android channel or Android list
+- **Smart Defaults**: Tech topics default to tech-general channel and Tech Work board
+- **Trello Comments**: Automatically prefixed with "From Claude Code:" for attribution
+
+#### Skill Files Location
+
+The skill files are in `.claude/skills/comms/`:
+- `SKILL.md` - Instructions and examples
+- `RESOURCES.md` - Channel/board ID mappings
+
+See the full reference in [MCP_SETUP.md](../explorations/MCP_SETUP.md).
 
 ---
 
@@ -415,15 +492,17 @@ sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService
 | `./scripts/test-quick.sh` | Run unit tests |
 | `./scripts/test-all.sh` | Run all tests |
 | `./scripts/health-check.sh` | Lint + quick tests |
+| `./scripts/refresh-mcp-creds.sh` | Refresh Slack/Trello credentials |
 | `claude mcp list` | Check MCP server status |
 
 ---
 
 ## 11. Additional Resources
 
-- [CLAUDE.md](../CLAUDE.md) - Claude Code instructions
-- [AGENTS.md](../AGENTS.md) - AI development guidelines
-- [IOS_STYLE_GUIDE.md](IOS_STYLE_GUIDE.md) - Swift/SwiftUI coding standards
-- [UnaMentis_TDD.md](UnaMentis_TDD.md) - Technical design document
+- [CLAUDE.md](../../CLAUDE.md) - Claude Code instructions
+- [AGENTS.md](../../AGENTS.md) - AI development guidelines
+- [IOS_STYLE_GUIDE.md](../ios/IOS_STYLE_GUIDE.md) - Swift/SwiftUI coding standards
+- [UnaMentis_TDD.md](../architecture/UnaMentis_TDD.md) - Technical design document
+- [MCP_SETUP.md](../explorations/MCP_SETUP.md) - Slack/Trello MCP setup (detailed reference)
 - [CODE_QUALITY_INITIATIVE.md](../quality/CODE_QUALITY_INITIATIVE.md) - Quality infrastructure and testing
 - [CHAOS_ENGINEERING_RUNBOOK.md](../testing/CHAOS_ENGINEERING_RUNBOOK.md) - Voice pipeline resilience testing

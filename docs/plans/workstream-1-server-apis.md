@@ -1,70 +1,57 @@
 # Workstream 1: Server API Fixes
 
-## Context
-This is one of several parallel workstreams identified from an incomplete work audit. You are fixing server-side API and management console issues.
+## Status: COMPLETED (2026-01-10)
+
+All tasks in this workstream have been implemented.
+
+---
 
 ## Tasks
 
-### 1.1 Latency Harness Suite Deletion (P0)
+### 1.1 Latency Harness Suite Deletion (P0) - DONE
 **File:** `server/management/latency_harness_api.py`
-**Line:** 263
 
-The endpoint returns success without actually deleting:
-```python
-# TODO: Implement suite deletion
-return web.json_response({"message": f"Suite {suite_id} deleted"})
-```
-
-**Requirements:**
-1. Call `storage.delete_suite(suite_id)`
-2. Handle case where suite doesn't exist (return 404)
-3. Return appropriate success/error response
-
-**Reference:** The storage layer is fully implemented in `server/latency_harness/storage.py` - see `FileBasedLatencyStorage.delete_suite()` at line 326.
+Implemented proper `handle_delete_suite()` function that:
+- Validates suite exists before deletion via `storage.get_suite()`
+- Prevents deletion of built-in suites (`quick_validation`, `provider_comparison`)
+- Calls `storage.delete_suite(suite_id)` with proper error handling
+- Returns appropriate HTTP status codes (400, 404, 500)
 
 ---
 
-### 1.2 CK-12 Course Detail View
+### 1.2 CK-12 Course Detail View - DONE
 **File:** `server/management/static/app.js`
-**Line:** 3839
 
-Currently shows placeholder:
-```javascript
-async function viewCK12CourseDetail(courseId) {
-    showToast('CK-12 course details coming soon', 'info');
-    // TODO: Implement detailed view similar to MIT OCW
-}
-```
-
-**Requirements:**
-1. Look at MIT OCW detail view implementation as reference (search for `viewMITOCWCourseDetail` in same file)
-2. Implement similar detail fetching and display for CK-12 FlexBooks
-3. Show course title, description, units/chapters, and any available metadata
+Implemented full detail view matching MIT OCW pattern:
+- `viewCK12CourseDetail(courseId)` - Main detail view with lesson cards
+- `selectAllCK12Lessons(select)` - Select/deselect all lessons
+- `updateCK12LessonSelectionCount()` - Live count updates
+- `importCK12Course()` - Import with selected lessons
 
 ---
 
-### 1.3 Plugin Discovery Metadata Extraction (P3 - Lower Priority)
+### 1.3 Plugin Discovery Metadata Extraction - DONE
 **File:** `server/importers/core/discovery.py`
-**Lines:** 209, 216
 
-Currently hardcoded:
-```python
-version="1.0.0",  # TODO: Extract from module if available
-author=None,  # TODO: Extract from module docstring
-```
+Added `_extract_module_metadata(module)` function that extracts:
+- `__version__` from module attribute or docstring "Version:" pattern
+- `__author__` from module attribute or docstring "Author:" pattern
+- `__url__` from module attribute or docstring "Reference:" pattern
 
-**Requirements:**
-1. Try to extract `__version__` from plugin module if available
-2. Try to extract `__author__` from plugin module if available
-3. Fall back to current defaults if not found
+Added metadata to all 5 source plugins:
+- `ck12_flexbook.py` - `__version__`, `__author__`, `__url__`
+- `mit_ocw.py` - `__version__`, `__author__`, `__url__`
+- `merlot.py` - `__version__`, `__author__`, `__url__`
+- `engageny.py` - `__version__`, `__author__`, `__url__`
+- `coreknowledge.py` - `__version__`, `__author__`, `__url__`
 
 ---
 
 ## Verification
 
-After completing each task:
-1. Run the management API: `cd server && python -m management.main`
-2. Test via curl:
-   - Suite deletion: `curl -X DELETE http://localhost:8766/api/latency-tests/suites/{suite_id}`
-   - CK-12 detail: Test via web UI at http://localhost:8766
-3. Run `/validate` to ensure no regressions
+All tasks verified:
+1. Suite deletion API properly calls storage layer
+2. CK-12 detail view displays course structure
+3. Plugin metadata extraction works with fallbacks
+
+Note: iOS build failures in `/validate` are pre-existing issues unrelated to these server-side changes (see Workstream 3 for iOS fixes).

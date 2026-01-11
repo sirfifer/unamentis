@@ -15,6 +15,7 @@ UnaMentis implements a **5-phase Code Quality Initiative** that enables a small 
 | Capability | Status | Impact |
 |------------|--------|--------|
 | Pre-commit quality gates | Implemented | Issues caught before commit |
+| Hook bypass auditing | Implemented | Detect `--no-verify` usage |
 | Automated dependency management | Implemented | Zero manual dependency tracking |
 | 80% code coverage enforcement | Implemented | CI fails below threshold |
 | Performance regression detection | Implemented | Automated latency monitoring |
@@ -22,6 +23,8 @@ UnaMentis implements a **5-phase Code Quality Initiative** that enables a small 
 | Feature flag lifecycle management | Implemented | Safe rollouts with cleanup tracking |
 | DORA metrics and observability | Implemented | Engineering health visibility |
 | AI-powered code review | Implemented | Every PR reviewed by CodeRabbit |
+| Mutation testing | Implemented | Weekly test quality validation |
+| Chaos engineering | Implemented | Voice pipeline resilience testing |
 
 ### Philosophy
 
@@ -333,20 +336,51 @@ path_instructions:
 
 **Cost:** FREE for open source projects (normally $24-30/seat/month)
 
-#### Planned Advanced Features
+#### Mutation Testing (Implemented)
 
-**Mutation Testing** (High Priority):
-- Proves tests catch bugs, not just hit lines
-- Tools: Muter (Swift), mutmut (Python), Stryker (Web)
-- Run weekly on main branch
+Mutation testing proves tests catch bugs, not just hit lines:
 
-**Voice Pipeline Resilience Testing** (High Priority):
-- Network degradation simulation
-- Test scenarios: high latency (500ms+), packet loss (5-20%), disconnection
-- API timeout handling (Groq, OpenAI, ElevenLabs)
-- Graceful degradation validation
+**Weekly Workflow:** `.github/workflows/mutation.yml` runs every Sunday at 4am UTC
 
-**Contract Testing** (Medium Priority):
+**Tools by Platform:**
+| Platform | Tool | Workflow |
+|----------|------|----------|
+| Python | mutmut | Automated in CI |
+| Web | Stryker | Automated in CI |
+| iOS | Muter | Manual trigger |
+
+**Configuration:**
+```yaml
+# From .github/workflows/mutation.yml
+schedule:
+  - cron: '0 4 * * 0'  # Sunday 4am UTC
+```
+
+**Metrics:**
+- Mutation score target: >70%
+- Results uploaded as artifacts (30-day retention)
+- Trend analysis over time
+
+#### Chaos Engineering (Implemented)
+
+Voice pipeline resilience testing validates graceful degradation. See [CHAOS_ENGINEERING_RUNBOOK.md](testing/CHAOS_ENGINEERING_RUNBOOK.md).
+
+**Test Scenarios:**
+| Category | Scenarios |
+|----------|-----------|
+| Network | High latency (500ms+), packet loss (5-20%), disconnection |
+| API | Provider timeouts, rate limiting, partial responses |
+| Resources | Memory pressure, thermal throttling, battery constraints |
+| Partial Failures | STT timeout with TTS working, mixed provider failures |
+
+**Tools:**
+- Network Link Conditioner (macOS/iOS)
+- Charles Proxy for API mocking
+- XCTest with custom conditions
+- Automated test scripts
+
+#### Contract Testing (Planned)
+
 - Ensures iOS client and Server API stay in sync
 - Tool: Pact
 - Deferred until APIs stabilize
@@ -544,6 +578,9 @@ When budget allows, consider these upgrades in priority order:
 # Audit feature flags
 ./scripts/feature-flag-audit.sh
 
+# Audit for hook bypasses
+./scripts/hook-audit.sh
+
 # Run latency tests
 python -m latency_harness.cli --suite quick_validation --mock
 
@@ -600,4 +637,4 @@ This infrastructure enables a small team to maintain quality standards typically
 ---
 
 **Last Updated:** January 2025
-**Status:** Phases 1-4 Complete, Phase 5 In Progress
+**Status:** Phases 1-5 Complete (Mutation Testing, Chaos Engineering implemented)

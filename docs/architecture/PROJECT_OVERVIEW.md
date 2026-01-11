@@ -88,7 +88,7 @@ All components are **protocol-based and swappable**. The system supports multipl
 | **AssemblyAI** | Universal-2 | Cloud | Word-level timestamps |
 | **Groq** | Whisper-large-v3-turbo | Cloud | Free tier (14,400 req/day), 300x real-time |
 | **OpenAI** | Whisper | Cloud | High accuracy, batch processing |
-| **Self-hosted** | whisper.cpp, faster-whisper | Local server | OpenAI-compatible API |
+| **Self-hosted** | whisper.cpp, faster-whisper | Local server | OpenAI-compatible API, WebSocket streaming |
 
 ### Text-to-Speech (TTS) Models
 
@@ -109,10 +109,16 @@ Chatterbox is our featured self-hosted TTS model with advanced capabilities:
 - **Emotion Control:** Exaggeration parameter (0.0-1.5) controls emotional intensity
 - **Generation Fidelity:** CFG weight (0.0-1.0) for output consistency
 - **Paralinguistic Tags:** `[laugh]`, `[cough]`, `[chuckle]`, `[sigh]`, `[gasp]`
-- **Voice Cloning:** Zero-shot cloning from reference audio
+- **Voice Cloning:** Zero-shot cloning from reference audio (with UI for file selection and recording)
 - **Languages:** 23 languages supported
 - **Modes:** Streaming and non-streaming
 - **Presets:** Default, Natural, Expressive, Low Latency
+
+The iOS app includes a dedicated Chatterbox Settings view with voice cloning UI that allows users to:
+- Enable/disable voice cloning
+- Select reference audio files from device storage
+- Record new reference audio directly (5+ seconds required)
+- Preview and manage reference audio samples
 
 ### Large Language Models (LLM)
 
@@ -592,6 +598,7 @@ python -m latency_harness.cli --suite quick_validation --format json
 - **Network Projections:** Automatic latency projections for localhost, WiFi, cellular
 - **Regression Detection:** Baseline comparison with severity levels (minor/moderate/severe)
 - **Resource Monitoring:** CPU, memory, thermal state tracking during tests
+- **Audio File Loading:** Full audio input scenario support with file loading, format conversion, and STT streaming
 
 See `server/latency_harness/CLAUDE.md` and `docs/LATENCY_TEST_HARNESS_GUIDE.md` for details.
 
@@ -619,25 +626,29 @@ UnaMentis implements a comprehensive **5-phase Code Quality Initiative** that en
 | Component | Tool | Purpose |
 |-----------|------|---------|
 | Pre-commit Hooks | Native git hooks | Lint, format, secrets check |
+| Hook Bypass Audit | `scripts/hook-audit.sh` | Detect `--no-verify` usage |
 | Dependency Management | Renovate | Auto-updates with grouping |
 | AI Code Review | CodeRabbit | Automated PR review (free for OSS) |
 | Performance Testing | Latency Harness | Regression detection |
 | Security Scanning | CodeQL, Gitleaks | Vulnerability detection |
 | DORA Metrics | Apache DevLake | Engineering health |
 | Feature Flags | Unleash | Safe rollouts |
+| Mutation Testing | mutmut, Stryker, Muter | Test quality validation |
+| Chaos Engineering | Custom runbook | Voice pipeline resilience |
 
 ### GitHub Actions Workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | iOS CI | Push/PR | Build, lint, test, coverage |
-| Server CI | Push/PR | Python linting, tests |
-| Web Client CI | Push/PR | Lint, typecheck, build |
+| Server CI | Push/PR | Python linting, tests, coverage |
+| Web Client CI | Push/PR | Lint, typecheck, build, coverage |
 | Nightly E2E | Daily 2am | Full E2E + latency tests |
 | Performance | Push/PR/scheduled | Latency regression check |
 | Security | Push/PR/weekly | Secrets, CodeQL, audits |
 | Quality Metrics | Daily | CI/PR/bug metrics |
 | Feature Flags | Weekly | Stale flag audit |
+| Mutation Testing | Weekly (Sunday 4am) | Test quality validation |
 
 ### Feature Flag System
 
@@ -680,7 +691,20 @@ cd server/devlake && docker compose up -d
 
 # Start feature flags
 cd server/feature-flags && docker compose up -d
+
+# Audit for hook bypasses
+./scripts/hook-audit.sh
 ```
+
+### Chaos Engineering
+
+The project includes a comprehensive chaos engineering runbook for testing voice pipeline resilience:
+
+- **Network Degradation:** High latency (500ms+), packet loss (5-20%), disconnections
+- **API Failures:** Provider timeouts, rate limiting, partial responses
+- **Resource Pressure:** Memory limits, thermal throttling, battery constraints
+
+See [CHAOS_ENGINEERING_RUNBOOK.md](../testing/CHAOS_ENGINEERING_RUNBOOK.md) for test scenarios.
 
 See [CODE_QUALITY_INITIATIVE.md](../CODE_QUALITY_INITIATIVE.md) for complete documentation.
 

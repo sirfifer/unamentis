@@ -202,11 +202,14 @@ UnaMentis implements a comprehensive **5-phase Code Quality Initiative** that en
 ### Automation Tools
 
 - **Pre-commit Hooks**: SwiftLint, SwiftFormat, Ruff, ESLint, Gitleaks
+- **Hook Bypass Auditing**: Detect `--no-verify` usage with `scripts/hook-audit.sh`
 - **Dependency Management**: Renovate with auto-merge for patches
 - **AI Code Review**: CodeRabbit (free for open source)
 - **Performance Testing**: Automated latency regression detection
 - **Security Scanning**: CodeQL, Gitleaks, pip-audit, npm audit
 - **DORA Metrics**: Apache DevLake for engineering health
+- **Mutation Testing**: Weekly validation with mutmut (Python), Stryker (Web), Muter (iOS)
+- **Chaos Engineering**: Voice pipeline resilience testing (see [runbook](docs/testing/CHAOS_ENGINEERING_RUNBOOK.md))
 
 ### Feature Flags
 
@@ -218,11 +221,12 @@ Self-hosted Unleash system with full lifecycle management:
 ```bash
 # Install quality infrastructure
 ./scripts/install-hooks.sh      # Git hooks
+./scripts/hook-audit.sh         # Check for bypasses
 cd server/devlake && docker compose up -d    # DORA metrics
 cd server/feature-flags && docker compose up -d  # Feature flags
 ```
 
-See [docs/CODE_QUALITY_INITIATIVE.md](docs/CODE_QUALITY_INITIATIVE.md) for the complete quality initiative documentation.
+See [docs/CODE_QUALITY_INITIATIVE.md](docs/CODE_QUALITY_INITIATIVE.md) for the complete quality initiative documentation, including mutation testing and chaos engineering.
 
 ## Architecture
 

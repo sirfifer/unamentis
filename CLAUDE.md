@@ -116,6 +116,9 @@ xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
 python -m latency_harness.cli --list-suites
 python -m latency_harness.cli --suite quick_validation --mock
 python -m latency_harness.cli --suite quick_validation --no-mock  # Real providers
+
+# Hook audit (check for bypasses)
+./scripts/hook-audit.sh
 ```
 
 ## Server Management
@@ -194,6 +197,7 @@ Follow Conventional Commits: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `pe
 - `curriculum/README.md` - UMCF curriculum format
 - `docs/LATENCY_TEST_HARNESS_GUIDE.md` - Latency harness usage guide
 - `docs/design/AUDIO_LATENCY_TEST_HARNESS.md` - Latency harness architecture
+- `docs/testing/CHAOS_ENGINEERING_RUNBOOK.md` - Voice pipeline resilience testing
 
 ## MANDATORY: PROJECT_OVERVIEW.md Maintenance
 
@@ -265,6 +269,30 @@ curl -s "http://localhost:8766/api/latency-tests/baselines/{id}/check?runId=run_
 - These targets inform test pass/fail criteria
 
 See `server/latency_harness/CLAUDE.md` for detailed CLI documentation.
+
+## Mutation Testing
+
+Mutation testing validates that tests actually catch bugs, not just cover lines. A weekly workflow runs mutation testing:
+
+```bash
+# View mutation testing workflow
+# .github/workflows/mutation.yml - Runs Sundays at 4am UTC
+# Supports: mutmut (Python), Stryker (Web), Muter (iOS manual)
+```
+
+## Chaos Engineering
+
+Voice pipeline resilience testing validates graceful degradation under adverse conditions:
+
+```bash
+# See the runbook for test scenarios
+docs/testing/CHAOS_ENGINEERING_RUNBOOK.md
+
+# Test scenarios include:
+# - Network degradation (high latency, packet loss)
+# - API timeouts and failures
+# - Memory pressure and thermal throttling
+```
 
 ## Cross-Repository Access
 

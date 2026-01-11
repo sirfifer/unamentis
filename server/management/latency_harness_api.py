@@ -260,8 +260,30 @@ async def handle_delete_suite(request: web.Request) -> web.Response:
             status=400
         )
 
-    # TODO: Implement suite deletion
-    return web.json_response({"message": f"Suite {suite_id} deleted"})
+    # Delete from storage
+    if _storage is None:
+        return web.json_response(
+            {"error": "Storage not initialized"},
+            status=500
+        )
+
+    # Check if suite exists first
+    suite = await _storage.get_suite(suite_id)
+    if suite is None:
+        return web.json_response(
+            {"error": f"Suite '{suite_id}' not found"},
+            status=404
+        )
+
+    # Delete the suite
+    deleted = await _storage.delete_suite(suite_id)
+    if not deleted:
+        return web.json_response(
+            {"error": f"Failed to delete suite '{suite_id}'"},
+            status=500
+        )
+
+    return web.json_response({"message": f"Suite '{suite_id}' deleted successfully"})
 
 
 # =============================================================================

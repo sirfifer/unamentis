@@ -19,17 +19,20 @@ xcodebuild test -project UnaMentis.xcodeproj -scheme UnaMentis \
   -only-testing:UnaMentisTests/ProgressTrackerTests
 ```
 
-## MANDATORY: Test Before Commit
+## MANDATORY: Validate Before Complete
 
-**All tests must pass before work is considered complete.**
+**Use the `/validate` skill before marking any work complete.**
 
-When adding new files to the project:
+```
+/validate           # Lint + quick tests
+/validate --full    # Lint + full test suite
+```
+
+When adding new files:
 1. Verify the file is added to the Xcode project (not just the filesystem)
-2. Run the build to confirm compilation
-3. Run the full test suite to confirm no regressions
-4. Only then is the implementation complete
+2. Run `/validate` to confirm compilation and tests pass
 
-**Never claim work is complete without verifying tests pass.**
+See `.claude/skills/validate/SKILL.md` for details.
 
 ## Swift 6.0 Strict Concurrency
 

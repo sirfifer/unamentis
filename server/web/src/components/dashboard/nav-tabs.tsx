@@ -16,6 +16,7 @@ import {
   MonitorCog,
   Users,
   Timer,
+  Brain,
 } from 'lucide-react';
 
 // Section types
@@ -26,6 +27,7 @@ export type OpsTabId =
   | 'dashboard'
   | 'health'
   | 'latency'
+  | 'fov'
   | 'metrics'
   | 'logs'
   | 'clients'
@@ -60,6 +62,7 @@ const opsTabs: { id: OpsTabId; label: string; shortLabel: string; icon: typeof L
     { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: LayoutDashboard },
     { id: 'health', label: 'System Health', shortLabel: 'Health', icon: Activity },
     { id: 'latency', label: 'Latency Tests', shortLabel: 'Latency', icon: Timer },
+    { id: 'fov', label: 'FOV Context', shortLabel: 'FOV', icon: Brain },
     { id: 'metrics', label: 'Metrics', shortLabel: 'Metrics', icon: BarChart3 },
     { id: 'logs', label: 'Logs', shortLabel: 'Logs', icon: FileText },
     { id: 'clients', label: 'Clients', shortLabel: 'Clients', icon: Smartphone },

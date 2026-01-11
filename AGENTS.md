@@ -282,15 +282,16 @@ This is non-negotiable. Server work is NOT complete until:
 **Why:** Unlike compiled code where build success confirms the code will run, server code changes only take effect after restart. Telling the user to restart the server means you haven't verified your work actually functions.
 
 **How to restart:**
-```bash
-# Management Console (port 8766)
-pkill -f "server/management/server.py"
-cd server/management && python server.py &
 
-# Operations Console (port 3000)
-# Usually auto-reloads, but if needed:
-cd server/web && npm run dev
+Use the `/service` skill for all service restarts. Never use bash commands like `pkill`.
+
 ```
+/service restart management-api    # Management Console (port 8766)
+/service restart web-client        # Operations Console (port 3000)
+/service status                    # Check service status
+```
+
+The Operations Console usually auto-reloads with Next.js dev server.
 
 **How to verify:**
 - Make API calls to test modified endpoints
@@ -711,3 +712,26 @@ curl -s "http://localhost:8766/api/latency-tests/baselines/{id}/check?runId=run_
 ```
 
 See `server/latency_harness/CLAUDE.md` and `docs/LATENCY_TEST_HARNESS_GUIDE.md` for complete documentation.
+
+---
+
+## Cross-Repository Access
+
+This project has read access to related external repositories via `additionalDirectories` in `.claude/settings.json`.
+
+### Available Repos
+
+| Repo | Path | Purpose |
+|------|------|---------|
+| unamentis-android | /Users/ramerman/dev/unamentis-android | Android client |
+
+### Usage
+
+Use absolute paths with Read, Grep, and Glob tools:
+- `Read /Users/ramerman/dev/unamentis-android/README.md`
+- `Grep pattern in /Users/ramerman/dev/unamentis-android/`
+- `Glob /Users/ramerman/dev/unamentis-android/**/*.kt`
+
+For read-only constraint, invoke `/read-external` skill.
+
+See `.claude/skills/read-external/TEMPLATE.md` to add more repos.

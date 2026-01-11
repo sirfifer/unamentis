@@ -184,6 +184,10 @@
 		FB59364BBC02872920BD0323 /* ref-botticelli-birth-venus.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 14F5F7B4594AB0DD6CE717E7 /* ref-botticelli-birth-venus.jpg */; };
 		FFF26AE98F6DDE371CA0B169 /* VADService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F889719749AE4061E8AD19F /* VADService.swift */; };
 		B4C3D2E1F0A54876 /* FOVContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B2C1D4E5F64789 /* FOVContextTests.swift */; };
+		TD01BF01A1B2C3D4E5F60001 /* TodoItemSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TD01FR01A1B2C3D4E5F60001 /* TodoItemSourceTests.swift */; };
+		TD02BF02A1B2C3D4E5F60002 /* TodoItemStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TD02FR02A1B2C3D4E5F60002 /* TodoItemStatusTests.swift */; };
+		TD03BF03A1B2C3D4E5F60003 /* TodoItemTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TD03FR03A1B2C3D4E5F60003 /* TodoItemTypeTests.swift */; };
+		TD04BF04A1B2C3D4E5F60004 /* TodoManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TD04FR04A1B2C3D4E5F60004 /* TodoManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -394,6 +398,10 @@
 		FD17BD85661AA22279D27BA4 /* CurriculumEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumEngineTests.swift; sourceTree = "<group>"; };
 		FEAAC040F0D5B735565FA7B1 /* AnalyticsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModelTests.swift; sourceTree = "<group>"; };
 		A3B2C1D4E5F64789 /* FOVContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FOVContextTests.swift; sourceTree = "<group>"; };
+		TD01FR01A1B2C3D4E5F60001 /* TodoItemSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemSourceTests.swift; sourceTree = "<group>"; };
+		TD02FR02A1B2C3D4E5F60002 /* TodoItemStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemStatusTests.swift; sourceTree = "<group>"; };
+		TD03FR03A1B2C3D4E5F60003 /* TodoItemTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemTypeTests.swift; sourceTree = "<group>"; };
+		TD04FR04A1B2C3D4E5F60004 /* TodoManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -660,6 +668,7 @@
 				02E786E3EAE24BBCB1C0FE23 /* Intents */,
 				F9618B2299E85D5C1DEE2259 /* Routing */,
 				39FC8779AE057ACCA9B0773D /* Services */,
+				TD00GP00A1B2C3D4E5F60000 /* Todo */,
 				FEAAC040F0D5B735565FA7B1 /* AnalyticsViewModelTests.swift */,
 				07CF7D30DE2EBE3285D2B6D6 /* AnthropicLLMServiceTests.swift */,
 				E0ABC1A1F855955D78CF05F9 /* APIKeyManagerTests.swift */,
@@ -688,6 +697,17 @@
 				99F01835E4A6FD36F8723764 /* PersistenceController.swift */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		TD00GP00A1B2C3D4E5F60000 /* Todo */ = {
+			isa = PBXGroup;
+			children = (
+				TD01FR01A1B2C3D4E5F60001 /* TodoItemSourceTests.swift */,
+				TD02FR02A1B2C3D4E5F60002 /* TodoItemStatusTests.swift */,
+				TD03FR03A1B2C3D4E5F60003 /* TodoItemTypeTests.swift */,
+				TD04FR04A1B2C3D4E5F60004 /* TodoManagerTests.swift */,
+			);
+			path = Todo;
 			sourceTree = "<group>";
 		};
 		4F115E0BA4EE0EE454ABDE15 /* Audio */ = {
@@ -1369,6 +1389,10 @@
 				C5E305ECAC6D723230AABEDC /* VoiceSessionIntegrationTests.swift in Sources */,
 				C3902188850609E414EB2A66 /* WatchSessionState.swift in Sources */,
 				06C5A936CA172811A9D0D671 /* WatchSessionStateTests.swift in Sources */,
+				TD01BF01A1B2C3D4E5F60001 /* TodoItemSourceTests.swift in Sources */,
+				TD02BF02A1B2C3D4E5F60002 /* TodoItemStatusTests.swift in Sources */,
+				TD03BF03A1B2C3D4E5F60003 /* TodoItemTypeTests.swift in Sources */,
+				TD04BF04A1B2C3D4E5F60004 /* TodoManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

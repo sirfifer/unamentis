@@ -85,23 +85,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Feature Flags (Unleash)
-# Initialize client for server-side feature flag evaluation
-feature_flags = None
+# UnleashClient will be initialized in on_startup() for async-friendly startup
+feature_flags: Optional["UnleashClient"] = None
+_unleash_available = False
+FEATURE_FLAG_URL = ""
+FEATURE_FLAG_KEY = ""
+
 try:
     from UnleashClient import UnleashClient
     FEATURE_FLAG_URL = os.environ.get("FEATURE_FLAG_URL", "http://localhost:3063/proxy")
     FEATURE_FLAG_KEY = os.environ.get("FEATURE_FLAG_KEY", "proxy-client-key")
-    feature_flags = UnleashClient(
-        url=FEATURE_FLAG_URL,
-        app_name="UnaMentis-Management-API",
-        custom_headers={"Authorization": FEATURE_FLAG_KEY}
-    )
-    feature_flags.initialize_client()
-    logger.info(f"Feature flags initialized from {FEATURE_FLAG_URL}")
+    _unleash_available = True
 except ImportError:
     logger.warning("UnleashClient not installed. Install with: pip install UnleashClient")
-except Exception as e:
-    logger.warning(f"Feature flags initialization failed: {e}")
 
 
 def is_flag_enabled(flag_name: str, default: bool = False) -> bool:
@@ -4423,6 +4419,20 @@ def create_app() -> web.Application:
     async def on_startup(app):
         await detect_existing_processes()
         state._load_curricula()  # Load all UMCF curricula on startup
+
+        # Initialize feature flags client (deferred from module load for async-friendly startup)
+        global feature_flags
+        if _unleash_available:
+            try:
+                feature_flags = UnleashClient(
+                    url=FEATURE_FLAG_URL,
+                    app_name="UnaMentis-Management-API",
+                    custom_headers={"Authorization": FEATURE_FLAG_KEY}
+                )
+                feature_flags.initialize_client()
+                logger.info(f"Feature flags initialized from {FEATURE_FLAG_URL}")
+            except Exception as e:
+                logger.warning(f"Feature flags initialization failed: {e}")
 
         # Initialize database connection for auth
         database_url = os.environ.get("DATABASE_URL")

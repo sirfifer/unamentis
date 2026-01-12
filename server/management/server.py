@@ -84,6 +84,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Feature Flags (Unleash)
+# Initialize client for server-side feature flag evaluation
+feature_flags = None
+try:
+    from UnleashClient import UnleashClient
+    FEATURE_FLAG_URL = os.environ.get("FEATURE_FLAG_URL", "http://localhost:3063/proxy")
+    FEATURE_FLAG_KEY = os.environ.get("FEATURE_FLAG_KEY", "proxy-client-key")
+    feature_flags = UnleashClient(
+        url=FEATURE_FLAG_URL,
+        app_name="UnaMentis-Management-API",
+        custom_headers={"Authorization": FEATURE_FLAG_KEY}
+    )
+    feature_flags.initialize_client()
+    logger.info(f"Feature flags initialized from {FEATURE_FLAG_URL}")
+except ImportError:
+    logger.warning("UnleashClient not installed. Install with: pip install UnleashClient")
+except Exception as e:
+    logger.warning(f"Feature flags initialization failed: {e}")
+
+
+def is_flag_enabled(flag_name: str, default: bool = False) -> bool:
+    """Check if a feature flag is enabled.
+
+    Args:
+        flag_name: Name of the feature flag (e.g., 'ops_maintenance_mode')
+        default: Default value if flag system is unavailable
+
+    Returns:
+        True if flag is enabled, False otherwise
+    """
+    if feature_flags is None:
+        return default
+    try:
+        return feature_flags.is_enabled(flag_name)
+    except Exception:
+        return default
+
 
 @dataclass
 class LogEntry:

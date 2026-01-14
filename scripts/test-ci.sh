@@ -241,6 +241,10 @@ main() {
     cmd="$cmd -resultBundlePath '$result_bundle'"
     cmd="$cmd CODE_SIGNING_ALLOWED=NO"
 
+    # Enable strict Swift concurrency checking to match CI behavior
+    # This catches Sendable violations that would fail in CI
+    cmd="$cmd SWIFT_STRICT_CONCURRENCY=complete"
+
     # Get beautify command
     local beautify_cmd
     beautify_cmd=$(get_xcbeautify_cmd)

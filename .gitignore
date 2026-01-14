@@ -32,6 +32,8 @@ fastlane/test_output
 # Code coverage
 *.gcda
 *.gcno
+.coverage
+htmlcov/
 
 # macOS
 .DS_Store

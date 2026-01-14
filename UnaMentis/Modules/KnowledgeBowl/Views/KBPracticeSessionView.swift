@@ -58,6 +58,10 @@ struct KBPracticeSessionView: View {
         }
         .confirmationDialog("Exit Practice?", isPresented: $showingExitConfirmation) {
             Button("Exit", role: .destructive) {
+                // End session early and save progress before dismissing
+                engine.endSessionEarly()
+                let summary = engine.generateSummary()
+                onComplete(summary)
                 dismiss()
             }
             Button("Continue Practicing", role: .cancel) { }
@@ -525,6 +529,17 @@ struct DomainBadge: View {
 struct DifficultyIndicator: View {
     let level: Int
 
+    private var difficultyLabel: String {
+        switch level {
+        case 1: return "Very Easy"
+        case 2: return "Easy"
+        case 3: return "Medium"
+        case 4: return "Hard"
+        case 5: return "Very Hard"
+        default: return "Difficulty \(level)"
+        }
+    }
+
     var body: some View {
         HStack(spacing: 4) {
             ForEach(1...5, id: \.self) { i in
@@ -533,6 +548,9 @@ struct DifficultyIndicator: View {
                     .frame(width: 8, height: 8)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Difficulty: \(difficultyLabel)")
+        .accessibilityValue("\(level) of 5")
     }
 }
 

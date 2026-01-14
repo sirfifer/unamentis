@@ -18,6 +18,19 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _validate_path_component(component: str) -> bool:
+    """Validate a path component is safe (no path traversal)."""
+    if not component:
+        return False
+    # Block path traversal attempts
+    if ".." in component or "/" in component or "\\" in component:
+        return False
+    # Block absolute paths on any platform
+    if os.path.isabs(component):
+        return False
+    return True
+
+
 class KBSegmentType(str, Enum):
     """Types of audio segments for a KB question."""
     QUESTION = "question"
@@ -557,12 +570,32 @@ class KBAudioManager:
         Returns:
             Audio bytes if found, None otherwise
         """
+        # Validate inputs to prevent path traversal attacks
+        if not _validate_path_component(module_id):
+            logger.warning(f"Invalid module_id rejected: {module_id!r}")
+            return None
+        if not _validate_path_component(question_id):
+            logger.warning(f"Invalid question_id rejected: {question_id!r}")
+            return None
+        if not _validate_path_component(segment_type):
+            logger.warning(f"Invalid segment_type rejected: {segment_type!r}")
+            return None
+
         if segment_type == "hint":
             filename = f"hint_{hint_index}.wav"
         else:
             filename = f"{segment_type}.wav"
 
         file_path = self.base_dir / module_id / question_id / filename
+
+        # Verify resolved path is still within base_dir
+        try:
+            resolved = file_path.resolve()
+            if not str(resolved).startswith(str(self.base_dir.resolve())):
+                logger.warning(f"Path traversal attempt blocked: {file_path}")
+                return None
+        except Exception:
+            return None
 
         if not file_path.exists():
             return None
@@ -683,7 +716,21 @@ class KBAudioManager:
 
     async def get_feedback_audio(self, feedback_type: str) -> Optional[bytes]:
         """Get feedback audio (correct/incorrect)."""
+        # Validate feedback_type to prevent path traversal attacks
+        if not _validate_path_component(feedback_type):
+            logger.warning(f"Invalid feedback_type rejected: {feedback_type!r}")
+            return None
+
         file_path = self.base_dir / "feedback" / f"{feedback_type}.wav"
+
+        # Verify resolved path is still within base_dir
+        try:
+            resolved = file_path.resolve()
+            if not str(resolved).startswith(str(self.base_dir.resolve())):
+                logger.warning(f"Path traversal attempt blocked: {file_path}")
+                return None
+        except Exception:
+            return None
 
         if not file_path.exists():
             return None

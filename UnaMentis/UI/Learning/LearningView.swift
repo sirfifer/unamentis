@@ -163,12 +163,15 @@ struct CurriculumContentView: View {
                 .listRowBackground(Color.clear)
             } else {
                 ForEach(curricula, id: \.id) { curriculum in
-                    CurriculumRowCompact(curriculum: curriculum)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            Self.logger.debug("Curriculum tapped: \(curriculum.name ?? "unknown")")
-                            selectedCurriculum = curriculum
-                        }
+                    Button {
+                        Self.logger.debug("Curriculum tapped: \(curriculum.name ?? "unknown")")
+                        selectedCurriculum = curriculum
+                    } label: {
+                        CurriculumRowCompact(curriculum: curriculum)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(curriculum.name ?? "Curriculum")
+                    .accessibilityHint("Double tap to select")
                 }
                 .onDelete(perform: deleteCurricula)
             }

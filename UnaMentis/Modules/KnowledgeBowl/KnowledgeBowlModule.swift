@@ -154,88 +154,7 @@ public enum KBDomain: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Question Model
-
-/// A Knowledge Bowl practice question
-struct KBQuestion: Codable, Identifiable, Hashable {
-    let id: String
-    let domainId: String
-    let subcategory: String
-    let questionText: String
-    let answerText: String
-    let acceptableAnswers: [String]
-    let difficulty: Int
-    let speedTargetSeconds: Double
-    let questionType: String
-    let hints: [String]
-    let explanation: String
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case domainId = "domain_id"
-        case subcategory
-        case questionText = "question_text"
-        case answerText = "answer_text"
-        case acceptableAnswers = "acceptable_answers"
-        case difficulty
-        case speedTargetSeconds = "speed_target_seconds"
-        case questionType = "question_type"
-        case hints
-        case explanation
-    }
-
-    func isCorrect(answer: String) -> Bool {
-        let normalizedAnswer = answer.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        return acceptableAnswers.contains { $0.lowercased() == normalizedAnswer }
-    }
-}
-
-/// Result of answering a question
-struct KBQuestionResult: Identifiable {
-    let id = UUID()
-    let question: KBQuestion
-    let userAnswer: String
-    let isCorrect: Bool
-    let responseTimeSeconds: Double
-    let wasWithinSpeedTarget: Bool
-
-    init(question: KBQuestion, userAnswer: String, responseTimeSeconds: Double) {
-        self.question = question
-        self.userAnswer = userAnswer
-        self.isCorrect = question.isCorrect(answer: userAnswer)
-        self.responseTimeSeconds = responseTimeSeconds
-        self.wasWithinSpeedTarget = responseTimeSeconds <= question.speedTargetSeconds
-    }
-}
-
-/// Summary of a practice session
-struct KBSessionSummary {
-    let totalQuestions: Int
-    let correctAnswers: Int
-    let averageResponseTime: Double
-    let questionsWithinSpeedTarget: Int
-    let domainBreakdown: [String: DomainScore]
-    let duration: TimeInterval
-
-    var accuracy: Double {
-        guard totalQuestions > 0 else { return 0 }
-        return Double(correctAnswers) / Double(totalQuestions)
-    }
-
-    var speedTargetRate: Double {
-        guard totalQuestions > 0 else { return 0 }
-        return Double(questionsWithinSpeedTarget) / Double(totalQuestions)
-    }
-
-    struct DomainScore {
-        let total: Int
-        let correct: Int
-        var accuracy: Double {
-            guard total > 0 else { return 0 }
-            return Double(correct) / Double(total)
-        }
-    }
-}
+// MARK: - Models are defined in Models/KBQuestion.swift with Sendable conformance
 
 // MARK: - Practice Engine
 
@@ -297,7 +216,7 @@ final class KBPracticeEngine: ObservableObject {
 
     func skipQuestion() {
         guard let question = currentQuestion, sessionState == .inProgress else { return }
-        let result = KBQuestionResult(question: question, userAnswer: "", responseTimeSeconds: 0)
+        let result = KBQuestionResult(question: question, userAnswer: "", responseTimeSeconds: 0, wasSkipped: true)
         results.append(result)
         sessionState = .showingAnswer(isCorrect: false)
     }
@@ -316,7 +235,9 @@ final class KBPracticeEngine: ObservableObject {
 
     func generateSummary() -> KBSessionSummary {
         let correctCount = results.filter { $0.isCorrect }.count
-        let avgTime = results.isEmpty ? 0 : results.map { $0.responseTimeSeconds }.reduce(0, +) / Double(results.count)
+        // Exclude skipped questions from average time calculation
+        let answeredResults = results.filter { !$0.wasSkipped }
+        let avgTime = answeredResults.isEmpty ? 0 : answeredResults.map { $0.responseTimeSeconds }.reduce(0, +) / Double(answeredResults.count)
         let speedTargetCount = results.filter { $0.wasWithinSpeedTarget }.count
 
         var domainBreakdown: [String: KBSessionSummary.DomainScore] = [:]

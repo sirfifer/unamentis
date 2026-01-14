@@ -51,13 +51,15 @@ struct KBQuestionResult: Identifiable, Sendable {
     let isCorrect: Bool
     let responseTimeSeconds: Double
     let wasWithinSpeedTarget: Bool
+    let wasSkipped: Bool
 
-    init(question: KBQuestion, userAnswer: String, responseTimeSeconds: Double) {
+    init(question: KBQuestion, userAnswer: String, responseTimeSeconds: Double, wasSkipped: Bool = false) {
         self.question = question
         self.userAnswer = userAnswer
-        self.isCorrect = question.isCorrect(answer: userAnswer)
+        self.isCorrect = wasSkipped ? false : question.isCorrect(answer: userAnswer)
         self.responseTimeSeconds = responseTimeSeconds
-        self.wasWithinSpeedTarget = responseTimeSeconds <= question.speedTargetSeconds
+        self.wasWithinSpeedTarget = wasSkipped ? false : responseTimeSeconds <= question.speedTargetSeconds
+        self.wasSkipped = wasSkipped
     }
 }
 

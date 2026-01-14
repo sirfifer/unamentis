@@ -406,6 +406,13 @@ async def handle_create_module(request: web.Request) -> web.Response:
                     status=400
                 )
 
+        # Validate module_id to prevent path traversal attacks
+        if not validate_module_id(data["id"]):
+            return web.json_response(
+                {"error": f"Invalid module_id: {data['id']}. Must be alphanumeric with hyphens and underscores only."},
+                status=400
+            )
+
         registry = load_modules_registry()
 
         # Check if module already exists

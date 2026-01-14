@@ -91,7 +91,8 @@ public final class ModuleRegistry: ObservableObject {
         do {
             let decoder = JSONDecoder()
             let modules = try decoder.decode([DownloadedModule].self, from: data)
-            downloadedModules = Dictionary(uniqueKeysWithValues: modules.map { ($0.id, $0) })
+            // Use uniquingKeysWith to handle any duplicate IDs gracefully (keep last)
+            downloadedModules = Dictionary(modules.map { ($0.id, $0) }, uniquingKeysWith: { _, new in new })
             Self.logger.info("Loaded \(modules.count) modules from storage")
         } catch {
             Self.logger.error("Failed to load modules: \(error)")

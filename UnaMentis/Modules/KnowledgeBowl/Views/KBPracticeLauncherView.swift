@@ -147,6 +147,7 @@ struct KBPracticeLauncherView: View {
     private func loadQuestions() async {
         isLoading = true
         errorMessage = nil
+        loadedQuestions = []  // Clear stale data before loading
 
         // Ensure questions are loaded in the service
         if !questionService.isLoaded {

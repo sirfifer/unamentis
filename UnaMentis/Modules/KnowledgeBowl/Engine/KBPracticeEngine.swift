@@ -104,7 +104,8 @@ final class KBPracticeEngine: ObservableObject {
         let result = KBQuestionResult(
             question: question,
             userAnswer: "",
-            responseTimeSeconds: 0
+            responseTimeSeconds: 0,
+            wasSkipped: true
         )
 
         results.append(result)
@@ -140,7 +141,9 @@ final class KBPracticeEngine: ObservableObject {
     /// Generate a summary of the completed session
     func generateSummary() -> KBSessionSummary {
         let correctCount = results.filter { $0.isCorrect }.count
-        let avgTime = results.isEmpty ? 0 : results.map { $0.responseTimeSeconds }.reduce(0, +) / Double(results.count)
+        // Exclude skipped questions from average time calculation
+        let answeredResults = results.filter { !$0.wasSkipped }
+        let avgTime = answeredResults.isEmpty ? 0 : answeredResults.map { $0.responseTimeSeconds }.reduce(0, +) / Double(answeredResults.count)
         let speedTargetCount = results.filter { $0.wasWithinSpeedTarget }.count
 
         var domainBreakdown: [String: KBSessionSummary.DomainScore] = [:]

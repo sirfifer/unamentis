@@ -54,6 +54,14 @@ final class KBStatsManager: ObservableObject {
         static let recentSessions = "kb_recent_sessions"
     }
 
+    /// Normalize a domain ID for consistent storage and lookup
+    private func normalizeDomainId(_ domainId: String) -> String {
+        domainId.lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            .replacingOccurrences(of: "&", with: "")
+            .replacingOccurrences(of: "--", with: "-")
+    }
+
     private init() {
         loadStats()
     }
@@ -73,12 +81,13 @@ final class KBStatsManager: ObservableObject {
             averageResponseTime = newTotalTime / Double(totalQuestionsAnswered)
         }
 
-        // Update domain stats
+        // Update domain stats (normalize IDs for consistent storage)
         for (domainId, score) in summary.domainBreakdown {
-            var stats = domainStats[domainId] ?? DomainStats()
+            let normalizedId = normalizeDomainId(domainId)
+            var stats = domainStats[normalizedId] ?? DomainStats()
             stats.totalAnswered += score.total
             stats.totalCorrect += score.correct
-            domainStats[domainId] = stats
+            domainStats[normalizedId] = stats
         }
 
         // Add session record
@@ -105,7 +114,8 @@ final class KBStatsManager: ObservableObject {
 
     /// Get mastery percentage for a specific domain
     func mastery(for domainId: String) -> Double {
-        guard let stats = domainStats[domainId], stats.totalAnswered > 0 else {
+        let normalizedId = normalizeDomainId(domainId)
+        guard let stats = domainStats[normalizedId], stats.totalAnswered > 0 else {
             return 0
         }
         return Double(stats.totalCorrect) / Double(stats.totalAnswered)
@@ -113,11 +123,7 @@ final class KBStatsManager: ObservableObject {
 
     /// Get mastery for a KBDomain
     func mastery(for domain: KBDomain) -> Double {
-        // Map domain to domainId used in questions
-        let domainId = domain.rawValue.lowercased().replacingOccurrences(of: " ", with: "-")
-            .replacingOccurrences(of: "&", with: "")
-            .replacingOccurrences(of: "--", with: "-")
-        return mastery(for: domainId)
+        mastery(for: domain.rawValue)
     }
 
     /// Reset all statistics

@@ -97,10 +97,7 @@ async fn get_template(
     Path(id): Path<String>,
 ) -> Result<Json<ServiceTemplate>, StatusCode> {
     let templates = state.templates.read().await;
-    templates
-        .get(&id)
-        .map(Json)
-        .ok_or(StatusCode::NOT_FOUND)
+    templates.get(&id).map(Json).ok_or(StatusCode::NOT_FOUND)
 }
 
 async fn create_template(
@@ -189,9 +186,10 @@ async fn create_instance(
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
     // Verify template exists
     let templates = state.templates.read().await;
-    let template = templates
-        .get(&config.template_id)
-        .ok_or((StatusCode::BAD_REQUEST, format!("Template '{}' not found", config.template_id)))?;
+    let template = templates.get(&config.template_id).ok_or((
+        StatusCode::BAD_REQUEST,
+        format!("Template '{}' not found", config.template_id),
+    ))?;
 
     // Determine port
     let port = config.port.unwrap_or(template.default_port);
@@ -219,33 +217,199 @@ async fn create_instance(
 }
 
 async fn start_instance(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
-    // This is a simplified version - full implementation would use UsmCore
+    let mut instances = state.instances.write().await;
+    let instance = instances
+        .get_mut(&id)
+        .ok_or((StatusCode::NOT_FOUND, format!("Instance '{}' not found", id)))?;
+
+    // Check if already running
+    if instance.status == ServiceStatus::Running {
+        return Ok(Json(serde_json::json!({
+            "status": "ok",
+            "message": format!("Instance {} is already running", id),
+            "pid": instance.pid
+        })));
+    }
+
+    // Get template for start command
+    let templates = state.templates.read().await;
+    let template = templates.get(&instance.template_id).ok_or((
+        StatusCode::BAD_REQUEST,
+        format!("Template '{}' not found", instance.template_id),
+    ))?;
+
+    // Build and execute start command
+    let command = template.build_start_command(instance);
+    let pid = state
+        .monitor
+        .start_process(&command, instance.working_dir.as_deref())
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    // Update instance state
+    instance.status = ServiceStatus::Running;
+    instance.pid = Some(pid);
+    instance.started_at = Some(chrono::Utc::now());
+
+    // Broadcast event
+    state
+        .event_bus
+        .send(crate::events::ServiceEvent::StatusChanged {
+            instance_id: id.clone(),
+            status: ServiceStatus::Running,
+            pid: Some(pid),
+        });
+
+    info!(instance_id = %id, pid = %pid, "Instance started via HTTP API");
+
     Ok(Json(serde_json::json!({
         "status": "ok",
-        "message": format!("Starting instance {}", id)
+        "message": format!("Started instance {}", id),
+        "pid": pid
     })))
 }
 
 async fn stop_instance(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    let mut instances = state.instances.write().await;
+    let instance = instances
+        .get_mut(&id)
+        .ok_or((StatusCode::NOT_FOUND, format!("Instance '{}' not found", id)))?;
+
+    // Check if already stopped
+    if instance.status != ServiceStatus::Running {
+        return Ok(Json(serde_json::json!({
+            "status": "ok",
+            "message": format!("Instance {} is already stopped", id)
+        })));
+    }
+
+    // Get template for optional custom stop command
+    let templates = state.templates.read().await;
+    let template = templates.get(&instance.template_id);
+
+    // Stop the process
+    if let Some(pid) = instance.pid {
+        if let Some(tmpl) = template {
+            if let Some(stop_cmd) = &tmpl.stop_command {
+                let cmd = stop_cmd.replace("{pid}", &pid.to_string());
+                state
+                    .monitor
+                    .execute_command(&cmd)
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            } else {
+                state
+                    .monitor
+                    .kill_process(pid)
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            }
+        } else {
+            state
+                .monitor
+                .kill_process(pid)
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        }
+    }
+
+    // Update instance state
+    instance.status = ServiceStatus::Stopped;
+    instance.pid = None;
+    instance.started_at = None;
+
+    // Broadcast event
+    state
+        .event_bus
+        .send(crate::events::ServiceEvent::StatusChanged {
+            instance_id: id.clone(),
+            status: ServiceStatus::Stopped,
+            pid: None,
+        });
+
+    info!(instance_id = %id, "Instance stopped via HTTP API");
+
     Ok(Json(serde_json::json!({
         "status": "ok",
-        "message": format!("Stopping instance {}", id)
+        "message": format!("Stopped instance {}", id)
     })))
 }
 
 async fn restart_instance(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    // Stop first
+    let mut instances = state.instances.write().await;
+    let instance = instances
+        .get_mut(&id)
+        .ok_or((StatusCode::NOT_FOUND, format!("Instance '{}' not found", id)))?;
+
+    // Get template
+    let templates = state.templates.read().await;
+    let template = templates.get(&instance.template_id).ok_or((
+        StatusCode::BAD_REQUEST,
+        format!("Template '{}' not found", instance.template_id),
+    ))?;
+
+    // Stop if running
+    if instance.status == ServiceStatus::Running {
+        if let Some(pid) = instance.pid {
+            if let Some(stop_cmd) = &template.stop_command {
+                let cmd = stop_cmd.replace("{pid}", &pid.to_string());
+                let _ = state.monitor.execute_command(&cmd);
+            } else {
+                let _ = state.monitor.kill_process(pid);
+            }
+        }
+        instance.status = ServiceStatus::Stopped;
+        instance.pid = None;
+    }
+
+    // Brief delay before restart
+    drop(templates);
+    drop(instances);
+    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+
+    // Start again
+    let mut instances = state.instances.write().await;
+    let instance = instances.get_mut(&id).ok_or((
+        StatusCode::NOT_FOUND,
+        format!("Instance '{}' not found after stop", id),
+    ))?;
+
+    let templates = state.templates.read().await;
+    let template = templates.get(&instance.template_id).ok_or((
+        StatusCode::BAD_REQUEST,
+        format!("Template '{}' not found", instance.template_id),
+    ))?;
+
+    let command = template.build_start_command(instance);
+    let pid = state
+        .monitor
+        .start_process(&command, instance.working_dir.as_deref())
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    instance.status = ServiceStatus::Running;
+    instance.pid = Some(pid);
+    instance.started_at = Some(chrono::Utc::now());
+
+    state
+        .event_bus
+        .send(crate::events::ServiceEvent::StatusChanged {
+            instance_id: id.clone(),
+            status: ServiceStatus::Running,
+            pid: Some(pid),
+        });
+
+    info!(instance_id = %id, pid = %pid, "Instance restarted via HTTP API");
+
     Ok(Json(serde_json::json!({
         "status": "ok",
-        "message": format!("Restarting instance {}", id)
+        "message": format!("Restarted instance {}", id),
+        "pid": pid
     })))
 }
 
@@ -281,10 +445,7 @@ async fn websocket_handler(
     ws.on_upgrade(move |socket| handle_websocket(socket, state))
 }
 
-async fn handle_websocket(
-    mut socket: axum::extract::ws::WebSocket,
-    state: AppState,
-) {
+async fn handle_websocket(mut socket: axum::extract::ws::WebSocket, state: AppState) {
     use axum::extract::ws::Message;
 
     // Send initial state
@@ -295,7 +456,11 @@ async fn handle_websocket(
     });
     drop(instances);
 
-    if socket.send(Message::Text(initial.to_string())).await.is_err() {
+    if socket
+        .send(Message::Text(initial.to_string()))
+        .await
+        .is_err()
+    {
         return;
     }
 

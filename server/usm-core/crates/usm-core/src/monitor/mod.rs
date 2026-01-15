@@ -12,7 +12,6 @@ pub use backend::ProcessMonitor;
 
 use std::sync::Arc;
 
-
 /// Create the appropriate process monitor for the current platform
 pub fn create_monitor() -> Arc<dyn ProcessMonitor> {
     #[cfg(target_os = "macos")]

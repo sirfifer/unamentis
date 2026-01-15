@@ -79,12 +79,17 @@ impl SystemMetrics {
 
     /// Get available memory in bytes
     pub fn memory_available_bytes(&self) -> u64 {
-        self.memory_total_bytes.saturating_sub(self.memory_used_bytes)
+        self.memory_total_bytes
+            .saturating_sub(self.memory_used_bytes)
     }
 
     /// Get load average as tuple (1m, 5m, 15m)
     pub fn load_average_tuple(&self) -> (f64, f64, f64) {
-        (self.load_average.one, self.load_average.five, self.load_average.fifteen)
+        (
+            self.load_average.one,
+            self.load_average.five,
+            self.load_average.fifteen,
+        )
     }
 }
 
@@ -165,7 +170,12 @@ mod tests {
                 open_files: 0,
                 uptime_seconds: secs,
             };
-            assert_eq!(metrics.uptime_string(), expected, "Failed for {} seconds", secs);
+            assert_eq!(
+                metrics.uptime_string(),
+                expected,
+                "Failed for {} seconds",
+                secs
+            );
         }
     }
 }

@@ -58,6 +58,9 @@ venv/
 *.pyc
 __pycache__/
 
+# Hypothesis testing cache
+.hypothesis/
+
 # ML Models (too large for git)
 # Use explicit path to avoid matching Swift code directories like Routing/Models/
 /models/

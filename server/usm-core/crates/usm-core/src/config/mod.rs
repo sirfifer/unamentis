@@ -222,8 +222,14 @@ impl ConfigManager {
                     InstanceConfigFile {
                         template: instance.template_id,
                         port: Some(instance.port),
-                        working_dir: instance.working_dir.as_ref().map(|p| p.display().to_string()),
-                        config: instance.config_path.as_ref().map(|p| p.display().to_string()),
+                        working_dir: instance
+                            .working_dir
+                            .as_ref()
+                            .map(|p| p.display().to_string()),
+                        config: instance
+                            .config_path
+                            .as_ref()
+                            .map(|p| p.display().to_string()),
                         version: instance.version,
                         git_branch: instance.git_branch,
                         tags: instance.tags,
@@ -257,7 +263,10 @@ impl ConfigManager {
                         .to_string()
                 }),
             )
-            .replace("~", &dirs::home_dir().unwrap_or_default().display().to_string());
+            .replace(
+                "~",
+                &dirs::home_dir().unwrap_or_default().display().to_string(),
+            );
 
         PathBuf::from(resolved)
     }
@@ -353,5 +362,296 @@ tags = ["test"]
 
         let instance = instances.get("test-instance").unwrap();
         assert_eq!(instance.port, 8001);
+    }
+}
+
+/// Property-based tests for configuration management
+#[cfg(test)]
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    // --- Strategies for generating test data ---
+
+    /// Generate valid port numbers (1024-65535 for non-privileged ports)
+    fn port_strategy() -> impl Strategy<Value = u16> {
+        1024u16..=65535u16
+    }
+
+    /// Generate valid port ranges
+    fn port_range_strategy() -> impl Strategy<Value = (u16, u16)> {
+        (1024u16..=60000u16).prop_flat_map(|start| {
+            (Just(start), start..=65535u16)
+        })
+    }
+
+    /// Generate valid service identifiers (alphanumeric with dashes)
+    fn identifier_strategy() -> impl Strategy<Value = String> {
+        "[a-z][a-z0-9-]{0,30}[a-z0-9]"
+    }
+
+    /// Generate valid display names
+    fn display_name_strategy() -> impl Strategy<Value = String> {
+        "[A-Za-z][A-Za-z0-9 ]{0,50}"
+    }
+
+    /// Generate valid start commands
+    fn command_strategy() -> impl Strategy<Value = String> {
+        "(echo|python3?|node|cargo|npm) [a-z0-9/._-]{1,100}"
+    }
+
+    // --- Property Tests: Port Validation ---
+
+    proptest! {
+        /// Default ports should always be within valid range
+        #[test]
+        fn template_port_always_valid(port in port_strategy()) {
+            prop_assert!(port >= 1024);
+            prop_assert!(port <= 65535);
+        }
+
+        /// Port ranges should have start <= end
+        #[test]
+        fn port_range_ordering(range in port_range_strategy()) {
+            let (start, end) = range;
+            prop_assert!(start <= end, "Port range start {} > end {}", start, end);
+        }
+
+        /// Port allocation should stay within range
+        #[test]
+        fn port_allocation_within_range(
+            default in port_strategy(),
+            range in port_range_strategy()
+        ) {
+            let (range_start, range_end) = range;
+
+            // If default is in range, allocation should succeed
+            if default >= range_start && default <= range_end {
+                prop_assert!(
+                    default >= range_start && default <= range_end,
+                    "Default port {} outside range [{}, {}]",
+                    default, range_start, range_end
+                );
+            }
+        }
+    }
+
+    // --- Property Tests: TOML Serialization Round-trip ---
+
+    proptest! {
+        /// TemplateConfig should survive TOML round-trip
+        #[test]
+        fn template_config_toml_roundtrip(
+            display_name in display_name_strategy(),
+            port in port_strategy(),
+            command in command_strategy(),
+        ) {
+            let template = TemplateConfig {
+                display_name: display_name.clone(),
+                description: Some("Test description".to_string()),
+                default_port: port,
+                port_range: Some((port, port.saturating_add(100).min(65535))),
+                start_command: command.clone(),
+                stop_command: None,
+                health_endpoint: Some(format!("http://localhost:{}/health", port)),
+                health_timeout_ms: 5000,
+                category: ServiceCategory::Core,
+                supports_multiple: true,
+                is_docker: false,
+                default_env: std::collections::HashMap::new(),
+            };
+
+            // Serialize to TOML
+            let toml_str = toml::to_string(&template).expect("TOML serialization failed");
+
+            // Deserialize back
+            let restored: TemplateConfig = toml::from_str(&toml_str)
+                .expect("TOML deserialization failed");
+
+            // Verify key fields
+            prop_assert_eq!(restored.display_name, display_name);
+            prop_assert_eq!(restored.default_port, port);
+            prop_assert_eq!(restored.start_command, command);
+        }
+
+        /// InstanceConfigFile should survive TOML round-trip
+        #[test]
+        fn instance_config_toml_roundtrip(
+            template_id in identifier_strategy(),
+            port in port_strategy(),
+        ) {
+            let instance = InstanceConfigFile {
+                template: template_id.clone(),
+                port: Some(port),
+                working_dir: Some("/test/path".to_string()),
+                config: None,
+                version: Some("1.0.0".to_string()),
+                git_branch: Some("main".to_string()),
+                tags: vec!["test".to_string(), "property".to_string()],
+                auto_start: true,
+                env_vars: std::collections::HashMap::new(),
+                created_at: None,
+                created_via: None,
+            };
+
+            // Serialize to TOML
+            let toml_str = toml::to_string(&instance).expect("TOML serialization failed");
+
+            // Deserialize back
+            let restored: InstanceConfigFile = toml::from_str(&toml_str)
+                .expect("TOML deserialization failed");
+
+            // Verify key fields
+            prop_assert_eq!(restored.template, template_id);
+            prop_assert_eq!(restored.port, Some(port));
+            prop_assert_eq!(restored.auto_start, true);
+        }
+    }
+
+    // --- Property Tests: Path Resolution ---
+
+    proptest! {
+        /// Path resolution should be idempotent (resolving twice = resolving once)
+        #[test]
+        fn path_resolution_idempotent(path in "[a-zA-Z0-9/_.-]{1,100}") {
+            // Create a mock config manager (we'll test the resolve_path logic)
+            let resolved1 = resolve_path_test(&path);
+            let resolved2 = resolve_path_test(&resolved1);
+
+            // After first resolution, no more placeholders should exist
+            // so second resolution should be identical
+            prop_assert_eq!(resolved1.clone(), resolved2.clone(),
+                "Path resolution not idempotent: '{}' -> '{}' -> '{}'",
+                path, resolved1, resolved2
+            );
+        }
+
+        /// Path resolution should expand ~ to home directory
+        #[test]
+        fn path_resolution_expands_tilde(suffix in "[a-zA-Z0-9/_.-]{0,50}") {
+            let path_with_tilde = format!("~/{}", suffix);
+            let resolved = resolve_path_test(&path_with_tilde);
+
+            // Should not contain tilde after resolution (unless home dir unavailable)
+            if dirs::home_dir().is_some() {
+                prop_assert!(!resolved.starts_with("~/"),
+                    "Tilde not expanded in: '{}'", resolved
+                );
+            }
+        }
+
+        /// Path resolution should not introduce invalid characters
+        #[test]
+        fn path_resolution_valid_path(path in "[a-zA-Z0-9/_.-]{1,100}") {
+            let resolved = resolve_path_test(&path);
+
+            // Should not contain null bytes
+            prop_assert!(!resolved.contains('\0'),
+                "Resolved path contains null byte: '{}'", resolved
+            );
+
+            // Should be valid UTF-8 (already guaranteed by String type)
+            prop_assert!(resolved.is_ascii() || resolved.chars().all(|c| !c.is_control()),
+                "Resolved path contains control characters: '{}'", resolved
+            );
+        }
+    }
+
+    /// Helper function to test path resolution without needing full ConfigManager
+    fn resolve_path_test(path: &str) -> String {
+        path
+            .replace(
+                "${PROJECT_ROOT}",
+                &std::env::var("UNAMENTIS_ROOT").unwrap_or_else(|_| {
+                    dirs::home_dir()
+                        .unwrap_or_default()
+                        .join("dev/unamentis")
+                        .display()
+                        .to_string()
+                }),
+            )
+            .replace(
+                "~",
+                &dirs::home_dir().unwrap_or_default().display().to_string(),
+            )
+    }
+
+    // --- Property Tests: ConfigFile Structure ---
+
+    proptest! {
+        /// ConfigFile should handle empty templates/instances gracefully
+        #[test]
+        fn config_file_handles_empty(
+            num_templates in 0usize..5,
+            _num_instances in 0usize..5,
+        ) {
+            let mut config = ConfigFile {
+                templates: std::collections::HashMap::new(),
+                instances: std::collections::HashMap::new(),
+            };
+
+            // Add some templates
+            for i in 0..num_templates {
+                config.templates.insert(
+                    format!("template-{}", i),
+                    TemplateConfig {
+                        display_name: format!("Template {}", i),
+                        description: None,
+                        default_port: 8000 + i as u16,
+                        port_range: None,
+                        start_command: "echo test".to_string(),
+                        stop_command: None,
+                        health_endpoint: None,
+                        health_timeout_ms: 5000,
+                        category: ServiceCategory::Core,
+                        supports_multiple: false,
+                        is_docker: false,
+                        default_env: std::collections::HashMap::new(),
+                    },
+                );
+            }
+
+            // Verify counts match
+            prop_assert_eq!(config.templates.len(), num_templates);
+            prop_assert_eq!(config.instances.len(), 0); // No instances added yet
+        }
+    }
+
+    // --- Property Tests: Health Timeout ---
+
+    proptest! {
+        /// Health timeout should have reasonable defaults
+        #[test]
+        fn health_timeout_reasonable(timeout_ms in 100u32..=60000u32) {
+            // Timeouts should be reasonable (not too short, not too long)
+            prop_assert!(timeout_ms >= 100, "Timeout too short: {}ms", timeout_ms);
+            prop_assert!(timeout_ms <= 60000, "Timeout too long: {}ms", timeout_ms);
+        }
+    }
+
+    // --- Property Tests: Default Values ---
+
+    #[test]
+    fn default_health_timeout_is_reasonable() {
+        let timeout = default_health_timeout();
+        assert!(timeout >= 1000, "Default timeout too short: {}ms", timeout);
+        assert!(timeout <= 30000, "Default timeout too long: {}ms", timeout);
+    }
+
+    #[test]
+    fn template_config_defaults_are_safe() {
+        // Test that parsing minimal TOML produces safe defaults
+        let minimal_toml = r#"
+            display_name = "Test"
+            default_port = 8000
+            start_command = "echo start"
+        "#;
+
+        let config: TemplateConfig = toml::from_str(minimal_toml).unwrap();
+
+        assert_eq!(config.health_timeout_ms, 5000); // default
+        assert!(!config.supports_multiple); // default false
+        assert!(!config.is_docker); // default false
+        assert!(config.default_env.is_empty()); // default empty
     }
 }

@@ -105,9 +105,9 @@ impl ServiceTemplate {
 
     /// Build the health endpoint URL for a specific instance
     pub fn build_health_endpoint(&self, instance: &ServiceInstance) -> Option<String> {
-        self.health_endpoint.as_ref().map(|endpoint| {
-            endpoint.replace("{port}", &instance.port.to_string())
-        })
+        self.health_endpoint
+            .as_ref()
+            .map(|endpoint| endpoint.replace("{port}", &instance.port.to_string()))
     }
 
     /// Check if a port is within the valid range for this template
@@ -120,15 +120,11 @@ impl ServiceTemplate {
 
     /// Get the next available port (simple increment from default)
     pub fn next_available_port(&self, used_ports: &[u16]) -> Option<u16> {
-        let (min, max) = self.port_range.unwrap_or((self.default_port, self.default_port + 100));
+        let (min, max) = self
+            .port_range
+            .unwrap_or((self.default_port, self.default_port + 100));
 
-        for port in min..=max {
-            if !used_ports.contains(&port) {
-                return Some(port);
-            }
-        }
-
-        None
+        (min..=max).find(|port| !used_ports.contains(port))
     }
 }
 
@@ -144,7 +140,8 @@ mod tests {
             description: Some("A test service".to_string()),
             default_port: 8000,
             port_range: Some((8000, 8099)),
-            start_command: "python3 {working_dir}/server.py --port {port} --config {config}".to_string(),
+            start_command: "python3 {working_dir}/server.py --port {port} --config {config}"
+                .to_string(),
             stop_command: Some("kill {pid}".to_string()),
             health_endpoint: Some("http://localhost:{port}/health".to_string()),
             health_timeout_ms: 5000,
@@ -220,6 +217,9 @@ mod tests {
         assert_eq!(template.next_available_port(&[8000]), Some(8001));
 
         // Multiple ports used
-        assert_eq!(template.next_available_port(&[8000, 8001, 8002]), Some(8003));
+        assert_eq!(
+            template.next_available_port(&[8000, 8001, 8002]),
+            Some(8003)
+        );
     }
 }

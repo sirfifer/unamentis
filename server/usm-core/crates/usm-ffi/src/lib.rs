@@ -80,9 +80,7 @@ pub unsafe extern "C" fn usm_create(config_path: *const c_char) -> *mut UsmHandl
         Err(_) => return ptr::null_mut(),
     };
 
-    let core = runtime.block_on(async {
-        UsmCore::new(Path::new(path_str)).await
-    });
+    let core = runtime.block_on(async { UsmCore::new(Path::new(path_str)).await });
 
     match core {
         Ok(c) => {
@@ -91,7 +89,7 @@ pub unsafe extern "C" fn usm_create(config_path: *const c_char) -> *mut UsmHandl
                 runtime,
             });
             Box::into_raw(handle)
-        }
+        },
         Err(_) => ptr::null_mut(),
     }
 }

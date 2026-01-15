@@ -45,7 +45,10 @@ impl UsmCore {
     #[instrument(skip_all, fields(config_path = %config_path.as_ref().display()))]
     pub async fn new(config_path: impl AsRef<Path>) -> Result<Self> {
         let config_path = config_path.as_ref();
-        info!("Initializing USM Core from config: {}", config_path.display());
+        info!(
+            "Initializing USM Core from config: {}",
+            config_path.display()
+        );
 
         // Initialize event bus first (other components will subscribe)
         let event_bus = Arc::new(EventBus::new(1024));
@@ -151,10 +154,7 @@ impl UsmCore {
 
     /// Create a new instance from a template
     #[instrument(skip(self, config), fields(instance_id = %config.instance_id, template_id = %config.template_id))]
-    pub async fn create_instance(
-        &self,
-        config: service::InstanceConfig,
-    ) -> Result<String> {
+    pub async fn create_instance(&self, config: service::InstanceConfig) -> Result<String> {
         // Verify template exists
         let templates = self.templates.read().await;
         let template = templates
@@ -230,7 +230,9 @@ impl UsmCore {
 
         // Build and execute start command
         let command = template.build_start_command(instance);
-        let pid = self.monitor.start_process(&command, instance.working_dir.as_deref())?;
+        let pid = self
+            .monitor
+            .start_process(&command, instance.working_dir.as_deref())?;
 
         // Update instance state
         instance.status = service::ServiceStatus::Running;
@@ -376,7 +378,9 @@ impl UsmCore {
     pub async fn get_instance_metrics(&self, id: &str) -> Option<metrics::InstanceMetrics> {
         let instances = self.instances.read().await;
         let instance = instances.get(id)?;
-        instance.pid.and_then(|pid| self.monitor.get_process_metrics(pid))
+        instance
+            .pid
+            .and_then(|pid| self.monitor.get_process_metrics(pid))
     }
 }
 

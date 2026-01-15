@@ -144,9 +144,7 @@ impl ProcessMonitor for MacOSMonitor {
     fn execute_command(&self, command: &str) -> Result<()> {
         debug!(command = %command, "Executing command");
 
-        let status = Command::new("/bin/zsh")
-            .args(["-c", command])
-            .status()?;
+        let status = Command::new("/bin/zsh").args(["-c", command]).status()?;
 
         if !status.success() {
             anyhow::bail!("Command failed with status: {:?}", status.code());

@@ -86,7 +86,7 @@ mod tests {
                 assert_eq!(instance_id, "test");
                 assert_eq!(status, ServiceStatus::Running);
                 assert_eq!(pid, Some(12345));
-            }
+            },
             _ => panic!("Wrong event type"),
         }
     }

@@ -143,14 +143,17 @@ async fn main() -> anyhow::Result<()> {
         Commands::Server { port } => {
             info!(port = port, "Starting USM Core server");
             core.start_server(port).await?;
-        }
+        },
 
         Commands::Templates => {
             let templates = core.list_templates().await;
             if templates.is_empty() {
                 println!("No templates registered.");
             } else {
-                println!("{:<20} {:<30} {:<10} {:<10}", "ID", "Name", "Port", "Multiple");
+                println!(
+                    "{:<20} {:<30} {:<10} {:<10}",
+                    "ID", "Name", "Port", "Multiple"
+                );
                 println!("{}", "-".repeat(70));
                 for t in templates {
                     println!(
@@ -162,9 +165,13 @@ async fn main() -> anyhow::Result<()> {
                     );
                 }
             }
-        }
+        },
 
-        Commands::Instances { template, tag, status } => {
+        Commands::Instances {
+            template,
+            tag,
+            status,
+        } => {
             let instances = core.list_instances(template.as_deref()).await;
 
             let filtered: Vec<_> = instances
@@ -193,7 +200,10 @@ async fn main() -> anyhow::Result<()> {
             if filtered.is_empty() {
                 println!("No instances found.");
             } else {
-                println!("{:<25} {:<20} {:<8} {:<10} {:<20}", "ID", "Template", "Port", "Status", "Tags");
+                println!(
+                    "{:<25} {:<20} {:<8} {:<10} {:<20}",
+                    "ID", "Template", "Port", "Status", "Tags"
+                );
                 println!("{}", "-".repeat(85));
                 for i in filtered {
                     let status = match i.status {
@@ -212,25 +222,25 @@ async fn main() -> anyhow::Result<()> {
                     );
                 }
             }
-        }
+        },
 
         Commands::Start { instance_id } => {
             info!(instance = %instance_id, "Starting instance");
             core.start_instance(&instance_id).await?;
             println!("Started instance: {}", instance_id);
-        }
+        },
 
         Commands::Stop { instance_id } => {
             info!(instance = %instance_id, "Stopping instance");
             core.stop_instance(&instance_id).await?;
             println!("Stopped instance: {}", instance_id);
-        }
+        },
 
         Commands::Restart { instance_id } => {
             info!(instance = %instance_id, "Restarting instance");
             core.restart_instance(&instance_id).await?;
             println!("Restarted instance: {}", instance_id);
-        }
+        },
 
         Commands::Metrics { instance_id } => {
             if let Some(id) = instance_id {
@@ -246,18 +256,24 @@ async fn main() -> anyhow::Result<()> {
                 let metrics = core.get_system_metrics();
                 println!("System Metrics:");
                 println!("  CPU: {:.1}%", metrics.cpu_percent);
-                println!("  Memory: {:.2} GB / {:.2} GB ({:.1}%)",
+                println!(
+                    "  Memory: {:.2} GB / {:.2} GB ({:.1}%)",
                     metrics.memory_used_gb(),
                     metrics.memory_total_gb(),
                     metrics.memory_percent
                 );
             }
-        }
+        },
 
-        Commands::Create { template, id, port, tags, auto_start } => {
-            let instance_id = id.unwrap_or_else(|| {
-                format!("{}-{}", template, chrono::Utc::now().timestamp())
-            });
+        Commands::Create {
+            template,
+            id,
+            port,
+            tags,
+            auto_start,
+        } => {
+            let instance_id =
+                id.unwrap_or_else(|| format!("{}-{}", template, chrono::Utc::now().timestamp()));
 
             let tag_vec: Vec<String> = tags
                 .map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
@@ -278,7 +294,7 @@ async fn main() -> anyhow::Result<()> {
 
             let created_id = core.create_instance(config).await?;
             println!("Created instance: {}", created_id);
-        }
+        },
 
         Commands::Remove { instance_id, force } => {
             if force {
@@ -287,7 +303,7 @@ async fn main() -> anyhow::Result<()> {
             }
             core.remove_instance(&instance_id).await?;
             println!("Removed instance: {}", instance_id);
-        }
+        },
 
         Commands::StartAll { tag } => {
             let tags: Vec<&str> = tag.as_deref().map(|t| vec![t]).unwrap_or_default();
@@ -295,7 +311,7 @@ async fn main() -> anyhow::Result<()> {
             let success = results.iter().filter(|r| r.is_ok()).count();
             let failed = results.len() - success;
             println!("Started {} instances ({} failed)", success, failed);
-        }
+        },
 
         Commands::StopAll { tag } => {
             let tags: Vec<&str> = tag.as_deref().map(|t| vec![t]).unwrap_or_default();
@@ -303,7 +319,7 @@ async fn main() -> anyhow::Result<()> {
             let success = results.iter().filter(|r| r.is_ok()).count();
             let failed = results.len() - success;
             println!("Stopped {} instances ({} failed)", success, failed);
-        }
+        },
     }
 
     Ok(())

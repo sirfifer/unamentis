@@ -149,7 +149,9 @@ def validate_path_in_directory(file_path: Path, base_directory: Path) -> Path:
     """
     # Resolve both paths to absolute paths, following symlinks
     resolved_base = base_directory.resolve()
-    resolved_path = (base_directory / file_path).resolve()
+    # CodeQL: This line is part of the path validation itself; file_path is validated
+    # by the subsequent relative_to() check which raises ValueError if path escapes
+    resolved_path = (base_directory / file_path).resolve()  # lgtm[py/path-injection]
 
     # Check if the resolved path is within the base directory
     try:
@@ -2628,7 +2630,9 @@ async def handle_stream_topic_audio(request: web.Request) -> web.StreamResponse:
 
             except Exception as e:
                 logger.error(f"    TTS request failed: {e}")
-                await response.write(f"ERR:{str(e)}\n".encode('utf-8'))
+                # Sanitize error to avoid exposing stack traces/internals
+                error_type = type(e).__name__
+                await response.write(f"ERR:{error_type}\n".encode('utf-8'))
 
         # Send end marker
         await response.write(b"END\n")
@@ -2855,7 +2859,8 @@ async def handle_unarchive_curriculum(request: web.Request) -> web.Response:
         except ValueError:
             return web.json_response({"error": "Invalid file name"}, status=400)
 
-        if not archived_path.exists():
+        # archived_path was validated by validate_path_in_directory above
+        if not archived_path.exists():  # lgtm[py/path-injection]
             return web.json_response({"error": "Archived curriculum not found"}, status=404)
 
         # Move back to active directory
@@ -2869,7 +2874,8 @@ async def handle_unarchive_curriculum(request: web.Request) -> web.Response:
             counter += 1
 
         import shutil
-        shutil.move(str(archived_path), str(active_path))
+        # Path validated above via validate_path_in_directory
+        shutil.move(str(archived_path), str(active_path))  # lgtm[py/path-injection]
         logger.info(f"Unarchived curriculum: {archived_path} -> {active_path}")
 
         # Reload the curriculum
@@ -2917,11 +2923,12 @@ async def handle_delete_archived_curriculum(request: web.Request) -> web.Respons
         except ValueError:
             return web.json_response({"error": "Invalid file name"}, status=400)
 
-        if not archived_path.exists():
+        # archived_path was validated by validate_path_in_directory above
+        if not archived_path.exists():  # lgtm[py/path-injection]
             return web.json_response({"error": "Archived curriculum not found"}, status=404)
 
-        # Read info for response
-        with open(archived_path, 'r', encoding='utf-8') as f:
+        # Read info for response (path validated above)
+        with open(archived_path, 'r', encoding='utf-8') as f:  # lgtm[py/path-injection]
             umcf = json.load(f)
         curriculum_id = umcf.get("id", {}).get("value", archived_path.stem)
         title = umcf.get("title", "Untitled")
@@ -2937,8 +2944,8 @@ async def handle_delete_archived_curriculum(request: web.Request) -> web.Respons
                 }
             })
 
-        # Delete the file
-        archived_path.unlink()
+        # Delete the file (path validated above)
+        archived_path.unlink()  # lgtm[py/path-injection]
         logger.info(f"Permanently deleted archived curriculum: {archived_path}")
 
         return web.json_response({
@@ -2964,14 +2971,15 @@ async def handle_save_curriculum(request: web.Request) -> web.Response:
 
         # Determine file path
         if curriculum_id in state.curriculums:
+            # Trusted internal path from loaded curriculum state
             file_path = Path(state.curriculums[curriculum_id].file_path)
         else:
-            # New curriculum - create filename from title
+            # New curriculum: filename sanitized to alphanumeric, hyphen, underscore only
             safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in data["title"].lower())
             file_path = PROJECT_ROOT / "curriculum" / "examples" / "realistic" / f"{safe_name}.umcf"
 
-        # Write the file
-        with open(file_path, 'w', encoding='utf-8') as f:
+        # Write the file (path is either trusted or sanitized above)
+        with open(file_path, 'w', encoding='utf-8') as f:  # lgtm[py/path-injection]
             json.dump(data, f, indent=2)
 
         # Reload the curriculum
@@ -3048,25 +3056,25 @@ async def handle_import_curriculum(request: web.Request) -> web.Response:
         title = metadata.get("title", "Imported Curriculum")
         curriculum_id = umcf_data.get("id", {}).get("value", "")
 
-        # Create safe filename
+        # Create safe filename (sanitized to alphanumeric, hyphen, underscore only)
         safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in title.lower())
         if not safe_name:
             safe_name = f"imported-{int(time.time())}"
 
-        # Determine destination path
+        # Determine destination path (safe_name is sanitized)
         curriculum_dir = PROJECT_ROOT / "curriculum" / "examples" / "realistic"
         curriculum_dir.mkdir(parents=True, exist_ok=True)
 
         file_path = curriculum_dir / f"{safe_name}.umcf"
 
-        # Handle duplicate filenames
+        # Handle duplicate filenames (safe_name sanitized above)
         counter = 1
-        while file_path.exists():
+        while file_path.exists():  # lgtm[py/path-injection]
             file_path = curriculum_dir / f"{safe_name}-{counter}.umcf"
             counter += 1
 
-        # Write the file
-        with open(file_path, 'w', encoding='utf-8') as f:
+        # Write the file (path uses sanitized safe_name)
+        with open(file_path, 'w', encoding='utf-8') as f:  # lgtm[py/path-injection]
             json.dump(umcf_data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved imported curriculum to: {file_path}")
@@ -3145,16 +3153,16 @@ async def handle_upload_visual_asset(request: web.Request) -> web.Response:
         except ValueError as e:
             return web.json_response({"error": str(e)}, status=400)
 
-        # Create assets directory if needed
+        # Create assets directory if needed (IDs sanitized above)
         assets_dir = PROJECT_ROOT / "curriculum" / "assets" / safe_curriculum_id / safe_topic_id
-        assets_dir.mkdir(parents=True, exist_ok=True)
+        assets_dir.mkdir(parents=True, exist_ok=True)  # lgtm[py/path-injection]
 
         # Generate unique asset ID
         asset_id = f"img-{int(time.time() * 1000)}"
         local_path = assets_dir / f"{asset_id}{ext}"
 
-        # Save the file
-        with open(local_path, "wb") as f:
+        # Save the file (path uses sanitized segments)
+        with open(local_path, "wb") as f:  # lgtm[py/path-injection]
             f.write(file_data)
 
         logger.info(f"Saved visual asset: {local_path}")
@@ -3355,6 +3363,15 @@ async def download_and_save_asset(
     """
     global _last_download_time
 
+    # Sanitize path segments to prevent path traversal
+    try:
+        safe_curriculum_id = sanitize_path_segment(curriculum_id)
+        safe_topic_id = sanitize_path_segment(topic_id)
+        safe_asset_id = sanitize_path_segment(asset_id)
+    except ValueError as e:
+        logger.error(f"Invalid path segment in download_and_save_asset: {e}")
+        return None
+
     async with _download_lock:
         # Enforce rate limiting
         now = time.time()
@@ -3371,11 +3388,11 @@ async def download_and_save_asset(
         if not ext or ext not in [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"]:
             ext = ".jpg"  # Default to jpg
 
-        # Create assets directory
-        assets_dir = PROJECT_ROOT / "curriculum" / "assets" / curriculum_id / topic_id
+        # Create assets directory (using sanitized path segments)
+        assets_dir = PROJECT_ROOT / "curriculum" / "assets" / safe_curriculum_id / safe_topic_id
         assets_dir.mkdir(parents=True, exist_ok=True)
 
-        local_path = assets_dir / f"{asset_id}{ext}"
+        local_path = assets_dir / f"{safe_asset_id}{ext}"
 
         # Skip if already downloaded
         if local_path.exists():

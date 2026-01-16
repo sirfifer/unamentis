@@ -221,6 +221,32 @@ def sanitize_file_extension(filename: str, allowed_extensions: set[str]) -> str:
     return ext
 
 
+def codeql_assert_path_within(file_path: Path, base_dir: Path) -> None:  # CodeQL: sanitizer
+    """Assert a path is within a base directory using CodeQL-recognized patterns.
+
+    This function uses os.path.realpath() + str.startswith() which CodeQL
+    explicitly recognizes as path sanitization (py/path-injection sanitizer).
+
+    Args:
+        file_path: The path to validate
+        base_dir: The directory the path must be within
+
+    Raises:
+        ValueError: If path would escape base_dir
+    """
+    # CodeQL-recognized pattern: realpath + startswith
+    real_path = os.path.realpath(str(file_path))
+    real_base = os.path.realpath(str(base_dir))
+
+    # Ensure base ends with separator for proper prefix matching
+    if not real_base.endswith(os.sep):
+        real_base = real_base + os.sep
+
+    # The startswith check after realpath is the CodeQL-recognized sanitizer
+    if not real_path.startswith(real_base) and real_path != real_base.rstrip(os.sep):
+        raise ValueError("Path escapes allowed directory")
+
+
 def safe_error_response(error: Exception, context: str = "operation") -> web.Response:
     """Create a safe error response that doesn't expose internal details.
 
@@ -2941,8 +2967,12 @@ async def handle_delete_archived_curriculum(request: web.Request) -> web.Respons
         if not archived_path.exists():
             return web.json_response({"error": "Archived curriculum not found"}, status=404)
 
+        # CodeQL-recognized validation before file access
+        codeql_assert_path_within(archived_path, archived_dir)
+
         # Read info for response (path validated above)
-        with open(archived_path, 'r', encoding='utf-8') as f:            umcf = json.load(f)
+        with open(archived_path, 'r', encoding='utf-8') as f:
+            umcf = json.load(f)
         curriculum_id = umcf.get("id", {}).get("value", archived_path.stem)
         title = umcf.get("title", "Untitled")
 
@@ -2991,8 +3021,13 @@ async def handle_save_curriculum(request: web.Request) -> web.Response:
             safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in data["title"].lower())
             file_path = PROJECT_ROOT / "curriculum" / "examples" / "realistic" / f"{safe_name}.umcf"
 
+        # CodeQL-recognized validation before file write
+        curriculum_base = PROJECT_ROOT / "curriculum"
+        codeql_assert_path_within(file_path, curriculum_base)
+
         # Write the file (path is either trusted or sanitized above)
-        with open(file_path, 'w', encoding='utf-8') as f:            json.dump(data, f, indent=2)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
 
         # Reload the curriculum
         state._load_curriculum_file(file_path)
@@ -3166,14 +3201,23 @@ async def handle_upload_visual_asset(request: web.Request) -> web.Response:
             return web.json_response({"error": str(e)}, status=400)
 
         # Create assets directory if needed (IDs sanitized above)
-        assets_dir = PROJECT_ROOT / "curriculum" / "assets" / safe_curriculum_id / safe_topic_id
+        assets_base = PROJECT_ROOT / "curriculum" / "assets"
+        assets_dir = assets_base / safe_curriculum_id / safe_topic_id
+
+        # CodeQL-recognized validation before directory creation
+        codeql_assert_path_within(assets_dir, assets_base)
+
         assets_dir.mkdir(parents=True, exist_ok=True)
         # Generate unique asset ID
         asset_id = f"img-{int(time.time() * 1000)}"
         local_path = assets_dir / f"{asset_id}{ext}"
 
+        # CodeQL-recognized validation before file write
+        codeql_assert_path_within(local_path, assets_base)
+
         # Save the file (path uses sanitized segments)
-        with open(local_path, "wb") as f:            f.write(file_data)
+        with open(local_path, "wb") as f:
+            f.write(file_data)
 
         logger.info(f"Saved visual asset: {local_path}")
 
@@ -3399,10 +3443,18 @@ async def download_and_save_asset(
             ext = ".jpg"  # Default to jpg
 
         # Create assets directory (using sanitized path segments)
-        assets_dir = PROJECT_ROOT / "curriculum" / "assets" / safe_curriculum_id / safe_topic_id
+        assets_base = PROJECT_ROOT / "curriculum" / "assets"
+        assets_dir = assets_base / safe_curriculum_id / safe_topic_id
+
+        # CodeQL-recognized validation before directory creation
+        codeql_assert_path_within(assets_dir, assets_base)
+
         assets_dir.mkdir(parents=True, exist_ok=True)
 
         local_path = assets_dir / f"{safe_asset_id}{ext}"
+
+        # CodeQL-recognized validation before file operations
+        codeql_assert_path_within(local_path, assets_base)
 
         # Skip if already downloaded
         if local_path.exists():
@@ -3424,7 +3476,7 @@ async def download_and_save_asset(
                     if not content_type.startswith("image/"):
                         logger.warning(f"Non-image content type for {url}: {content_type}")
 
-                    # Save to disk
+                    # Save to disk (path already validated above)
                     with open(local_path, "wb") as f:
                         f.write(content)
 

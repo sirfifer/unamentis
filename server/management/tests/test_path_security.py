@@ -18,6 +18,7 @@ from server import (
     sanitize_path_segment,
     sanitize_file_extension,
     safe_error_response,
+    codeql_assert_path_within,
 )
 
 
@@ -302,3 +303,77 @@ class TestPathValidationIntegration:
         # Unicode characters that might normalize to / or \
         with pytest.raises(ValueError, match="invalid characters"):
             sanitize_path_segment("test\u2215file")  # Unicode division slash
+
+
+class TestCodeqlAssertPathWithin:
+    """Tests for codeql_assert_path_within function.
+
+    This function uses CodeQL-recognized patterns (os.path.realpath + startswith)
+    to validate that paths stay within allowed directories.
+    """
+
+    def test_valid_path_within_directory(self, tmp_path):
+        """Test that valid paths within the base directory are accepted."""
+        test_file = tmp_path / "test.txt"
+        test_file.touch()
+
+        # Should not raise
+        codeql_assert_path_within(test_file, tmp_path)
+
+    def test_valid_nested_path(self, tmp_path):
+        """Test that nested paths within the base directory are accepted."""
+        nested_dir = tmp_path / "subdir" / "nested"
+        nested_dir.mkdir(parents=True)
+        test_file = nested_dir / "test.txt"
+        test_file.touch()
+
+        # Should not raise
+        codeql_assert_path_within(test_file, tmp_path)
+
+    def test_path_traversal_rejected(self, tmp_path):
+        """Test that path traversal attempts are rejected."""
+        # Create a path that escapes the base directory
+        escape_path = tmp_path / ".." / "etc" / "passwd"
+
+        with pytest.raises(ValueError, match="escapes allowed directory"):
+            codeql_assert_path_within(escape_path, tmp_path)
+
+    def test_absolute_path_outside_rejected(self, tmp_path):
+        """Test that absolute paths outside the base directory are rejected."""
+        outside_path = Path("/etc/passwd")
+
+        with pytest.raises(ValueError, match="escapes allowed directory"):
+            codeql_assert_path_within(outside_path, tmp_path)
+
+    def test_base_directory_itself_accepted(self, tmp_path):
+        """Test that the base directory itself is accepted."""
+        # Should not raise
+        codeql_assert_path_within(tmp_path, tmp_path)
+
+    def test_sibling_directory_rejected(self, tmp_path):
+        """Test that sibling directories are rejected."""
+        # Create sibling directory
+        sibling = tmp_path.parent / "sibling"
+        sibling.mkdir(exist_ok=True)
+
+        try:
+            with pytest.raises(ValueError, match="escapes allowed directory"):
+                codeql_assert_path_within(sibling, tmp_path)
+        finally:
+            sibling.rmdir()
+
+    def test_symlink_escape_rejected(self, tmp_path):
+        """Test that symlinks escaping the directory are rejected."""
+        import os
+
+        # Create a symlink pointing outside
+        symlink_path = tmp_path / "escape_link"
+        try:
+            os.symlink("/etc", str(symlink_path))
+            target_file = symlink_path / "passwd"
+
+            with pytest.raises(ValueError, match="escapes allowed directory"):
+                codeql_assert_path_within(target_file, tmp_path)
+        finally:
+            if symlink_path.exists() or symlink_path.is_symlink():
+                symlink_path.unlink()

@@ -8,13 +8,14 @@ import XCTest
 
 final class KBStatsManagerTests: XCTestCase {
 
-    private var testDefaults: UserDefaults!
-    private var statsManager: KBStatsManager!
+    // Use nonisolated(unsafe) since XCTest runs serially on main thread
+    nonisolated(unsafe) private var testDefaults: UserDefaults!
+    nonisolated(unsafe) private var statsManager: KBStatsManager!
     private let testSuiteName = "com.unamentis.tests.kbstats"
 
     @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // Create a fresh test UserDefaults suite
         testDefaults = UserDefaults(suiteName: testSuiteName)!
         // Clear any existing data
@@ -22,18 +23,18 @@ final class KBStatsManagerTests: XCTestCase {
         statsManager = KBStatsManager(defaults: testDefaults)
     }
 
-    override func tearDown() {
+    @MainActor
+    override func tearDown() async throws {
         // Clean up test defaults
         testDefaults?.removePersistentDomain(forName: testSuiteName)
         testDefaults = nil
         statsManager = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - Initial State Tests
 
-    @MainActor
-    func testInitialState_hasZeroValues() {
+    @MainActor func testInitialState_hasZeroValues() {
         XCTAssertEqual(statsManager.totalQuestionsAnswered, 0)
         XCTAssertEqual(statsManager.totalCorrectAnswers, 0)
         XCTAssertEqual(statsManager.averageResponseTime, 0)
@@ -41,20 +42,17 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertTrue(statsManager.recentSessions.isEmpty)
     }
 
-    @MainActor
-    func testOverallAccuracy_returnsZeroWithNoQuestions() {
+    @MainActor func testOverallAccuracy_returnsZeroWithNoQuestions() {
         XCTAssertEqual(statsManager.overallAccuracy, 0)
     }
 
-    @MainActor
-    func testCompetitionReadiness_returnsZeroWithNoQuestions() {
+    @MainActor func testCompetitionReadiness_returnsZeroWithNoQuestions() {
         XCTAssertEqual(statsManager.competitionReadiness, 0)
     }
 
     // MARK: - Record Session Tests
 
-    @MainActor
-    func testRecordSession_updatesTotalQuestions() {
+    @MainActor func testRecordSession_updatesTotalQuestions() {
         let summary = makeSessionSummary(totalQuestions: 10, correctAnswers: 7)
 
         statsManager.recordSession(summary, mode: .diagnostic)
@@ -63,8 +61,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.totalCorrectAnswers, 7)
     }
 
-    @MainActor
-    func testRecordSession_accumulatesMultipleSessions() {
+    @MainActor func testRecordSession_accumulatesMultipleSessions() {
         let summary1 = makeSessionSummary(totalQuestions: 10, correctAnswers: 7)
         let summary2 = makeSessionSummary(totalQuestions: 5, correctAnswers: 4)
 
@@ -75,8 +72,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.totalCorrectAnswers, 11)
     }
 
-    @MainActor
-    func testRecordSession_calculatesAverageResponseTime() {
+    @MainActor func testRecordSession_calculatesAverageResponseTime() {
         let summary = makeSessionSummary(
             totalQuestions: 10,
             correctAnswers: 7,
@@ -88,8 +84,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.averageResponseTime, 3.5, accuracy: 0.001)
     }
 
-    @MainActor
-    func testRecordSession_updatesRunningAverageResponseTime() {
+    @MainActor func testRecordSession_updatesRunningAverageResponseTime() {
         // First session: 10 questions at 4.0s average
         let summary1 = makeSessionSummary(
             totalQuestions: 10,
@@ -110,8 +105,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.averageResponseTime, 3.0, accuracy: 0.001)
     }
 
-    @MainActor
-    func testRecordSession_addsSessionRecord() {
+    @MainActor func testRecordSession_addsSessionRecord() {
         let summary = makeSessionSummary(totalQuestions: 10, correctAnswers: 7)
 
         statsManager.recordSession(summary, mode: .diagnostic)
@@ -122,8 +116,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.recentSessions.first?.mode, "Diagnostic")
     }
 
-    @MainActor
-    func testRecordSession_keepsOnly20RecentSessions() {
+    @MainActor func testRecordSession_keepsOnly20RecentSessions() {
         for i in 0..<25 {
             let summary = makeSessionSummary(totalQuestions: i + 1, correctAnswers: i)
             statsManager.recordSession(summary, mode: .diagnostic)
@@ -134,8 +127,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.recentSessions.first?.questionsAnswered, 25)
     }
 
-    @MainActor
-    func testRecordSession_updatesDomainStats() {
+    @MainActor func testRecordSession_updatesDomainStats() {
         let domainBreakdown: [String: KBSessionSummary.DomainScore] = [
             "Science": KBSessionSummary.DomainScore(total: 5, correct: 4),
             "Mathematics": KBSessionSummary.DomainScore(total: 3, correct: 2)
@@ -153,8 +145,7 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - Overall Accuracy Tests
 
-    @MainActor
-    func testOverallAccuracy_calculatesCorrectly() {
+    @MainActor func testOverallAccuracy_calculatesCorrectly() {
         let summary = makeSessionSummary(totalQuestions: 10, correctAnswers: 7)
         statsManager.recordSession(summary, mode: .diagnostic)
 
@@ -163,8 +154,7 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - Competition Readiness Tests
 
-    @MainActor
-    func testCompetitionReadiness_calculatesWeightedAverage() {
+    @MainActor func testCompetitionReadiness_calculatesWeightedAverage() {
         // Setup: Answer 200 questions across 12 domains with 80% accuracy
         for domain in KBDomain.allCases {
             let domainBreakdown = [domain.rawValue: KBSessionSummary.DomainScore(total: 17, correct: 14)]
@@ -183,13 +173,11 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - Mastery Tests
 
-    @MainActor
-    func testMastery_returnsZeroForUnknownDomain() {
+    @MainActor func testMastery_returnsZeroForUnknownDomain() {
         XCTAssertEqual(statsManager.mastery(for: "unknown-domain"), 0)
     }
 
-    @MainActor
-    func testMastery_calculatesCorrectlyForDomain() {
+    @MainActor func testMastery_calculatesCorrectlyForDomain() {
         let domainBreakdown = ["Science": KBSessionSummary.DomainScore(total: 10, correct: 8)]
         let summary = makeSessionSummary(domainBreakdown: domainBreakdown)
         statsManager.recordSession(summary, mode: .diagnostic)
@@ -197,8 +185,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(statsManager.mastery(for: "Science"), 0.8, accuracy: 0.001)
     }
 
-    @MainActor
-    func testMastery_worksWithKBDomainEnum() {
+    @MainActor func testMastery_worksWithKBDomainEnum() {
         let domainBreakdown = [KBDomain.science.rawValue: KBSessionSummary.DomainScore(total: 10, correct: 9)]
         let summary = makeSessionSummary(domainBreakdown: domainBreakdown)
         statsManager.recordSession(summary, mode: .diagnostic)
@@ -208,8 +195,7 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - Reset Stats Tests
 
-    @MainActor
-    func testResetStats_clearsAllData() {
+    @MainActor func testResetStats_clearsAllData() {
         // First add some data
         let summary = makeSessionSummary(totalQuestions: 10, correctAnswers: 7)
         statsManager.recordSession(summary, mode: .diagnostic)
@@ -226,41 +212,37 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - Domain ID Normalization Tests
 
-    @MainActor
-    func testNormalizeDomainId_lowercases() {
+    @MainActor func testNormalizeDomainId_lowercases() {
         XCTAssertEqual(statsManager.normalizeDomainId("Science"), "science")
         XCTAssertEqual(statsManager.normalizeDomainId("MATH"), "math")
     }
 
-    @MainActor
-    func testNormalizeDomainId_replacesSpacesWithDashes() {
+    @MainActor func testNormalizeDomainId_replacesSpacesWithDashes() {
         XCTAssertEqual(statsManager.normalizeDomainId("Social Studies"), "social-studies")
         XCTAssertEqual(statsManager.normalizeDomainId("Pop Culture"), "pop-culture")
     }
 
-    @MainActor
-    func testNormalizeDomainId_removesAmpersands() {
+    @MainActor func testNormalizeDomainId_removesAmpersands() {
         XCTAssertEqual(statsManager.normalizeDomainId("Religion & Philosophy"), "religion-philosophy")
     }
 
-    @MainActor
-    func testNormalizeDomainId_collapsesDoubleDashes() {
+    @MainActor func testNormalizeDomainId_collapsesDoubleDashes() {
         XCTAssertEqual(statsManager.normalizeDomainId("A--B"), "a-b")
     }
 
     // MARK: - DomainStats Tests
 
-    func testDomainStats_accuracy_calculatesCorrectly() {
+    @MainActor func testDomainStats_accuracy_calculatesCorrectly() {
         let stats = DomainStats(totalAnswered: 10, totalCorrect: 8)
         XCTAssertEqual(stats.accuracy, 0.8, accuracy: 0.001)
     }
 
-    func testDomainStats_accuracy_returnsZeroForNoAnswers() {
+    @MainActor func testDomainStats_accuracy_returnsZeroForNoAnswers() {
         let stats = DomainStats(totalAnswered: 0, totalCorrect: 0)
         XCTAssertEqual(stats.accuracy, 0)
     }
 
-    func testDomainStats_codable() throws {
+    @MainActor func testDomainStats_codable() throws {
         let stats = DomainStats(totalAnswered: 10, totalCorrect: 7)
 
         let encoded = try JSONEncoder().encode(stats)
@@ -272,7 +254,7 @@ final class KBStatsManagerTests: XCTestCase {
 
     // MARK: - SessionRecord Tests
 
-    func testSessionRecord_accuracy_calculatesCorrectly() {
+    @MainActor func testSessionRecord_accuracy_calculatesCorrectly() {
         let record = SessionRecord(
             id: UUID(),
             date: Date(),
@@ -285,7 +267,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(record.accuracy, 0.7, accuracy: 0.001)
     }
 
-    func testSessionRecord_accuracy_returnsZeroForNoQuestions() {
+    @MainActor func testSessionRecord_accuracy_returnsZeroForNoQuestions() {
         let record = SessionRecord(
             id: UUID(),
             date: Date(),
@@ -298,7 +280,7 @@ final class KBStatsManagerTests: XCTestCase {
         XCTAssertEqual(record.accuracy, 0)
     }
 
-    func testSessionRecord_codable() throws {
+    @MainActor func testSessionRecord_codable() throws {
         let id = UUID()
         let date = Date()
         let record = SessionRecord(

@@ -8,17 +8,19 @@ import XCTest
 
 final class KBPracticeEngineTests: XCTestCase {
 
-    private var engine: KBPracticeEngine!
+    // Use nonisolated(unsafe) since XCTest runs serially on main thread
+    nonisolated(unsafe) private var engine: KBPracticeEngine!
 
     @MainActor
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         engine = KBPracticeEngine()
     }
 
-    override func tearDown() {
+    @MainActor
+    override func tearDown() async throws {
         engine = nil
-        super.tearDown()
+        try await super.tearDown()
     }
 
     // MARK: - Test Data
@@ -50,8 +52,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Initial State Tests
 
-    @MainActor
-    func testInitialState_isNotStarted() {
+    @MainActor func testInitialState_isNotStarted() {
         XCTAssertEqual(engine.sessionState, .notStarted)
         XCTAssertNil(engine.currentQuestion)
         XCTAssertEqual(engine.questionIndex, 0)
@@ -61,8 +62,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Start Session Tests
 
-    @MainActor
-    func testStartSession_setsStateToInProgress() {
+    @MainActor func testStartSession_setsStateToInProgress() {
         let questions = makeQuestions(count: 10)
 
         engine.startSession(questions: questions, mode: .diagnostic)
@@ -70,8 +70,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.sessionState, .inProgress)
     }
 
-    @MainActor
-    func testStartSession_presentsFirstQuestion() {
+    @MainActor func testStartSession_presentsFirstQuestion() {
         let questions = makeQuestions(count: 10)
 
         engine.startSession(questions: questions, mode: .diagnostic)
@@ -80,8 +79,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.questionIndex, 0)
     }
 
-    @MainActor
-    func testStartSession_setsCorrectTotalQuestions_diagnostic() {
+    @MainActor func testStartSession_setsCorrectTotalQuestions_diagnostic() {
         let questions = makeQuestions(count: 100)
 
         engine.startSession(questions: questions, mode: .diagnostic)
@@ -90,8 +88,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.totalQuestions, 50)
     }
 
-    @MainActor
-    func testStartSession_setsCorrectTotalQuestions_targeted() {
+    @MainActor func testStartSession_setsCorrectTotalQuestions_targeted() {
         let questions = makeQuestions(count: 100)
 
         engine.startSession(questions: questions, mode: .targeted)
@@ -100,8 +97,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.totalQuestions, 25)
     }
 
-    @MainActor
-    func testStartSession_setsCorrectTotalQuestions_breadth() {
+    @MainActor func testStartSession_setsCorrectTotalQuestions_breadth() {
         let questions = makeQuestions(count: 100)
 
         engine.startSession(questions: questions, mode: .breadth)
@@ -110,8 +106,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.totalQuestions, 36)
     }
 
-    @MainActor
-    func testStartSession_setsCorrectTotalQuestions_speed() {
+    @MainActor func testStartSession_setsCorrectTotalQuestions_speed() {
         let questions = makeQuestions(count: 100)
 
         engine.startSession(questions: questions, mode: .speed)
@@ -122,8 +117,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.timeRemaining, 300)  // 5 minutes
     }
 
-    @MainActor
-    func testStartSession_setsCorrectTotalQuestions_competition() {
+    @MainActor func testStartSession_setsCorrectTotalQuestions_competition() {
         let questions = makeQuestions(count: 100)
 
         engine.startSession(questions: questions, mode: .competition)
@@ -132,8 +126,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.totalQuestions, 45)
     }
 
-    @MainActor
-    func testStartSession_limitsToAvailableQuestions() {
+    @MainActor func testStartSession_limitsToAvailableQuestions() {
         let questions = makeQuestions(count: 5)
 
         engine.startSession(questions: questions, mode: .diagnostic)
@@ -142,8 +135,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.totalQuestions, 5)
     }
 
-    @MainActor
-    func testStartSession_clearsResultsFromPreviousSession() {
+    @MainActor func testStartSession_clearsResultsFromPreviousSession() {
         let questions = makeQuestions(count: 10)
 
         // Start first session and answer a question
@@ -159,8 +151,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Submit Answer Tests
 
-    @MainActor
-    func testSubmitAnswer_addsResultToResults() {
+    @MainActor func testSubmitAnswer_addsResultToResults() {
         let questions = [makeQuestion(acceptableAnswers: ["correct"])]
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -170,8 +161,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertTrue(engine.results.first!.isCorrect)
     }
 
-    @MainActor
-    func testSubmitAnswer_setsStateToShowingAnswer() {
+    @MainActor func testSubmitAnswer_setsStateToShowingAnswer() {
         let questions = [makeQuestion(acceptableAnswers: ["correct"])]
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -180,8 +170,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.sessionState, .showingAnswer(isCorrect: true))
     }
 
-    @MainActor
-    func testSubmitAnswer_incorrectAnswer_setsShowingAnswerFalse() {
+    @MainActor func testSubmitAnswer_incorrectAnswer_setsShowingAnswerFalse() {
         let questions = [makeQuestion(acceptableAnswers: ["correct"])]
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -191,8 +180,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertFalse(engine.results.first!.isCorrect)
     }
 
-    @MainActor
-    func testSubmitAnswer_doesNothingWhenNotInProgress() {
+    @MainActor func testSubmitAnswer_doesNothingWhenNotInProgress() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
         engine.submitAnswer("answer")  // Now in showingAnswer state
@@ -206,8 +194,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Skip Question Tests
 
-    @MainActor
-    func testSkipQuestion_addsSkippedResult() {
+    @MainActor func testSkipQuestion_addsSkippedResult() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -218,8 +205,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertFalse(engine.results.first!.isCorrect)
     }
 
-    @MainActor
-    func testSkipQuestion_setsStateToShowingAnswer() {
+    @MainActor func testSkipQuestion_setsStateToShowingAnswer() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -230,8 +216,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Next Question Tests
 
-    @MainActor
-    func testNextQuestion_advancesToNextQuestion() {
+    @MainActor func testNextQuestion_advancesToNextQuestion() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
         engine.submitAnswer("answer")
@@ -242,8 +227,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.sessionState, .inProgress)
     }
 
-    @MainActor
-    func testNextQuestion_doesNothingWhenNotShowingAnswer() {
+    @MainActor func testNextQuestion_doesNothingWhenNotShowingAnswer() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -253,8 +237,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(engine.questionIndex, 0)
     }
 
-    @MainActor
-    func testNextQuestion_completesSessionAtEnd() {
+    @MainActor func testNextQuestion_completesSessionAtEnd() {
         let questions = [makeQuestion()]
         engine.startSession(questions: questions, mode: .diagnostic)
         engine.submitAnswer("answer")
@@ -266,8 +249,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - End Session Early Tests
 
-    @MainActor
-    func testEndSessionEarly_setsStateToCompleted() {
+    @MainActor func testEndSessionEarly_setsStateToCompleted() {
         let questions = makeQuestions(count: 10)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -278,8 +260,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Generate Summary Tests
 
-    @MainActor
-    func testGenerateSummary_returnsCorrectTotals() {
+    @MainActor func testGenerateSummary_returnsCorrectTotals() {
         let questions = makeQuestions(count: 3)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -297,8 +278,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(summary.correctAnswers, 2)
     }
 
-    @MainActor
-    func testGenerateSummary_calculatesAverageResponseTime() {
+    @MainActor func testGenerateSummary_calculatesAverageResponseTime() {
         let questions = makeQuestions(count: 2)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -314,8 +294,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(summary.averageResponseTime, 0)
     }
 
-    @MainActor
-    func testGenerateSummary_calculatesDomainBreakdown() {
+    @MainActor func testGenerateSummary_calculatesDomainBreakdown() {
         let q1 = makeQuestion(id: "q1", domainId: "science")
         let q2 = makeQuestion(id: "q2", domainId: "science")
         let q3 = makeQuestion(id: "q3", domainId: "math")
@@ -337,8 +316,7 @@ final class KBPracticeEngineTests: XCTestCase {
         XCTAssertEqual(summary.domainBreakdown["math"]?.correct, 1)
     }
 
-    @MainActor
-    func testGenerateSummary_excludesSkippedFromAverageTime() {
+    @MainActor func testGenerateSummary_excludesSkippedFromAverageTime() {
         let questions = makeQuestions(count: 2)
         engine.startSession(questions: questions, mode: .diagnostic)
 
@@ -355,8 +333,7 @@ final class KBPracticeEngineTests: XCTestCase {
 
     // MARK: - Session State Equatable Tests
 
-    @MainActor
-    func testSessionState_equatable() {
+    @MainActor func testSessionState_equatable() {
         XCTAssertEqual(KBPracticeEngine.SessionState.notStarted, .notStarted)
         XCTAssertEqual(KBPracticeEngine.SessionState.inProgress, .inProgress)
         XCTAssertEqual(KBPracticeEngine.SessionState.completed, .completed)

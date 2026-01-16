@@ -158,7 +158,7 @@ final class KBQuestionTests: XCTestCase {
     }
 
     func testQuestionResult_withinSpeedTarget_setsWasWithinSpeedTargetTrue() {
-        let question = makeQuestion(speedTargetSeconds: 5.0, acceptableAnswers: ["Paris"])
+        let question = makeQuestion(acceptableAnswers: ["Paris"], speedTargetSeconds: 5.0)
         let result = KBQuestionResult(
             question: question,
             userAnswer: "Paris",
@@ -169,7 +169,7 @@ final class KBQuestionTests: XCTestCase {
     }
 
     func testQuestionResult_exceedsSpeedTarget_setsWasWithinSpeedTargetFalse() {
-        let question = makeQuestion(speedTargetSeconds: 5.0, acceptableAnswers: ["Paris"])
+        let question = makeQuestion(acceptableAnswers: ["Paris"], speedTargetSeconds: 5.0)
         let result = KBQuestionResult(
             question: question,
             userAnswer: "Paris",

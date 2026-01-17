@@ -57,6 +57,7 @@ from fov_context_api import setup_fov_context_routes
 
 # Import TTS cache system
 from tts_cache import TTSCache, TTSResourcePool, CurriculumPrefetcher
+from tts_cache.kb_audio import KBAudioManager
 from tts_api import register_tts_routes
 
 # Import TTS pre-generation system
@@ -70,6 +71,9 @@ from deployment_api import register_deployment_routes, ScheduledDeploymentManage
 
 # Import audio WebSocket handler
 from audio_ws import AudioWebSocketHandler, register_audio_websocket
+
+# Import modules API for server-driven training modules
+from modules_api import register_modules_routes, schedule_kb_audio_prefetch
 
 # Import session management (for UserSession, UserVoiceConfig)
 from fov_context import SessionManager, UserVoiceConfig
@@ -4547,7 +4551,8 @@ def setup_auth_routes(app: web.Application, db_pool) -> bool:
 
 def create_app() -> web.Application:
     """Create and configure the aiohttp application."""
-    app = web.Application()
+    # Limit request body size to 1MB to prevent DoS attacks via large JSON payloads
+    app = web.Application(client_max_size=1024 * 1024)
 
     # CORS middleware
     @web.middleware
@@ -4648,6 +4653,9 @@ def create_app() -> web.Application:
 
     # TTS Cache System
     register_tts_routes(app)
+
+    # Training Modules System (server-driven module discovery and download)
+    register_modules_routes(app)
 
     # TTS Pre-Generation System (Profiles, Batch Jobs, Comparison)
     register_tts_pregen_routes(app)
@@ -4792,6 +4800,17 @@ def create_app() -> web.Application:
         prefetcher = CurriculumPrefetcher(tts_cache, resource_pool)
         app["tts_prefetcher"] = prefetcher
 
+        # Initialize Knowledge Bowl audio manager for pre-generated TTS
+        kb_audio_dir = Path(__file__).parent / "data" / "kb_audio"
+        try:
+            kb_audio_manager = KBAudioManager(str(kb_audio_dir), resource_pool)
+            await kb_audio_manager.initialize()
+            app["kb_audio_manager"] = kb_audio_manager
+            logger.info("[Startup] KB audio manager initialized")
+        except Exception as e:
+            logger.error(f"[Startup] KB audio manager init failed, continuing without KB audio: {e}")
+            app["kb_audio_manager"] = None
+
         # Initialize session manager (handles both FOV and user sessions)
         session_manager = SessionManager()
         app["session_manager"] = session_manager
@@ -4866,8 +4885,21 @@ def create_app() -> web.Application:
             "diagnostic_enabled": diag_logger.is_enabled()
         })
 
+        # Schedule KB audio prefetch in background (checks coverage and generates if needed)
+        app["kb_audio_prefetch_task"] = asyncio.create_task(schedule_kb_audio_prefetch(app))
+
     # Cleanup hook to stop background tasks
     async def on_cleanup(app):
+        # Cancel KB audio prefetch task if running
+        task = app.get("kb_audio_prefetch_task")
+        if task and not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            logger.info("[Cleanup] KB audio prefetch task cancelled")
+
         # Close database pool if it exists
         if "db_pool" in app:
             await app["db_pool"].close()

@@ -11,6 +11,33 @@ Manages isolated development environments using git worktrees. Each worktree pro
 
 **Key Benefit:** Complete file isolation between parallel tasks. No stashing or branch switching needed.
 
+## Why Worktrees?
+
+Git worktrees solve the problem of context switching during parallel development:
+
+| Without Worktrees | With Worktrees |
+|-------------------|----------------|
+| `git stash` before switching branches | Each branch in its own directory |
+| Risk of losing uncommitted work | Work preserved in each worktree |
+| One task at a time | 2-4 tasks truly in parallel |
+| Must wait for builds to finish | Each worktree builds independently |
+| Single Claude Code session | Multiple independent sessions |
+
+**How it works:** All worktrees share the same `.git` repository data (commits, branches, history) but have separate working directories. This means:
+- Lightweight creation (no full clone needed)
+- Changes in one worktree don't affect others
+- All worktrees stay in sync with `git fetch`
+
+## When to Use
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Working on feature while reviewing PR | Create worktree for review |
+| Bug fix needed while mid-feature | Create worktree for fix |
+| Experimenting with risky changes | Create worktree for experiment |
+| Running long build while coding | Build in one worktree, code in another |
+| Multiple related tasks for sprint | One worktree per task |
+
 ## Usage
 
 ```
@@ -233,6 +260,76 @@ Clean DerivedData from inactive worktrees? (4.1 GB)
 ✓ Cleaned 4.1 GB from 2 worktrees
 ```
 
+## Typical Workflow
+
+Here's a complete example of parallel development with 3 tasks:
+
+### 1. Start Your Session
+
+```
+# In main repo, check current worktrees
+/worktree list
+
+Git Worktrees:
+  * /Users/ramerman/dev/unamentis (main) ← current
+
+Total: 1 worktree
+```
+
+### 2. Create Worktrees for Each Task
+
+```
+# Task 1: Knowledge Bowl UI improvements
+/worktree create kb-ui
+
+# Task 2: Fix answer validation bug
+/worktree create fix-validation
+
+# Task 3: Add regional config feature
+/worktree create kb-regional
+```
+
+You now have 4 VS Code windows (main + 3 worktrees).
+
+### 3. Configure Each Session
+
+In each new VS Code window:
+```
+/mcp-setup ios
+```
+
+### 4. Work in Parallel
+
+Each Claude Code session works independently:
+- **Window 1 (main):** Coordination, PRs, main branch work
+- **Window 2 (kb-ui):** UI implementation
+- **Window 3 (fix-validation):** Bug investigation and fix
+- **Window 4 (kb-regional):** Feature development
+
+### 5. Merge and Cleanup
+
+When a task is complete:
+```
+# In the worktree, push the branch
+git push -u origin feature/kb-ui
+
+# Create PR (from any worktree)
+gh pr create
+
+# After PR is merged, remove worktree
+/worktree remove kb-ui
+```
+
+### 6. Periodic Maintenance
+
+```
+# Check disk usage
+/worktree list
+
+# Clean up build artifacts from inactive worktrees
+/worktree cleanup
+```
+
 ## Integration
 
 - **Run `/mcp-setup ios`** in each new worktree session to configure MCP
@@ -252,6 +349,57 @@ Each worktree accumulates its own build artifacts:
 
 With 3-4 active worktrees, this can consume 10-20 GB. Use `/worktree cleanup` regularly.
 
+## Troubleshooting
+
+### "fatal: '<branch>' is already checked out"
+
+You cannot have the same branch checked out in multiple worktrees. Solutions:
+1. Use a different branch name for the new worktree
+2. Switch the existing worktree to a different branch first
+
+### "Worktree not found" when using `/worktree open`
+
+The worktree directory may have been manually deleted. Run:
+```bash
+git worktree prune -v
+```
+Then create a new worktree.
+
+### VS Code doesn't open new window
+
+Ensure VS Code CLI is in your PATH:
+```bash
+which code
+# Should return: /usr/local/bin/code or similar
+```
+
+If not found, open VS Code and run "Shell Command: Install 'code' command in PATH" from the command palette.
+
+### MCP tools not working in worktree
+
+Run `/mcp-setup ios` in each new worktree session. MCP connections are per-session, not shared.
+
+### Worktree has stale .git reference
+
+If a worktree's parent repo was moved, repair the reference:
+```bash
+git worktree repair
+```
+
+### Disk space running low
+
+Run `/worktree cleanup` to remove DerivedData from inactive worktrees. For more aggressive cleanup:
+```bash
+# Remove all DerivedData across all worktrees
+for wt in $(git worktree list --porcelain | grep "^worktree" | cut -d' ' -f2); do
+  rm -rf "$wt/DerivedData"
+done
+```
+
+### Branch conflicts between worktrees
+
+Each branch can only be checked out in one worktree at a time. Use `/worktree list` to see which worktree has which branch.
+
 ## Quick Reference
 
 ```bash
@@ -261,4 +409,11 @@ git worktree add <path> <branch>       # Create for existing branch
 git worktree list -v                   # List all worktrees
 git worktree remove <path>             # Remove worktree
 git worktree prune -v                  # Clean stale references
+git worktree repair                    # Fix broken worktree references
 ```
+
+## Related Skills
+
+- `/mcp-setup` - Configure MCP for each worktree session
+- `/validate` - Run before committing in any worktree
+- `/service` - Services are shared across all worktrees (same ports)

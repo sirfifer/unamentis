@@ -153,8 +153,48 @@ async fn list_instances(
 
     let counts = instances.status_counts();
 
+    // Build instances with metrics for running processes
+    let instances_with_metrics: Vec<serde_json::Value> = list
+        .iter()
+        .map(|instance| {
+            let mut json = serde_json::to_value(instance).unwrap_or_default();
+            // Add metrics for running instances - try by port first (more reliable), then by PID
+            if instance.status == ServiceStatus::Running {
+                // Try to find process by port (most reliable for child processes)
+                let process_info = state.monitor.find_by_port(instance.port);
+                if let Some(info) = process_info {
+                    if let Some(obj) = json.as_object_mut() {
+                        obj.insert(
+                            "cpu_percent".to_string(),
+                            serde_json::json!(info.cpu_percent),
+                        );
+                        obj.insert(
+                            "memory_mb".to_string(),
+                            serde_json::json!(info.memory_bytes / (1024 * 1024)),
+                        );
+                    }
+                } else if let Some(pid) = instance.pid {
+                    // Fallback to stored PID
+                    if let Some(metrics) = state.monitor.get_process_metrics(pid) {
+                        if let Some(obj) = json.as_object_mut() {
+                            obj.insert(
+                                "cpu_percent".to_string(),
+                                serde_json::json!(metrics.cpu_percent),
+                            );
+                            obj.insert(
+                                "memory_mb".to_string(),
+                                serde_json::json!(metrics.memory_bytes / (1024 * 1024)),
+                            );
+                        }
+                    }
+                }
+            }
+            json
+        })
+        .collect();
+
     Json(serde_json::json!({
-        "instances": list,
+        "instances": instances_with_metrics,
         "total": instances.len(),
         "running": counts.get(&ServiceStatus::Running).unwrap_or(&0),
         "stopped": counts.get(&ServiceStatus::Stopped).unwrap_or(&0),

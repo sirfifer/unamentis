@@ -152,6 +152,55 @@ ENFORCE_COVERAGE=true|false     # Default: true in CI, false locally
 
 The USM menu bar app must be running. See `.claude/skills/service/SKILL.md` for full documentation.
 
+## MANDATORY: Graceful Application Termination
+
+**Always use graceful quit commands to stop applications. Never use kill as a first resort.**
+
+This is a universal principle across all operating systems. Graceful termination allows applications to:
+- Save state and user data
+- Clean up resources properly
+- Close file handles and network connections
+- Avoid data corruption
+
+### macOS
+
+```bash
+# CORRECT: Graceful quit via AppleScript
+osascript -e 'tell application "AppName" to quit'
+
+# CORRECT: Graceful termination signal
+pkill -TERM ProcessName
+
+# LAST RESORT ONLY: Forceful kill
+killall ProcessName        # Sends SIGTERM by default
+kill -9 PID               # SIGKILL - cannot be caught, use only when app is unresponsive
+```
+
+### Linux
+
+```bash
+# CORRECT: Graceful termination
+kill PID                  # Sends SIGTERM
+pkill ProcessName         # Sends SIGTERM
+
+# LAST RESORT ONLY: Forceful kill
+kill -9 PID              # SIGKILL
+pkill -9 ProcessName     # SIGKILL
+```
+
+### Windows
+
+```powershell
+# CORRECT: Graceful termination
+Stop-Process -Name "ProcessName"
+
+# LAST RESORT ONLY: Forceful kill
+Stop-Process -Name "ProcessName" -Force
+taskkill /F /IM "ProcessName.exe"
+```
+
+**Rule: Attempt graceful quit first. Only escalate to forceful termination if the application is unresponsive.**
+
 ## MANDATORY: Log Server for Debugging
 
 **The log server MUST be running for debugging.** Use the `/debug-logs` skill for structured debugging:

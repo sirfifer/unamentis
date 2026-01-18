@@ -353,6 +353,7 @@ final class KBWrittenSessionViewModel: ObservableObject {
 
 // MARK: - Haptic Feedback Helper
 
+@MainActor
 enum KBHapticFeedback {
     static func success() {
         #if os(iOS)

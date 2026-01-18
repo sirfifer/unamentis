@@ -417,7 +417,9 @@ public actor LatencyTestCoordinator {
         let sttPhase = TestPhaseTimer()
 
         // Start streaming with STT service
-        let resultStream = try await sttService.startStreaming(audioFormat: targetFormat)
+        // Safe: targetFormat is consumed synchronously by startStreaming for configuration
+        nonisolated(unsafe) let capturedFormat = targetFormat
+        let resultStream = try await sttService.startStreaming(audioFormat: capturedFormat)
 
         // Send audio in chunks (simulate real-time streaming)
         let chunkSize = AVAudioFrameCount(1600) // 100ms at 16kHz

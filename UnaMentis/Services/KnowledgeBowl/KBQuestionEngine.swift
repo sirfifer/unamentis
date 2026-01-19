@@ -7,17 +7,19 @@
 
 import Foundation
 import OSLog
+import Observation
 
 // MARK: - Question Engine
 
 /// Service for loading, filtering, and managing Knowledge Bowl questions
 @MainActor
-final class KBQuestionEngine: ObservableObject {
-    // MARK: - Published State
+@Observable
+final class KBQuestionEngine {
+    // MARK: - State
 
-    @Published private(set) var questions: [KBQuestion] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var loadError: Error?
+    private(set) var questions: [KBQuestion] = []
+    private(set) var isLoading = false
+    private(set) var loadError: Error?
 
     // MARK: - Private State
 

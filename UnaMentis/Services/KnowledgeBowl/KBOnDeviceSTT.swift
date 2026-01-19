@@ -12,194 +12,232 @@ import Speech
 // MARK: - On-Device STT Service
 
 /// Provides offline speech recognition using SFSpeechRecognizer
-@MainActor
-final class KBOnDeviceSTT: NSObject, ObservableObject {
-    // MARK: - Published State
+/// Conforms to STTService protocol for integration with provider abstraction layer
+public actor KBOnDeviceSTT: STTService {
+    // MARK: - STTService Protocol Requirements
 
-    @Published private(set) var isListening = false
-    @Published private(set) var transcript = ""
-    @Published private(set) var isFinal = false
-    @Published private(set) var authorizationStatus: SFSpeechRecognizerAuthorizationStatus = .notDetermined
-    @Published private(set) var error: KBSTTError?
+    public private(set) var metrics = STTMetrics(
+        medianLatency: 0.15,  // Apple Speech is typically very fast
+        p99Latency: 0.3,
+        wordEmissionRate: 0
+    )
+
+    public var costPerHour: Decimal { Decimal(0) }  // On-device = free
+
+    public private(set) var isStreaming: Bool = false
 
     // MARK: - Private State
 
-    private let speechRecognizer: SFSpeechRecognizer?
+    private let logger = Logger(subsystem: "com.unamentis", category: "KBOnDeviceSTT")
+    private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
-    private let audioEngine = AVAudioEngine()
-    private let logger = Logger(subsystem: "com.unamentis", category: "KBOnDeviceSTT")
+    private var audioEngine: AVAudioEngine?
+    private var resultContinuation: AsyncStream<STTResult>.Continuation?
+
+    private var sessionStartTime: Date?
+    private var latencyMeasurements: [TimeInterval] = []
+    private var lastAudioTime: Date?
 
     // MARK: - Initialization
 
-    override init() {
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-        super.init()
-        speechRecognizer?.delegate = self
-
-        // Request on-device recognition for offline capability
-        if speechRecognizer?.supportsOnDeviceRecognition == true {
-            logger.info("On-device speech recognition is supported")
-        } else {
-            logger.warning("On-device speech recognition not supported, will use server")
-        }
+    public init() {
+        logger.info("KBOnDeviceSTT initialized")
     }
 
     // MARK: - Authorization
 
     /// Request speech recognition authorization
-    func requestAuthorization() async -> Bool {
-        logger.debug("Requesting speech recognition authorization...")
-
-        // Check current status first
-        let currentStatus = SFSpeechRecognizer.authorizationStatus()
-        logger.debug("Current authorization status: \(String(describing: currentStatus))")
-
-        if currentStatus == .authorized {
-            await MainActor.run {
-                self.authorizationStatus = .authorized
-            }
-            return true
-        }
-
-        // Request authorization
-        return await withCheckedContinuation { continuation in
+    public static func requestAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
+        await withCheckedContinuation { continuation in
             SFSpeechRecognizer.requestAuthorization { status in
-                // Resume continuation immediately, update state on main actor separately
-                let isAuthorized = status == .authorized
-
-                Task { @MainActor [weak self] in
-                    self?.authorizationStatus = status
-                    switch status {
-                    case .authorized:
-                        self?.logger.info("Speech recognition authorized")
-                    case .denied:
-                        self?.logger.warning("Speech recognition denied")
-                        self?.error = .authorizationDenied
-                    case .restricted:
-                        self?.logger.warning("Speech recognition restricted")
-                        self?.error = .restricted
-                    case .notDetermined:
-                        self?.logger.info("Speech recognition not determined")
-                    @unknown default:
-                        break
-                    }
-                }
-
-                continuation.resume(returning: isAuthorized)
+                continuation.resume(returning: status)
             }
         }
     }
 
-    /// Check microphone authorization
-    func requestMicrophoneAccess() async -> Bool {
-        logger.debug("Requesting microphone access...")
-        let granted = await AVAudioApplication.requestRecordPermission()
-        logger.debug("Microphone access: \(granted ? "granted" : "denied")")
-        return granted
+    /// Check if speech recognition is available
+    public static var isAvailable: Bool {
+        let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+        return recognizer?.isAvailable ?? false
     }
 
-    // MARK: - Recognition
+    // MARK: - STTService Protocol
 
-    /// Start listening for speech input
-    func startListening() async throws {
+    public func startStreaming(audioFormat: sending AVAudioFormat) async throws -> AsyncStream<STTResult> {
+        guard !isStreaming else {
+            throw STTError.alreadyStreaming
+        }
+
         // Check authorization
-        if authorizationStatus != .authorized {
-            let authorized = await requestAuthorization()
-            guard authorized else {
-                throw KBSTTError.authorizationDenied
-            }
+        let authStatus = await Self.requestAuthorization()
+        guard authStatus == .authorized else {
+            logger.error("Speech recognition not authorized: \(authStatus.rawValue)")
+            throw STTError.authenticationFailed
         }
 
-        // Check microphone access
-        let micAccess = await requestMicrophoneAccess()
-        guard micAccess else {
-            throw KBSTTError.microphoneAccessDenied
+        // Check microphone permission
+        let micGranted = await AVAudioApplication.requestRecordPermission()
+        guard micGranted else {
+            logger.error("Microphone access denied")
+            throw STTError.authenticationFailed
         }
 
-        // Stop any existing recognition
-        stopListening()
+        // Initialize recognizer
+        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+        guard let recognizer = speechRecognizer, recognizer.isAvailable else {
+            logger.error("Speech recognizer not available")
+            throw STTError.connectionFailed("Speech recognizer not available")
+        }
+
+        logger.info("Starting Apple Speech stream")
+
+        isStreaming = true
+        sessionStartTime = Date()
+        latencyMeasurements = []
+
+        // Create recognition request
+        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        guard let request = recognitionRequest else {
+            throw STTError.streamingFailed("Failed to create recognition request")
+        }
+
+        // Configure for streaming
+        request.shouldReportPartialResults = true
+        request.requiresOnDeviceRecognition = recognizer.supportsOnDeviceRecognition
+
+        // Create audio engine
+        audioEngine = AVAudioEngine()
+        guard let audioEngine = audioEngine else {
+            throw STTError.streamingFailed("Failed to create audio engine")
+        }
 
         // Configure audio session
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
-        // Create recognition request
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        // Create result stream
+        return AsyncStream<STTResult> { continuation in
+            self.resultContinuation = continuation
 
-        guard let recognitionRequest = recognitionRequest else {
-            throw KBSTTError.recognitionRequestFailed
-        }
-
-        // Configure for on-device recognition if available
-        recognitionRequest.shouldReportPartialResults = true
-        recognitionRequest.requiresOnDeviceRecognition = speechRecognizer?.supportsOnDeviceRecognition ?? false
-
-        // Get input node
-        let inputNode = audioEngine.inputNode
-
-        // Get and validate audio format
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
-        logger.debug("Input node format: \(recordingFormat)")
-
-        // Check if format is valid (sample rate and channel count must be > 0)
-        guard recordingFormat.sampleRate > 0 && recordingFormat.channelCount > 0 else {
-            logger.error("Invalid audio format: sampleRate=\(recordingFormat.sampleRate), channels=\(recordingFormat.channelCount)")
-            throw KBSTTError.recognitionRequestFailed
-        }
-
-        // Start recognition task
-        recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { [weak self] result, error in
-            Task { @MainActor in
-                guard let self = self else { return }
-
+            // Start recognition task
+            self.recognitionTask = recognizer.recognitionTask(with: request) { result, error in
+                // Extract data synchronously to avoid concurrency issues
                 if let error = error {
                     self.logger.error("Recognition error: \(error.localizedDescription)")
-                    self.error = .recognitionFailed(error.localizedDescription)
-                    self.stopListening()
+                    continuation.finish()
                     return
                 }
 
-                if let result = result {
-                    self.transcript = result.bestTranscription.formattedString
-                    self.isFinal = result.isFinal
+                guard let result = result else { return }
 
-                    if result.isFinal {
-                        self.logger.info("Final transcript: \(self.transcript)")
-                        self.stopListening()
-                    }
+                let transcript = result.bestTranscription.formattedString
+                let isFinal = result.isFinal
+                let confidence = result.bestTranscription.segments.last?.confidence ?? 0.0
+
+                // Calculate latency
+                let latency: TimeInterval
+                if let startTime = self.sessionStartTime {
+                    latency = Date().timeIntervalSince(startTime)
+                } else {
+                    latency = 0
+                }
+
+                let sttResult = STTResult(
+                    transcript: transcript,
+                    isFinal: isFinal,
+                    isEndOfUtterance: isFinal,
+                    confidence: confidence,
+                    timestamp: Date().timeIntervalSince1970,
+                    latency: latency,
+                    wordTimestamps: nil
+                )
+
+                continuation.yield(sttResult)
+
+                if isFinal {
+                    self.logger.info("Final transcript: \(transcript)")
+                    continuation.finish()
+                }
+            }
+
+            // Install tap on input node
+            let inputNode = audioEngine.inputNode
+            let recordingFormat = inputNode.outputFormat(forBus: 0)
+
+            guard recordingFormat.sampleRate > 0 && recordingFormat.channelCount > 0 else {
+                continuation.finish()
+                return
+            }
+
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+                // Send buffer directly to recognition request
+                request.append(buffer)
+            }
+
+            // Start audio engine
+            audioEngine.prepare()
+            do {
+                try audioEngine.start()
+                self.logger.info("Audio engine started")
+            } catch {
+                self.logger.error("Failed to start audio engine: \(error.localizedDescription)")
+                continuation.finish()
+            }
+
+            // Handle cancellation
+            continuation.onTermination = { @Sendable [weak self] _ in
+                guard let self = self else { return }
+                Task {
+                    await self.cleanup()
                 }
             }
         }
-
-        // Install tap on input node
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
-            self?.recognitionRequest?.append(buffer)
-        }
-
-        // Start audio engine
-        audioEngine.prepare()
-        try audioEngine.start()
-
-        isListening = true
-        transcript = ""
-        isFinal = false
-        error = nil
-
-        logger.info("Started listening for speech")
     }
 
-    /// Stop listening and get final transcript
-    func stopListening() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+    public func sendAudio(_ buffer: sending AVAudioPCMBuffer) async throws {
+        guard isStreaming else {
+            throw STTError.notStreaming
+        }
+
+        lastAudioTime = Date()
+        recognitionRequest?.append(buffer)
+    }
+
+    public func stopStreaming() async throws {
+        guard isStreaming else { return }
+
+        logger.info("Stopping Apple Speech stream")
 
         recognitionRequest?.endAudio()
-        recognitionRequest = nil
+        resultContinuation?.finish()
+
+        await cleanup()
+    }
+
+    public func cancelStreaming() async {
+        logger.info("Cancelling Apple Speech stream")
 
         recognitionTask?.cancel()
+        resultContinuation?.finish()
+
+        await cleanup()
+    }
+
+    // MARK: - Private Helpers
+
+    private func cleanup() {
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        audioEngine = nil
+
+        recognitionRequest = nil
+        recognitionTask?.cancel()
         recognitionTask = nil
+
+        resultContinuation = nil
+        isStreaming = false
 
         // Deactivate audio session
         do {
@@ -208,89 +246,7 @@ final class KBOnDeviceSTT: NSObject, ObservableObject {
             logger.error("Failed to deactivate audio session: \(error.localizedDescription)")
         }
 
-        isListening = false
-        logger.debug("Stopped listening")
-    }
-
-    /// Listen for a specific duration and return the transcript
-    func listen(for duration: TimeInterval) async throws -> String {
-        try await startListening()
-
-        // Wait for the specified duration or until final result
-        try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
-
-        stopListening()
-        return transcript
-    }
-
-    /// Listen until silence is detected or max duration reached
-    func listenUntilSilence(maxDuration: TimeInterval = 10) async throws -> String {
-        try await startListening()
-
-        let startTime = Date()
-        var lastTranscriptLength = 0
-        var silenceStartTime: Date?
-        let silenceThreshold: TimeInterval = 1.5 // 1.5 seconds of silence
-
-        while isListening {
-            try await Task.sleep(nanoseconds: 100_000_000) // Check every 100ms
-
-            // Check max duration
-            if Date().timeIntervalSince(startTime) >= maxDuration {
-                break
-            }
-
-            // Check for silence (no new words)
-            if transcript.count == lastTranscriptLength {
-                if silenceStartTime == nil {
-                    silenceStartTime = Date()
-                } else if let startTime = silenceStartTime,
-                          Date().timeIntervalSince(startTime) >= silenceThreshold {
-                    break
-                }
-            } else {
-                silenceStartTime = nil
-                lastTranscriptLength = transcript.count
-            }
-
-            // Check if final result received
-            if isFinal {
-                break
-            }
-        }
-
-        stopListening()
-        return transcript
-    }
-
-    // MARK: - Availability
-
-    /// Check if speech recognition is available
-    var isAvailable: Bool {
-        speechRecognizer?.isAvailable ?? false
-    }
-
-    /// Check if on-device recognition is supported
-    var supportsOnDevice: Bool {
-        speechRecognizer?.supportsOnDeviceRecognition ?? false
-    }
-}
-
-// MARK: - SFSpeechRecognizerDelegate
-
-extension KBOnDeviceSTT: SFSpeechRecognizerDelegate {
-    nonisolated func speechRecognizer(
-        _ speechRecognizer: SFSpeechRecognizer,
-        availabilityDidChange available: Bool
-    ) {
-        Task { @MainActor in
-            if !available {
-                logger.warning("Speech recognition became unavailable")
-                error = .recognizerUnavailable
-            } else {
-                logger.info("Speech recognition available")
-            }
-        }
+        logger.debug("Cleanup complete")
     }
 }
 
@@ -302,7 +258,7 @@ enum KBSTTError: LocalizedError, Sendable {
     case restricted
     case recognizerUnavailable
     case recognitionRequestFailed
-    case recognitionFailed(String)  // Store error message instead of Error for Sendable
+    case recognitionFailed(String)
 
     var errorDescription: String? {
         switch self {

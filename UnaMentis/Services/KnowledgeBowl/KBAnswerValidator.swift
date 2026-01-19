@@ -11,7 +11,7 @@ import OSLog
 // MARK: - Answer Validator
 
 /// Validates user answers against correct answers using various matching strategies
-final class KBAnswerValidator: Sendable {
+actor KBAnswerValidator {
     private let logger = Logger(subsystem: "com.unamentis", category: "KBAnswerValidator")
 
     // MARK: - Configuration
@@ -43,7 +43,7 @@ final class KBAnswerValidator: Sendable {
     // MARK: - Public API
 
     /// Validate a user's answer against the question's correct answer
-    func validate(userAnswer: String, question: KBQuestion) -> KBValidationResult {
+    nonisolated func validate(userAnswer: String, question: KBQuestion) -> KBValidationResult {
         let answer = question.answer
 
         // Normalize the user answer
@@ -96,7 +96,7 @@ final class KBAnswerValidator: Sendable {
     }
 
     /// Validate an MCQ selection
-    func validateMCQ(selectedIndex: Int, question: KBQuestion) -> KBValidationResult {
+    nonisolated func validateMCQ(selectedIndex: Int, question: KBQuestion) -> KBValidationResult {
         guard let options = question.mcqOptions,
               selectedIndex >= 0 && selectedIndex < options.count else {
             return KBValidationResult(
@@ -122,7 +122,7 @@ final class KBAnswerValidator: Sendable {
     // MARK: - Normalization
 
     /// Normalize text based on answer type
-    private func normalize(_ text: String, for type: KBAnswerType) -> String {
+    nonisolated private func normalize(_ text: String, for type: KBAnswerType) -> String {
         var normalized = text
             .lowercased()
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -157,7 +157,7 @@ final class KBAnswerValidator: Sendable {
         return normalized
     }
 
-    private func normalizeText(_ text: String) -> String {
+    nonisolated private func normalizeText(_ text: String) -> String {
         var result = text
         // Remove common punctuation
         result = result.replacingOccurrences(of: "[.,!?;:'\"()-]", with: "", options: .regularExpression)
@@ -168,7 +168,7 @@ final class KBAnswerValidator: Sendable {
         return result.trimmingCharacters(in: .whitespaces)
     }
 
-    private func normalizePerson(_ text: String) -> String {
+    nonisolated private func normalizePerson(_ text: String) -> String {
         var result = normalizeText(text)
         // Remove titles
         let titles = ["dr", "mr", "mrs", "ms", "miss", "prof", "professor", "sir", "dame", "lord", "lady"]
@@ -185,7 +185,7 @@ final class KBAnswerValidator: Sendable {
         return result
     }
 
-    private func normalizePlace(_ text: String) -> String {
+    nonisolated private func normalizePlace(_ text: String) -> String {
         var result = normalizeText(text)
         // Handle common abbreviations
         let abbreviations: [String: String] = [
@@ -205,7 +205,7 @@ final class KBAnswerValidator: Sendable {
         return result
     }
 
-    private func normalizeNumber(_ text: String) -> String {
+    nonisolated private func normalizeNumber(_ text: String) -> String {
         var result = normalizeText(text)
 
         // Parse written numbers
@@ -232,7 +232,7 @@ final class KBAnswerValidator: Sendable {
         return result
     }
 
-    private func normalizeDate(_ text: String) -> String {
+    nonisolated private func normalizeDate(_ text: String) -> String {
         // Basic date normalization - could be expanded
         var result = normalizeText(text)
         // Handle month names
@@ -250,7 +250,7 @@ final class KBAnswerValidator: Sendable {
         return result
     }
 
-    private func normalizeTitle(_ text: String) -> String {
+    nonisolated private func normalizeTitle(_ text: String) -> String {
         var result = normalizeText(text)
         // Remove leading "the"
         result = result.replacingOccurrences(of: "^the\\s+", with: "", options: .regularExpression)
@@ -261,14 +261,14 @@ final class KBAnswerValidator: Sendable {
         return result.trimmingCharacters(in: .whitespaces)
     }
 
-    private func normalizeScientific(_ text: String) -> String {
+    nonisolated private func normalizeScientific(_ text: String) -> String {
         var result = text.lowercased()
         // Keep some special characters for formulas
         result = result.replacingOccurrences(of: "\\s+", with: "", options: .regularExpression)
         return result
     }
 
-    private func removeArticles(_ text: String) -> String {
+    nonisolated private func removeArticles(_ text: String) -> String {
         var result = text
         let articles = ["the ", "a ", "an "]
         for article in articles {
@@ -281,7 +281,7 @@ final class KBAnswerValidator: Sendable {
 
     // MARK: - Fuzzy Matching
 
-    private func fuzzyMatch(_ userAnswer: String, against answer: KBAnswer) -> KBValidationResult {
+    nonisolated private func fuzzyMatch(_ userAnswer: String, against answer: KBAnswer) -> KBValidationResult {
         let threshold = max(2, Int(Double(answer.primary.count) * config.fuzzyThresholdPercent))
 
         // Check against primary answer
@@ -323,7 +323,7 @@ final class KBAnswerValidator: Sendable {
     }
 
     /// Calculate Levenshtein distance between two strings
-    private func levenshteinDistance(_ s1: String, _ s2: String) -> Int {
+    nonisolated private func levenshteinDistance(_ s1: String, _ s2: String) -> Int {
         let m = s1.count
         let n = s2.count
 

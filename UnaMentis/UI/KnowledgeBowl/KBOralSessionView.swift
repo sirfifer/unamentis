@@ -5,7 +5,7 @@
 //  Oral round practice view for Knowledge Bowl with voice interaction
 //
 
-import Combine
+import AVFoundation
 import SwiftUI
 
 // MARK: - Oral Session View
@@ -635,6 +635,8 @@ final class KBOralSessionViewModel: ObservableObject {
     // MARK: - Tasks
 
     private var conferenceTask: Task<Void, Never>?
+    private var sttStreamTask: Task<Void, Never>?
+    private var ttsProgressTask: Task<Void, Never>?
 
     // MARK: - Computed Properties
 
@@ -662,43 +664,47 @@ final class KBOralSessionViewModel: ObservableObject {
         self.conferenceTimeRemaining = config.region.config.conferenceTime
     }
 
-    // MARK: - Combine Subscriptions
-
-    private var cancellables = Set<AnyCancellable>()
-
     // MARK: - Service Setup
 
     func prepareServices() async {
         // Set up TTS observation using Combine
         setupTTSObservation()
 
-        // Check current authorization status (don't request yet)
-        hasPermissions = stt.authorizationStatus == .authorized && stt.isAvailable
+        // Check if STT is available
+        hasPermissions = KBOnDeviceSTT.isAvailable
     }
 
     private func setupTTSObservation() {
-        tts.$progress
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] progress in
-                self?.ttsProgress = progress
-            }
-            .store(in: &cancellables)
+        // Poll TTS state periodically to update progress
+        ttsProgressTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 100_000_000)  // Poll every 100ms
 
-        tts.$isSpeaking
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] speaking in
-                self?.isSpeaking = speaking
+                guard let self = self else { break }
+
+                // Read TTS state
+                let progress = await tts.progress
+                let speaking = await tts.isSpeaking
+
+                self.ttsProgress = progress
+                self.isSpeaking = speaking
+
+                // Stop polling when not speaking
+                if !speaking {
+                    try? await Task.sleep(nanoseconds: 500_000_000)  // Pause longer when idle
+                }
             }
-            .store(in: &cancellables)
+        }
     }
 
     private func requestPermissionsIfNeeded() async -> Bool {
         print("[KB] Oral session: requesting speech authorization...")
-        let speechAuth = await stt.requestAuthorization()
+        let authStatus = await KBOnDeviceSTT.requestAuthorization()
+        let speechAuth = authStatus == .authorized
         print("[KB] Oral session: speech auth = \(speechAuth)")
 
         print("[KB] Oral session: requesting microphone access...")
-        let micAuth = await stt.requestMicrophoneAccess()
+        let micAuth = await AVAudioApplication.requestRecordPermission()
         print("[KB] Oral session: mic auth = \(micAuth)")
 
         hasPermissions = speechAuth && micAuth
@@ -728,8 +734,13 @@ final class KBOralSessionViewModel: ObservableObject {
 
     func endSession() async {
         conferenceTask?.cancel()
-        tts.stop()
-        stt.stopListening()
+        ttsProgressTask?.cancel()
+
+        await tts.stop()
+
+        // Cancel STT streaming task
+        sttStreamTask?.cancel()
+        await stt.cancelStreaming()
 
         session.endTime = Date()
         session.isComplete = true
@@ -796,21 +807,40 @@ final class KBOralSessionViewModel: ObservableObject {
 
     func toggleListening() async {
         if isListening {
-            stt.stopListening()
+            // Stop listening
+            sttStreamTask?.cancel()
+            try? await stt.stopStreaming()
             isListening = false
         } else {
+            // Start listening
             do {
-                try await stt.startListening()
+                // Create dummy audio format (actual audio captured by STT service internally)
+                let audioFormat = AVAudioFormat(
+                    commonFormat: .pcmFormatFloat32,
+                    sampleRate: 16000,
+                    channels: 1,
+                    interleaved: false
+                )!
+
+                let stream = try await stt.startStreaming(audioFormat: audioFormat)
                 isListening = true
                 sttError = nil
 
-                // Observe transcript using Combine
-                stt.$transcript
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] text in
-                        self?.transcript = text
+                // Create task to consume stream
+                sttStreamTask = Task { @MainActor [weak self] in
+                    for await result in stream {
+                        guard let self = self else { break }
+
+                        // Update transcript
+                        self.transcript = result.transcript
+
+                        // Stop listening when we get a final result
+                        if result.isFinal {
+                            self.isListening = false
+                            break
+                        }
                     }
-                    .store(in: &cancellables)
+                }
             } catch {
                 // Handle error gracefully
                 print("[KB] STT Error: \(error)")
@@ -821,13 +851,15 @@ final class KBOralSessionViewModel: ObservableObject {
     }
 
     func submitAnswer() async {
-        stt.stopListening()
+        // Stop STT streaming
+        sttStreamTask?.cancel()
+        try? await stt.stopStreaming()
         isListening = false
 
         guard let question = currentQuestion else { return }
 
         // Validate answer
-        let result = validator.validate(userAnswer: transcript, question: question)
+        let result = await validator.validate(userAnswer: transcript, question: question)
 
         // Calculate response time from when user could start answering
         let responseTime = questionStartTime.map { Date().timeIntervalSince($0) } ?? 0

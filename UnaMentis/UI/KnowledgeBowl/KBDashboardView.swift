@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - Dashboard View
 
 struct KBDashboardView: View {
-    @StateObject private var engine = KBQuestionEngine()
+    @State private var engine = KBQuestionEngine()
     @State private var selectedRegion: KBRegion = .colorado
     @State private var showingWrittenSession = false
     @State private var showingOralSession = false

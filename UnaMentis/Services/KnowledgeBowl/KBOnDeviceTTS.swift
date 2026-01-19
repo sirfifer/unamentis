@@ -4,6 +4,7 @@
 //
 //  On-device text-to-speech using AVSpeechSynthesizer for Knowledge Bowl oral rounds
 //
+//  TODO: Consider full TTSService protocol conformance for provider flexibility
 
 import AVFoundation
 import OSLog
@@ -11,19 +12,21 @@ import OSLog
 // MARK: - On-Device TTS Service
 
 /// Provides offline text-to-speech capability using AVSpeechSynthesizer
-@MainActor
-final class KBOnDeviceTTS: NSObject, ObservableObject {
-    // MARK: - Published State
+actor KBOnDeviceTTS {
+    // MARK: - State
 
-    @Published private(set) var isSpeaking = false
-    @Published private(set) var isPaused = false
-    @Published private(set) var progress: Float = 0
+    private(set) var isSpeaking = false
+    private(set) var isPaused = false
+    private(set) var progress: Float = 0
 
     // MARK: - Private State
 
-    private let synthesizer = AVSpeechSynthesizer()
-    private var currentUtterance: AVSpeechUtterance?
-    private var completionHandler: (() -> Void)?
+    // MainActor-only properties (AVSpeechSynthesizer requires main thread)
+    nonisolated(unsafe) private var synthesizer: AVSpeechSynthesizer?
+    nonisolated(unsafe) private var delegateHandler: TTSDelegateHandler?
+    nonisolated(unsafe) private var currentUtterance: AVSpeechUtterance?
+
+    private var completionContinuation: CheckedContinuation<Void, Never>?
     private let logger = Logger(subsystem: "com.unamentis", category: "KBOnDeviceTTS")
 
     // MARK: - Configuration
@@ -58,20 +61,8 @@ final class KBOnDeviceTTS: NSObject, ObservableObject {
 
     // MARK: - Initialization
 
-    override init() {
-        super.init()
-        synthesizer.delegate = self
-        configureAudioSession()
-    }
-
-    private func configureAudioSession() {
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try session.setActive(true)
-        } catch {
-            logger.error("Failed to configure audio session: \(error.localizedDescription)")
-        }
+    init() {
+        logger.info("KBOnDeviceTTS initialized")
     }
 
     // MARK: - Public API
@@ -83,40 +74,61 @@ final class KBOnDeviceTTS: NSObject, ObservableObject {
 
     /// Speak text with custom configuration
     func speak(_ text: String, config: VoiceConfig) async {
-        await withCheckedContinuation { continuation in
-            speak(text, config: config) {
-                continuation.resume()
+        // Ensure synthesizer is created on main thread
+        if synthesizer == nil {
+            await MainActor.run {
+                let synth = AVSpeechSynthesizer()
+                self.delegateHandler = TTSDelegateHandler(actor: self)
+                synth.delegate = self.delegateHandler
+                self.synthesizer = synth
+                self.configureAudioSession()
+            }
+        }
+
+        guard synthesizer != nil else {
+            logger.error("Failed to create synthesizer")
+            return
+        }
+
+        // Stop any current speech
+        if isSpeaking {
+            await MainActor.run {
+                self.synthesizer?.stopSpeaking(at: .immediate)
+            }
+        }
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            Task {
+                await self.startSpeech(text, config: config, continuation: continuation)
             }
         }
     }
 
-    /// Speak text with completion handler
-    func speak(_ text: String, config: VoiceConfig = .questionPace, completion: (() -> Void)? = nil) {
-        // Stop any current speech
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
-
-        let utterance = AVSpeechUtterance(string: text)
-        utterance.rate = config.rate
-        utterance.pitchMultiplier = config.pitchMultiplier
-        utterance.volume = config.volume
-        utterance.preUtteranceDelay = config.preUtteranceDelay
-        utterance.postUtteranceDelay = config.postUtteranceDelay
-
-        // Select voice
-        if let voice = AVSpeechSynthesisVoice(language: config.language) {
-            utterance.voice = voice
-        }
-
-        currentUtterance = utterance
-        completionHandler = completion
+    private func startSpeech(_ text: String, config: VoiceConfig, continuation: CheckedContinuation<Void, Never>) async {
+        completionContinuation = continuation
         progress = 0
         isSpeaking = true
         isPaused = false
 
         logger.debug("Speaking: \(text.prefix(50))...")
-        synthesizer.speak(utterance)
+
+        // Create and speak utterance on main thread
+        await MainActor.run {
+            let utterance = AVSpeechUtterance(string: text)
+            utterance.rate = config.rate
+            utterance.pitchMultiplier = config.pitchMultiplier
+            utterance.volume = config.volume
+            utterance.preUtteranceDelay = config.preUtteranceDelay
+            utterance.postUtteranceDelay = config.postUtteranceDelay
+
+            // Select voice
+            if let voice = AVSpeechSynthesisVoice(language: config.language) {
+                utterance.voice = voice
+            }
+
+            self.currentUtterance = utterance
+            self.synthesizer?.speak(utterance)
+        }
     }
 
     /// Speak a Knowledge Bowl question
@@ -126,8 +138,10 @@ final class KBOnDeviceTTS: NSObject, ObservableObject {
 
     /// Pause speech
     func pause() {
-        guard synthesizer.isSpeaking, !isPaused else { return }
-        synthesizer.pauseSpeaking(at: .word)
+        guard isSpeaking, !isPaused else { return }
+        Task { @MainActor in
+            self.synthesizer?.pauseSpeaking(at: .word)
+        }
         isPaused = true
         logger.debug("Speech paused")
     }
@@ -135,20 +149,92 @@ final class KBOnDeviceTTS: NSObject, ObservableObject {
     /// Resume speech
     func resume() {
         guard isPaused else { return }
-        synthesizer.continueSpeaking()
+        Task { @MainActor in
+            self.synthesizer?.continueSpeaking()
+        }
         isPaused = false
         logger.debug("Speech resumed")
     }
 
     /// Stop speech immediately
     func stop() {
-        synthesizer.stopSpeaking(at: .immediate)
+        Task { @MainActor in
+            self.synthesizer?.stopSpeaking(at: .immediate)
+        }
         isSpeaking = false
         isPaused = false
         progress = 0
         currentUtterance = nil
-        completionHandler = nil
+
+        // CRITICAL: Resume continuation to prevent leak
+        if let continuation = completionContinuation {
+            continuation.resume()
+            completionContinuation = nil
+        }
+
         logger.debug("Speech stopped")
+    }
+
+    // MARK: - Audio Session
+
+    @MainActor
+    private func configureAudioSession() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try session.setActive(true)
+        } catch {
+            logger.error("Failed to configure audio session: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Delegate Callbacks
+
+    func speechDidStart() {
+        isSpeaking = true
+        logger.debug("Speech started")
+    }
+
+    func speechDidFinish() {
+        isSpeaking = false
+        isPaused = false
+        progress = 1.0
+        logger.debug("Speech finished")
+
+        // Resume continuation on completion
+        if let continuation = completionContinuation {
+            continuation.resume()
+            completionContinuation = nil
+        }
+        currentUtterance = nil
+    }
+
+    func speechDidCancel() {
+        isSpeaking = false
+        isPaused = false
+        progress = 0
+        logger.debug("Speech cancelled")
+
+        // CRITICAL: Resume continuation to prevent leak
+        if let continuation = completionContinuation {
+            continuation.resume()
+            completionContinuation = nil
+        }
+        currentUtterance = nil
+    }
+
+    func speechProgressUpdated(_ newProgress: Float) {
+        progress = newProgress
+    }
+
+    func speechDidPause() {
+        isPaused = true
+        logger.debug("Speech paused (delegate)")
+    }
+
+    func speechDidContinue() {
+        isPaused = false
+        logger.debug("Speech continued (delegate)")
     }
 
     // MARK: - Available Voices
@@ -172,16 +258,23 @@ final class KBOnDeviceTTS: NSObject, ObservableObject {
     }
 }
 
-// MARK: - AVSpeechSynthesizerDelegate
+// MARK: - Delegate Handler
 
-extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
+/// Helper class to bridge AVSpeechSynthesizerDelegate to actor
+@MainActor
+private class TTSDelegateHandler: NSObject, AVSpeechSynthesizerDelegate {
+    let actor: KBOnDeviceTTS
+
+    init(actor: KBOnDeviceTTS) {
+        self.actor = actor
+    }
+
     nonisolated func speechSynthesizer(
         _ synthesizer: AVSpeechSynthesizer,
         didStart utterance: AVSpeechUtterance
     ) {
-        Task { @MainActor in
-            isSpeaking = true
-            logger.debug("Speech started")
+        Task {
+            await actor.speechDidStart()
         }
     }
 
@@ -189,14 +282,8 @@ extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
         _ synthesizer: AVSpeechSynthesizer,
         didFinish utterance: AVSpeechUtterance
     ) {
-        Task { @MainActor in
-            isSpeaking = false
-            isPaused = false
-            progress = 1.0
-            logger.debug("Speech finished")
-            completionHandler?()
-            completionHandler = nil
-            currentUtterance = nil
+        Task {
+            await actor.speechDidFinish()
         }
     }
 
@@ -204,13 +291,8 @@ extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
         _ synthesizer: AVSpeechSynthesizer,
         didCancel utterance: AVSpeechUtterance
     ) {
-        Task { @MainActor in
-            isSpeaking = false
-            isPaused = false
-            progress = 0
-            logger.debug("Speech cancelled")
-            completionHandler = nil
-            currentUtterance = nil
+        Task {
+            await actor.speechDidCancel()
         }
     }
 
@@ -219,12 +301,15 @@ extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
         willSpeakRangeOfSpeechString characterRange: NSRange,
         utterance: AVSpeechUtterance
     ) {
-        // Capture values before entering Task to avoid data race
+        // Calculate progress synchronously to avoid data races
         let totalLength = Float(utterance.speechString.count)
+        guard totalLength > 0 else { return }
+
         let currentPosition = Float(characterRange.location + characterRange.length)
         let newProgress = currentPosition / totalLength
-        Task { @MainActor in
-            progress = newProgress
+
+        Task {
+            await actor.speechProgressUpdated(newProgress)
         }
     }
 
@@ -232,9 +317,8 @@ extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
         _ synthesizer: AVSpeechSynthesizer,
         didPause utterance: AVSpeechUtterance
     ) {
-        Task { @MainActor in
-            isPaused = true
-            logger.debug("Speech paused (delegate)")
+        Task {
+            await actor.speechDidPause()
         }
     }
 
@@ -242,9 +326,8 @@ extension KBOnDeviceTTS: AVSpeechSynthesizerDelegate {
         _ synthesizer: AVSpeechSynthesizer,
         didContinue utterance: AVSpeechUtterance
     ) {
-        Task { @MainActor in
-            isPaused = false
-            logger.debug("Speech continued (delegate)")
+        Task {
+            await actor.speechDidContinue()
         }
     }
 }

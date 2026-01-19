@@ -45,9 +45,7 @@ final class KBPhoneticMatcherTests: XCTestCase {
         XCTAssertTrue(matcher.arePhoneticMatch("Philip", "Phillip"))
     }
 
-    func testPersonName_SaraS
-
-arah() {
+    func testPersonName_SaraSarah() {
         // Silent H at end
         XCTAssertTrue(matcher.arePhoneticMatch("Sara", "Sarah"))
     }

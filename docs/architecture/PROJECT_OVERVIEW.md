@@ -101,6 +101,9 @@ All components are **protocol-based and swappable**. The system supports multipl
 | Provider | Model | Type | Notes |
 |----------|-------|------|-------|
 | **Apple TTS** | AVSpeechSynthesizer | On-device | Zero cost, ~50ms TTFB, always available |
+| **Kyutai** | TTS 1.6B | Self-hosted | 40+ voices, emotion control, batch processing, CC-BY 4.0 |
+| **Kyutai** | Pocket TTS (100M) | On-device/CPU | 8 voices, voice cloning, sub-50ms latency, MIT license |
+| **Fish Speech** | V1.5 (~2B) | Self-hosted | Zero-shot voice cloning, 30+ languages, Apache 2.0 |
 | **Chatterbox** | Chatterbox-turbo (350M) | Self-hosted | Emotion control, voice cloning, paralinguistic tags |
 | **Chatterbox** | Chatterbox-multilingual (500M) | Self-hosted | 23 languages, expressive speech |
 | **VibeVoice** | VibeVoice-Realtime-0.5B | Self-hosted | Microsoft model, 0.5B parameters, real-time |
@@ -441,6 +444,10 @@ See [USM Core README](../../server/usm-core/README.md) for detailed documentatio
 - **Curriculum Studio** for viewing/editing UMCF content
 - **Plugin Manager** for configuring content sources
 - **Users Dashboard** for user and session management
+- **Voice Lab** section with:
+  - **AI Model Selection** - Compare and select models for all use cases (STT, TTS, LLM)
+  - **TTS Lab** - Experiment with TTS models and configurations before batch processing
+  - **Batch Profiles** - Manage TTS profiles for batch audio generation
 
 ### Self-Hosted Server Support
 
@@ -1002,7 +1009,13 @@ See [CODE_QUALITY_INITIATIVE.md](../quality/CODE_QUALITY_INITIATIVE.md) for comp
 - **UMCF AI curriculum generation prompt** (v1.2.0, complete format compliance)
 - **Specialized modules framework** (high-stakes learning scenarios)
 - **SAT Preparation Module specification** (adaptive testing, strategy training)
-- **Knowledge Bowl Module specification** (multi-subject mastery, competition simulation)
+- **Knowledge Bowl Module** (35+ Swift files: answer validation, session management, analytics, 12 domains)
+- **Knowledge Bowl 3-tier validation** (phonetic, n-gram, token, linguistic, semantic embeddings, LLM fallback)
+- **Knowledge Bowl question importers** (Qbreader, OpenTrivia, DOE Science Bowl with merge pipeline)
+- **Knowledge Bowl test suite** (15+ test files covering all validation algorithms and services)
+- **Voice Lab** (AI model selection, TTS experimentation, batch profiles in Operations Console)
+- **TTS Lab** (model comparison, configuration tuning, batch processing pipeline)
+- **Kyutai TTS integration** (TTS 1.6B and Pocket TTS models for batch and on-device)
 - **USM Core** (Rust cross-platform service manager, HTTP/WebSocket API, C FFI, 47 tests)
 - **USM-FFI** macOS menu bar app (Swift, real-time WebSocket, 16 tests)
 
@@ -1179,6 +1192,14 @@ See [CODE_QUALITY_INITIATIVE.md](../quality/CODE_QUALITY_INITIATIVE.md) for comp
 | [SPECIALIZED_MODULES_FRAMEWORK.md](../modules/SPECIALIZED_MODULES_FRAMEWORK.md) | Module design methodology |
 | [SAT_MODULE.md](../modules/SAT_MODULE.md) | SAT Preparation Module |
 | [KNOWLEDGE_BOWL_MODULE.md](../modules/KNOWLEDGE_BOWL_MODULE.md) | Knowledge Bowl Module |
+| [KNOWLEDGE_BOWL_ANSWER_VALIDATION.md](../modules/KNOWLEDGE_BOWL_ANSWER_VALIDATION.md) | 3-tier answer validation system |
+
+### Server & Tooling
+| Document | Purpose |
+|----------|---------|
+| [VOICE_LAB_GUIDE.md](../server/VOICE_LAB_GUIDE.md) | Voice Lab console section guide |
+| [TTS_LAB_GUIDE.md](../server/TTS_LAB_GUIDE.md) | TTS experimentation and batch processing |
+| [AI_MODEL_SELECTION_2026.md](../AI_MODEL_SELECTION_2026.md) | AI model comparison and selection |
 
 ### Future Explorations
 | Document | Purpose |

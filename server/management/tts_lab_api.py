@@ -19,7 +19,7 @@ import logging
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import aiofiles
 from aiohttp import web
@@ -95,10 +95,32 @@ class TTSLabConfig:
 # =============================================================================
 
 SUPPORTED_MODELS = {
+    # Server TTS Models
+    "fish-speech-v1.5": {
+        "name": "Fish Speech V1.5",
+        "type": "server",
+        "parameters": "~2B (DualAR)",
+        "release_date": "Late 2025",
+        "provider": "fish-speech",
+        "capabilities": [
+            "Zero-shot voice cloning",
+            "Multilingual (30+ languages)",
+            "Industry-leading ELO (1339)",
+            "Cross-lingual synthesis",
+        ],
+        "voices": ["default", "nova", "sarah"],
+        "config_params": {
+            "temperature": {"min": 0.1, "max": 2.0, "default": 1.0},
+            "top_p": {"min": 0.1, "max": 1.0, "default": 0.95},
+        },
+        "sample_voice": "nova",
+    },
     "kyutai-tts-1.6b": {
         "name": "Kyutai TTS 1.6B",
+        "type": "server",
         "parameters": "1.6B",
         "release_date": "July 2025",
+        "provider": "kyutai",
         "capabilities": [
             "40+ voices (including emotional)",
             "Delayed streams (low latency)",
@@ -123,17 +145,57 @@ SUPPORTED_MODELS = {
             "temperature": {"min": 0.1, "max": 2.0, "default": 1.0},
             "top_p": {"min": 0.1, "max": 1.0, "default": 0.95},
         },
+        "sample_voice": "sarah",
     },
+    "index-tts-2": {
+        "name": "IndexTTS-2",
+        "type": "server",
+        "parameters": "Transformer",
+        "release_date": "Late 2025",
+        "provider": "index-tts",
+        "capabilities": [
+            "Zero-shot voice synthesis",
+            "Precise duration control",
+            "Emotional disentanglement",
+            "Fine-grained timing",
+        ],
+        "voices": ["default", "narrator", "conversational"],
+        "config_params": {
+            "temperature": {"min": 0.1, "max": 2.0, "default": 1.0},
+            "duration_scale": {"min": 0.5, "max": 2.0, "default": 1.0},
+        },
+        "sample_voice": "narrator",
+    },
+    "vibevoice-1.5b": {
+        "name": "VibeVoice 1.5B",
+        "type": "server",
+        "parameters": "1.5B",
+        "release_date": "Late 2025",
+        "provider": "vibevoice",
+        "capabilities": [
+            "Microsoft official",
+            "Up to 90 minutes",
+            "Four distinct speakers",
+            "Long-form generation",
+        ],
+        "voices": ["nova", "alloy", "echo", "shimmer"],
+        "config_params": {
+            "speed": {"min": 0.5, "max": 2.0, "default": 1.0},
+        },
+        "sample_voice": "nova",
+    },
+    # On-Device TTS Models
     "kyutai-pocket-tts": {
         "name": "Kyutai Pocket TTS",
+        "type": "on-device",
         "parameters": "100M",
         "release_date": "Jan 13, 2026",
+        "provider": "kyutai-pocket",
         "capabilities": [
-            "8 built-in voices",
+            "Best WER (1.84%)",
             "Voice cloning from 5s",
             "CPU-only (no GPU)",
             "6x real-time speed",
-            "Sub-50ms latency",
         ],
         "voices": [
             "voice1",
@@ -150,23 +212,63 @@ SUPPORTED_MODELS = {
             "n_q": {"min": 8, "max": 24, "default": 24},
             "temperature": {"min": 0.1, "max": 2.0, "default": 1.0},
         },
+        "sample_voice": "voice1",
     },
-    "fish-speech-v1.5": {
-        "name": "Fish Speech V1.5",
-        "parameters": "~2B",
+    "neutts-air": {
+        "name": "NeuTTS Air",
+        "type": "on-device",
+        "parameters": "0.5B",
         "release_date": "Late 2025",
+        "provider": "neutts",
         "capabilities": [
-            "Zero-shot voice cloning",
-            "Multilingual (30+ languages)",
-            "Cross-lingual synthesis",
-            "Batch processing",
+            "Super-realistic TTS",
+            "Instant voice cloning",
+            "GGUF format",
+            "Runs on Raspberry Pi",
         ],
-        "voices": ["default"],  # Uses voice cloning
+        "voices": ["default", "narrator"],
         "config_params": {
             "temperature": {"min": 0.1, "max": 2.0, "default": 1.0},
-            "top_p": {"min": 0.1, "max": 1.0, "default": 0.95},
         },
+        "sample_voice": "default",
     },
+    "kokoro-82m": {
+        "name": "Kokoro 82M",
+        "type": "on-device",
+        "parameters": "82M",
+        "release_date": "Late 2025",
+        "provider": "kokoro",
+        "capabilities": [
+            "Only 82M parameters",
+            "Quality comparable to larger models",
+            "StyleTTS2/ISTFTNet based",
+            "Extremely efficient",
+        ],
+        "voices": ["default", "natural", "expressive"],
+        "config_params": {
+            "temperature": {"min": 0.1, "max": 2.0, "default": 0.8},
+            "style_weight": {"min": 0.0, "max": 1.0, "default": 0.5},
+        },
+        "sample_voice": "natural",
+    },
+}
+
+# Reference text for TTS model samples - designed to test various TTS capabilities
+TTS_REFERENCE_TEXT = '''The quick mathematician, Dr. Sarah Chen, carefully examined the peculiar equation. "Could this really be correct?" she wondered aloud, her eyes widening with excitement. After seventeen years of research, breakthrough discoveries still thrilled her. Numbers, equations, and the elegant beauty of mathematics had always been her true passion.'''
+
+# Directory for generated samples
+SAMPLES_DIR = Path(__file__).parent.parent / "web" / "public" / "audio" / "tts-samples"
+
+# Mapping from Voice Lab model IDs to actual TTS providers
+# (Some models may not have real providers yet)
+MODEL_TO_PROVIDER = {
+    "fish-speech-v1.5": None,  # Not yet integrated
+    "kyutai-tts-1.6b": None,  # Not yet integrated
+    "index-tts-2": None,  # Not yet integrated
+    "vibevoice-1.5b": "vibevoice",  # Available
+    "kyutai-pocket-tts": None,  # On-device only
+    "neutts-air": None,  # On-device only
+    "kokoro-82m": None,  # On-device only
 }
 
 
@@ -535,6 +637,164 @@ async def handle_validate_config(request: web.Request) -> web.Response:
     )
 
 
+async def handle_generate_samples(request: web.Request) -> web.Response:
+    """
+    POST /api/tts-lab/samples/generate
+
+    Generate reference audio samples for TTS models.
+
+    Request body (optional):
+    {
+        "model_ids": ["vibevoice-1.5b"],  // Optional, generates all if omitted
+        "force": false  // Regenerate even if sample exists
+    }
+
+    Response:
+    {
+        "status": "completed",
+        "generated": ["vibevoice-1.5b"],
+        "skipped": ["fish-speech-v1.5"],
+        "errors": {"kokoro-82m": "Provider not available"}
+    }
+    """
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    model_ids = data.get("model_ids")
+    force = data.get("force", False)
+
+    # Default to all models
+    if not model_ids:
+        model_ids = list(SUPPORTED_MODELS.keys())
+
+    # Ensure samples directory exists
+    SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Get TTS resource pool from app
+    from tts_cache import TTSResourcePool, Priority
+
+    resource_pool: TTSResourcePool = request.app.get("tts_resource_pool")
+
+    generated = []
+    skipped = []
+    errors = {}
+
+    for model_id in model_ids:
+        if model_id not in SUPPORTED_MODELS:
+            errors[model_id] = f"Unknown model: {model_id}"
+            continue
+
+        model_info = SUPPORTED_MODELS[model_id]
+        sample_path = SAMPLES_DIR / f"{model_id}.opus"
+
+        # Skip if exists and not forcing
+        if sample_path.exists() and not force:
+            skipped.append(model_id)
+            logger.info(f"Sample already exists for {model_id}, skipping")
+            continue
+
+        # Get provider mapping
+        provider = MODEL_TO_PROVIDER.get(model_id)
+        if not provider:
+            errors[model_id] = f"No TTS provider available for {model_id}"
+            logger.warning(f"No provider for model {model_id}")
+            continue
+
+        if not resource_pool:
+            errors[model_id] = "TTS resource pool not initialized"
+            continue
+
+        try:
+            # Generate audio using resource pool
+            voice_id = model_info.get("sample_voice", "nova")
+            logger.info(
+                f"Generating sample for {model_id} with voice {voice_id} using {provider}"
+            )
+
+            audio_data, sample_rate, duration = await resource_pool.generate_with_priority(
+                text=TTS_REFERENCE_TEXT,
+                voice_id=voice_id,
+                provider=provider,
+                speed=1.0,
+                chatterbox_config={},
+                priority=Priority.SCHEDULED,
+            )
+
+            # Save the audio file
+            async with aiofiles.open(sample_path, "wb") as f:
+                await f.write(audio_data)
+
+            generated.append(model_id)
+            logger.info(
+                f"Generated sample for {model_id}: {len(audio_data)} bytes, {duration:.1f}s"
+            )
+
+        except Exception as e:
+            errors[model_id] = str(e)
+            logger.error(f"Failed to generate sample for {model_id}: {e}")
+
+    return web.json_response(
+        {
+            "status": "completed",
+            "reference_text": TTS_REFERENCE_TEXT,
+            "samples_dir": str(SAMPLES_DIR),
+            "generated": generated,
+            "skipped": skipped,
+            "errors": errors,
+        }
+    )
+
+
+async def handle_get_sample_status(request: web.Request) -> web.Response:
+    """
+    GET /api/tts-lab/samples
+
+    Get status of generated samples for all models.
+
+    Response:
+    {
+        "reference_text": "The quick mathematician...",
+        "samples": {
+            "vibevoice-1.5b": {"available": true, "size_bytes": 102400, "path": "..."},
+            "fish-speech-v1.5": {"available": false, "reason": "No provider"}
+        }
+    }
+    """
+    samples = {}
+
+    for model_id, model_info in SUPPORTED_MODELS.items():
+        sample_path = SAMPLES_DIR / f"{model_id}.opus"
+        provider = MODEL_TO_PROVIDER.get(model_id)
+
+        if sample_path.exists():
+            stat = sample_path.stat()
+            samples[model_id] = {
+                "available": True,
+                "size_bytes": stat.st_size,
+                "url": f"/audio/tts-samples/{model_id}.opus",
+            }
+        elif not provider:
+            samples[model_id] = {
+                "available": False,
+                "reason": f"No TTS provider for {model_info['type']} model",
+            }
+        else:
+            samples[model_id] = {
+                "available": False,
+                "reason": "Sample not yet generated",
+            }
+
+    return web.json_response(
+        {
+            "reference_text": TTS_REFERENCE_TEXT,
+            "samples_dir": str(SAMPLES_DIR),
+            "samples": samples,
+        }
+    )
+
+
 # =============================================================================
 # Route Registration
 # =============================================================================
@@ -549,5 +809,9 @@ def register_tts_lab_routes(app: web.Application) -> None:
     app.router.add_get("/api/tts-lab/config/{config_id}", handle_get_config)
     app.router.add_delete("/api/tts-lab/config/{config_id}", handle_delete_config)
     app.router.add_post("/api/tts-lab/validate", handle_validate_config)
+
+    # Sample generation endpoints
+    app.router.add_get("/api/tts-lab/samples", handle_get_sample_status)
+    app.router.add_post("/api/tts-lab/samples/generate", handle_generate_samples)
 
     logger.info("Registered TTS Lab API routes")

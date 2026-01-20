@@ -17,41 +17,49 @@ actor KBNGramMatcher {
 
     // MARK: - Public API
 
-    /// Compute character n-gram similarity between two strings
+    /// Compute character n-gram similarity between two strings using Dice coefficient with padding
     /// - Parameters:
     ///   - str1: First string
     ///   - str2: Second string
     ///   - n: N-gram size (2 for bigrams, 3 for trigrams)
     /// - Returns: Similarity score (0.0-1.0)
     nonisolated func characterNGramSimilarity(_ str1: String, _ str2: String, n: Int) -> Float {
-        let ngrams1 = Set(characterNGrams(str1, n: n))
-        let ngrams2 = Set(characterNGrams(str2, n: n))
+        // Pad strings with boundary markers for better n-gram matching
+        let padded1 = String(repeating: "#", count: n - 1) + str1.lowercased() + String(repeating: "#", count: n - 1)
+        let padded2 = String(repeating: "#", count: n - 1) + str2.lowercased() + String(repeating: "#", count: n - 1)
+
+        let ngrams1 = characterNGrams(padded1, n: n)
+        let ngrams2 = characterNGrams(padded2, n: n)
 
         guard !ngrams1.isEmpty && !ngrams2.isEmpty else {
             return str1 == str2 ? 1.0 : 0.0
         }
 
-        return jaccardSimilarity(ngrams1, ngrams2)
+        // Use Dice coefficient with multiset (counting duplicates)
+        return diceMultisetSimilarity(ngrams1, ngrams2)
     }
 
-    /// Compute word n-gram similarity for multi-word answers
+    /// Compute word n-gram similarity for multi-word answers using Dice coefficient
     /// - Parameters:
     ///   - str1: First string
     ///   - str2: Second string
     ///   - n: N-gram size (typically 2 for word bigrams)
     /// - Returns: Similarity score (0.0-1.0)
     nonisolated func wordNGramSimilarity(_ str1: String, _ str2: String, n: Int) -> Float {
-        let ngrams1 = Set(wordNGrams(str1, n: n))
-        let ngrams2 = Set(wordNGrams(str2, n: n))
+        let normalized1 = str1.lowercased()
+        let normalized2 = str2.lowercased()
+
+        let ngrams1 = wordNGrams(normalized1, n: n)
+        let ngrams2 = wordNGrams(normalized2, n: n)
 
         guard !ngrams1.isEmpty && !ngrams2.isEmpty else {
             return str1 == str2 ? 1.0 : 0.0
         }
 
-        return jaccardSimilarity(ngrams1, ngrams2)
+        return diceMultisetSimilarity(ngrams1, ngrams2)
     }
 
-    /// Combined n-gram score (weighted average of char bigrams, trigrams, word bigrams)
+    /// Combined n-gram score using multiple similarity measures
     /// - Parameters:
     ///   - str1: First string
     ///   - str2: Second string
@@ -61,25 +69,81 @@ actor KBNGramMatcher {
         let normalized1 = str1.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         let normalized2 = str2.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Character bigrams (40% weight)
-        let charBigramScore = characterNGramSimilarity(normalized1, normalized2, n: 2)
+        // Exact match check
+        guard normalized1 != normalized2 else { return 1.0 }
 
-        // Character trigrams (40% weight)
-        let charTrigramScore = characterNGramSimilarity(normalized1, normalized2, n: 3)
+        // Character unigrams (shared character ratio) - very forgiving
+        let unigramScore = characterUnigramSimilarity(normalized1, normalized2)
 
-        // Word bigrams (20% weight) - only if multi-word
-        let wordBigramScore: Float
-        if normalized1.contains(" ") || normalized2.contains(" ") {
-            wordBigramScore = wordNGramSimilarity(normalized1, normalized2, n: 2)
+        // Character bigrams with Dice coefficient
+        let bigramScore = characterNGramSimilarity(normalized1, normalized2, n: 2)
+
+        // Character trigrams with Dice coefficient
+        let trigramScore = characterNGramSimilarity(normalized1, normalized2, n: 3)
+
+        // For multi-word strings, check word-level similarity
+        let isMultiWord = normalized1.contains(" ") || normalized2.contains(" ")
+
+        if isMultiWord {
+            // For multi-word answers, compute per-word average similarity
+            let wordScore = wordBySimilarity(normalized1, normalized2)
+            // Weighted: unigrams give base similarity, word-level for structure
+            return (unigramScore * 0.2) + (bigramScore * 0.25) + (trigramScore * 0.25) + (wordScore * 0.3)
         } else {
-            // Single word, use character-based only
-            wordBigramScore = (charBigramScore + charTrigramScore) / 2
+            // Single word: weighted combination favoring character-level
+            // Higher unigram weight helps with single character differences
+            return (unigramScore * 0.3) + (bigramScore * 0.35) + (trigramScore * 0.35)
+        }
+    }
+
+    /// Compute character unigram (single character) similarity
+    private nonisolated func characterUnigramSimilarity(_ str1: String, _ str2: String) -> Float {
+        let chars1 = Array(str1.filter { !$0.isWhitespace })
+        let chars2 = Array(str2.filter { !$0.isWhitespace })
+
+        guard !chars1.isEmpty && !chars2.isEmpty else {
+            return chars1.isEmpty && chars2.isEmpty ? 1.0 : 0.0
         }
 
-        // Weighted combination
-        let score = (charBigramScore * 0.4) + (charTrigramScore * 0.4) + (wordBigramScore * 0.2)
+        // Count character frequencies
+        var freq1: [Character: Int] = [:]
+        var freq2: [Character: Int] = [:]
 
-        return score
+        for ch in chars1 { freq1[ch, default: 0] += 1 }
+        for ch in chars2 { freq2[ch, default: 0] += 1 }
+
+        // Intersection count (min of frequencies)
+        var intersection = 0
+        for (ch, count1) in freq1 {
+            if let count2 = freq2[ch] {
+                intersection += min(count1, count2)
+            }
+        }
+
+        // Dice coefficient for character multisets
+        return Float(2 * intersection) / Float(chars1.count + chars2.count)
+    }
+
+    /// Compute word-by-word similarity for multi-word strings
+    private nonisolated func wordBySimilarity(_ str1: String, _ str2: String) -> Float {
+        let words1 = str1.split(separator: " ").map(String.init)
+        let words2 = str2.split(separator: " ").map(String.init)
+
+        guard !words1.isEmpty && !words2.isEmpty else { return 0.0 }
+
+        // Find best match for each word in str1 against words in str2
+        var totalScore: Float = 0.0
+
+        for word1 in words1 {
+            var bestMatch: Float = 0.0
+            for word2 in words2 {
+                let sim = characterNGramSimilarity(word1, word2, n: 2)
+                bestMatch = max(bestMatch, sim)
+            }
+            totalScore += bestMatch
+        }
+
+        return totalScore / Float(words1.count)
     }
 
     // MARK: - Private Helpers
@@ -114,14 +178,33 @@ actor KBNGramMatcher {
         return ngrams
     }
 
-    /// Compute Jaccard similarity between two sets
-    private nonisolated func jaccardSimilarity<T: Hashable>(_ set1: Set<T>, _ set2: Set<T>) -> Float {
-        let intersection = set1.intersection(set2).count
-        let union = set1.union(set2).count
+    /// Compute Dice coefficient similarity for multisets (arrays with duplicates)
+    private nonisolated func diceMultisetSimilarity(_ arr1: [String], _ arr2: [String]) -> Float {
+        guard !arr1.isEmpty || !arr2.isEmpty else { return 1.0 }
+        guard !arr1.isEmpty && !arr2.isEmpty else { return 0.0 }
 
-        guard union > 0 else { return 0.0 }
+        // Count occurrences in each array
+        var counts1: [String: Int] = [:]
+        var counts2: [String: Int] = [:]
 
-        return Float(intersection) / Float(union)
+        for item in arr1 {
+            counts1[item, default: 0] += 1
+        }
+        for item in arr2 {
+            counts2[item, default: 0] += 1
+        }
+
+        // Calculate intersection (minimum of counts)
+        var intersectionCount = 0
+        for (key, count1) in counts1 {
+            if let count2 = counts2[key] {
+                intersectionCount += min(count1, count2)
+            }
+        }
+
+        // Dice coefficient: 2 * |intersection| / (|A| + |B|)
+        let totalCount = arr1.count + arr2.count
+        return Float(2 * intersectionCount) / Float(totalCount)
     }
 }
 

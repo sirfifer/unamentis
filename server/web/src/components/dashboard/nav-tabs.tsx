@@ -105,7 +105,7 @@ const voiceLabTabs: {
   shortLabel: string;
   icon: typeof FlaskConical;
 }[] = [
-  { id: 'model-selection', label: 'AI Model Selection', shortLabel: 'Models', icon: FlaskConical },
+  { id: 'model-selection', label: 'TTS Models', shortLabel: 'TTS', icon: FlaskConical },
   { id: 'tts-lab', label: 'TTS Experimentation', shortLabel: 'Lab', icon: Settings },
   { id: 'tts-profiles', label: 'Batch Profiles', shortLabel: 'Profiles', icon: Mic },
 ];

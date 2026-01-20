@@ -26,8 +26,13 @@ actor KBTokenMatcher {
         let tokens1 = tokenize(str1)
         let tokens2 = tokenize(str2)
 
+        // If both are empty (all stopwords removed), consider them equal
+        if tokens1.isEmpty && tokens2.isEmpty {
+            return 1.0
+        }
+
         guard !tokens1.isEmpty && !tokens2.isEmpty else {
-            return str1 == str2 ? 1.0 : 0.0
+            return 0.0
         }
 
         let intersection = tokens1.intersection(tokens2).count
@@ -47,8 +52,13 @@ actor KBTokenMatcher {
         let tokens1 = tokenize(str1)
         let tokens2 = tokenize(str2)
 
+        // If both are empty (all stopwords removed), consider them equal
+        if tokens1.isEmpty && tokens2.isEmpty {
+            return 1.0
+        }
+
         guard !tokens1.isEmpty && !tokens2.isEmpty else {
-            return str1 == str2 ? 1.0 : 0.0
+            return 0.0
         }
 
         let intersection = tokens1.intersection(tokens2).count
@@ -87,8 +97,11 @@ actor KBTokenMatcher {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
-        // Remove common articles and prepositions
-        let stopWords = Set(["the", "a", "an", "of", "in", "at", "on", "to", "for", "with", "by", "from"])
+        // Remove common articles, prepositions, and titles
+        let stopWords = Set([
+            "the", "a", "an", "of", "in", "at", "on", "to", "for", "with", "by", "from",
+            "dr", "mr", "mrs", "ms", "jr", "sr"  // Common titles
+        ])
 
         let filtered = tokens.filter { !stopWords.contains($0) }
 

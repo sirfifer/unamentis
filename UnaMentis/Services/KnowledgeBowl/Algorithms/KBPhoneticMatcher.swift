@@ -99,20 +99,35 @@ actor KBPhoneticMatcher {
     }
 
     private nonisolated func processC(at pos: Int, context: inout MetaphoneContext) {
-        if pos > 1 && context.charAt(-1) != "A" && context.stringAt(pos, 2, "CH") && context.charAt(2) != "I" {
-            context.appendBoth("K")
-            context.advanceIndex()
+        // Handle CH combinations
+        if context.stringAt(pos, 2, "CH") {
+            // CHR at start (Christopher, Chromosome, etc.) -> K sound
+            if pos == 0 && context.stringAt(pos, 3, "CHR") {
+                context.appendBoth("K")
+                context.advanceIndex()
+            // CHL, CHM (Chlorine, etc.) -> K sound
+            } else if context.stringAt(pos, 3, "CHL", "CHM", "CHN") {
+                context.appendBoth("K")
+                context.advanceIndex()
+            // CH followed by vowel at start -> K (Chemistry, etc.) - give both options
+            } else if pos == 0 {
+                context.appendPrimary("K")
+                context.appendSecondary("X")
+                context.advanceIndex()
+            // Other CH -> X (church sound) with K as secondary
+            } else {
+                context.appendPrimary("X")
+                context.appendSecondary("K")
+                context.advanceIndex()
+            }
         } else if pos == 0 && context.stringAt(pos, 2, "CE", "CI") {
             context.appendBoth("S")
-        } else if context.stringAt(pos, 2, "CH") {
-            context.appendBoth("X")
-            context.advanceIndex()
         } else if context.stringAt(pos, 2, "CE", "CI", "CY") {
             context.appendBoth("S")
         } else {
             context.appendBoth("K")
         }
-        if context.charAt(1) == "C" {
+        if context.charAt(1) == "C" && !context.stringAt(pos, 2, "CH") {
             context.advanceIndex()
         }
     }
@@ -283,6 +298,11 @@ actor KBPhoneticMatcher {
     nonisolated func arePhoneticMatch(_ str1: String, _ str2: String) -> Bool {
         let codes1 = metaphone(str1)
         let codes2 = metaphone(str2)
+
+        // Empty codes (e.g., numbers only) should not match
+        guard !codes1.primary.isEmpty && !codes2.primary.isEmpty else {
+            return false
+        }
 
         // Match if primary codes match, or if either secondary matches the other's primary
         if codes1.primary == codes2.primary {

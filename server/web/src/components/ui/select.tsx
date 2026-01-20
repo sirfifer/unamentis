@@ -1,6 +1,14 @@
 'use client';
 
-import { forwardRef, createContext, useContext, useState, useRef, useEffect } from 'react';
+import {
+  forwardRef,
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  isValidElement,
+} from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -163,8 +171,9 @@ export function SelectItem({ value, children, className }: SelectItemProps) {
     if (typeof node === 'string') return node;
     if (typeof node === 'number') return String(node);
     if (Array.isArray(node)) return node.map(getTextContent).join('');
-    if (node && typeof node === 'object' && 'props' in node) {
-      return getTextContent((node as React.ReactElement).props.children);
+    if (isValidElement(node)) {
+      const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+      return getTextContent(element.props.children);
     }
     return '';
   };

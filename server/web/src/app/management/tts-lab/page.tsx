@@ -302,8 +302,8 @@ export default function TTSLabPage() {
                     <span className="text-sm font-medium">{config.cfgCoef.toFixed(1)}</span>
                   </div>
                   <Slider
-                    value={[config.cfgCoef]}
-                    onValueChange={([value]) => setConfig({ ...config, cfgCoef: value })}
+                    value={config.cfgCoef}
+                    onValueChange={(value) => setConfig({ ...config, cfgCoef: value })}
                     min={1.0}
                     max={5.0}
                     step={0.1}
@@ -320,8 +320,8 @@ export default function TTSLabPage() {
                     <span className="text-sm font-medium">{config.nQ}</span>
                   </div>
                   <Slider
-                    value={[config.nQ]}
-                    onValueChange={([value]) => setConfig({ ...config, nQ: value })}
+                    value={config.nQ}
+                    onValueChange={(value) => setConfig({ ...config, nQ: value })}
                     min={8}
                     max={32}
                     step={1}
@@ -338,8 +338,8 @@ export default function TTSLabPage() {
                     <span className="text-sm font-medium">{config.paddingBetween}</span>
                   </div>
                   <Slider
-                    value={[config.paddingBetween]}
-                    onValueChange={([value]) => setConfig({ ...config, paddingBetween: value })}
+                    value={config.paddingBetween}
+                    onValueChange={(value) => setConfig({ ...config, paddingBetween: value })}
                     min={0}
                     max={5}
                     step={1}
@@ -356,8 +356,8 @@ export default function TTSLabPage() {
                     <span className="text-sm font-medium">{config.paddingBonus}</span>
                   </div>
                   <Slider
-                    value={[config.paddingBonus]}
-                    onValueChange={([value]) => setConfig({ ...config, paddingBonus: value })}
+                    value={config.paddingBonus}
+                    onValueChange={(value) => setConfig({ ...config, paddingBonus: value })}
                     min={-3}
                     max={3}
                     step={1}
@@ -374,8 +374,8 @@ export default function TTSLabPage() {
                     <span className="text-sm font-medium">{config.temperature.toFixed(2)}</span>
                   </div>
                   <Slider
-                    value={[config.temperature]}
-                    onValueChange={([value]) => setConfig({ ...config, temperature: value })}
+                    value={config.temperature}
+                    onValueChange={(value) => setConfig({ ...config, temperature: value })}
                     min={0.1}
                     max={2.0}
                     step={0.05}
@@ -536,8 +536,8 @@ export default function TTSLabPage() {
                 <Label>Batch Size</Label>
                 <div className="flex items-center gap-4">
                   <Slider
-                    value={[config.batchSize]}
-                    onValueChange={([value]) => setConfig({ ...config, batchSize: value })}
+                    value={config.batchSize}
+                    onValueChange={(value) => setConfig({ ...config, batchSize: value })}
                     min={1}
                     max={32}
                     step={1}

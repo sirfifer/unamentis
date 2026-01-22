@@ -92,17 +92,6 @@ struct KyutaiPocketSettingsView: View {
                 Spacer()
             }
 
-            // Download progress
-            if viewModel.isDownloading {
-                ProgressView(value: viewModel.downloadProgress) {
-                    Text("Downloading...")
-                        .font(.caption)
-                } currentValueLabel: {
-                    Text("\(Int(viewModel.downloadProgress * 100))%")
-                        .font(.caption.monospacedDigit())
-                }
-            }
-
             // Loading progress
             if viewModel.isLoading {
                 ProgressView()
@@ -111,15 +100,15 @@ struct KyutaiPocketSettingsView: View {
 
             // Action buttons based on state
             switch viewModel.modelState {
-            case .notDownloaded:
-                Button {
-                    Task {
-                        await viewModel.downloadModels()
-                    }
-                } label: {
-                    Label("Download Models (\(viewModel.totalDownloadSizeMB))", systemImage: "arrow.down.circle")
+            case .notBundled:
+                // Models should be bundled; show error state
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                    Text("Models not bundled. Build configuration error.")
+                        .font(.caption)
+                        .foregroundStyle(.red)
                 }
-                .disabled(viewModel.isDownloading)
 
             case .available:
                 Button {
@@ -140,7 +129,7 @@ struct KyutaiPocketSettingsView: View {
                     Label("Unload Models", systemImage: "cpu.fill")
                 }
 
-            case .downloading, .loading:
+            case .loading:
                 EmptyView()
 
             case .error:
@@ -152,36 +141,22 @@ struct KyutaiPocketSettingsView: View {
                     Label("Retry", systemImage: "arrow.clockwise")
                 }
             }
-
-            // Delete option when downloaded
-            if case .available = viewModel.modelState {
-                Button(role: .destructive) {
-                    Task {
-                        await viewModel.deleteModels()
-                    }
-                } label: {
-                    Label("Delete Models", systemImage: "trash")
-                }
-            }
         } header: {
             Text("Model Status")
         } footer: {
-            Text("Kyutai Pocket TTS runs entirely on-device. Download once, use offline.")
+            Text("Kyutai Pocket TTS runs entirely on-device. Models are bundled with the app.")
         }
     }
 
     private var modelStatusIcon: some View {
         Group {
             switch viewModel.modelState {
-            case .notDownloaded:
-                Image(systemName: "arrow.down.circle")
-                    .foregroundStyle(.secondary)
-            case .downloading:
-                Image(systemName: "arrow.down.circle.fill")
-                    .foregroundStyle(.blue)
+            case .notBundled:
+                Image(systemName: "exclamationmark.circle.fill")
+                    .foregroundStyle(.red)
             case .available:
                 Image(systemName: "checkmark.circle")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.green)
             case .loading:
                 Image(systemName: "cpu")
                     .foregroundStyle(.blue)
@@ -198,12 +173,10 @@ struct KyutaiPocketSettingsView: View {
 
     private var modelStatusSubtext: String {
         switch viewModel.modelState {
-        case .notDownloaded:
-            return "Model needs to be downloaded (~\(viewModel.totalDownloadSizeMB))"
-        case .downloading:
-            return "Downloading model components..."
+        case .notBundled:
+            return "Build configuration error"
         case .available:
-            return "Model downloaded, ready to load"
+            return "Bundled models ready to load"
         case .loading:
             return "Loading into memory..."
         case .loaded:
@@ -611,7 +584,7 @@ struct KyutaiPocketSettingsView: View {
         } header: {
             Text("Model Information")
         } footer: {
-            Text("Kyutai Pocket TTS is a 100M parameter model from Kyutai (MIT license).")
+            Text("Kyutai Pocket TTS is a 100M parameter model from Kyutai (MIT license). Models are bundled with the app for instant use.")
         }
     }
 }

@@ -405,11 +405,14 @@ extension KyutaiPocketTTSConfig {
 
 /// Static information about the Kyutai Pocket TTS model
 public enum KyutaiPocketModelInfo {
-    /// Total model size in MB (all components)
-    public static let totalSizeMB: Int = 100
+    /// Total model size in MB (all components bundled)
+    public static let totalSizeMB: Int = 230
 
     /// Sample rate of generated audio
     public static let sampleRate: Int = 24000
+
+    /// Frame rate for latent generation
+    public static let frameRate: Float = 12.5
 
     /// Word Error Rate (WER) benchmark
     public static let wordErrorRate: Float = 0.0184
@@ -417,21 +420,30 @@ public enum KyutaiPocketModelInfo {
     /// Typical time to first audio (ms)
     public static let typicalLatencyMS: Int = 200
 
+    /// Realtime factor on CPU
+    public static let realtimeFactor: String = "~6x on M-series"
+
     /// Minimum iOS version required
     public static let minimumIOSVersion: String = "17.0"
 
     /// License type
-    public static let license: String = "MIT"
+    public static let license: String = "CC-BY-4.0"
+
+    /// Model parameters
+    public static let parameters: Int = 117_856_642
 
     /// Model components with sizes
     public static let components: [(name: String, sizeMB: Int)] = [
-        ("Transformer Backbone", 70),
-        ("MLP Sampler", 10),
-        ("Mimi VAE Decoder", 20),
+        ("Model Weights", 225),
+        ("Tokenizer", 1),
+        ("Voice Embeddings", 4),
     ]
 
-    /// Required device memory (MB)
-    public static let requiredMemoryMB: Int = 300
+    /// Inference mode note
+    public static let inferenceNote: String = "Server-side inference (native iOS pending)"
+
+    /// Required device memory (MB) for future local inference
+    public static let requiredMemoryMB: Int = 400
 }
 
 // MARK: - Comparable Extensions

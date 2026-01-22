@@ -1,24 +1,27 @@
 // UnaMentis - Kyutai Pocket TTS Model Manager
-// Manages download, storage, and loading of Kyutai Pocket TTS model components
+// Manages Kyutai Pocket TTS model information and server-side inference
 //
 // Part of Services/TTS
+//
+// Note: Kyutai Pocket TTS uses stateful streaming transformers that require
+// PyTorch/Python for inference. Native iOS CoreML conversion is not yet
+// available. Model files are bundled for future offline support, but current
+// inference uses server-side processing via the /api/tts/kyutai-pocket endpoint.
 
 import Foundation
-@preconcurrency import CoreML
 import OSLog
 
 // MARK: - Model Manager
 
-/// Manager for Kyutai Pocket TTS model components
+/// Manager for Kyutai Pocket TTS model information
 ///
-/// Handles downloading and loading of the three CoreML model components:
-/// - Transformer Backbone (KyutaiPocketTransformer.mlpackage)
-/// - MLP Sampler (KyutaiPocketSampler.mlpackage)
-/// - Mimi VAE Decoder (KyutaiPocketMimiDecoder.mlpackage)
+/// Model files (CC-BY-4.0 licensed, ~230MB total) are bundled for future
+/// offline support. Current inference uses server-side processing.
 ///
-/// Plus supporting files:
-/// - Tokenizer (tokenizer.model)
-/// - Voice Embeddings (voices.bin)
+/// Bundled Components:
+/// - Model Weights (model.safetensors) - 225MB
+/// - Tokenizer (tokenizer.model) - 60KB
+/// - Voice Embeddings (voices/*.safetensors) - 4.2MB total
 actor KyutaiPocketModelManager {
     private let logger = Logger(subsystem: "com.unamentis", category: "KyutaiPocketModelManager")
 
@@ -26,21 +29,18 @@ actor KyutaiPocketModelManager {
 
     /// Current state of the model
     enum ModelState: Sendable, Equatable {
-        case notDownloaded
-        case downloading(Float)  // Progress 0.0-1.0
-        case available           // Downloaded but not loaded
-        case loading(Float)      // Loading progress 0.0-1.0
-        case loaded              // Ready for inference
-        case error(String)       // Error occurred
+        case notBundled         // Models not found in app bundle
+        case available          // Models bundled, server inference ready
+        case loading(Float)     // Checking model files
+        case loaded             // Ready for server-side inference
+        case error(String)      // Error occurred
 
         static func == (lhs: ModelState, rhs: ModelState) -> Bool {
             switch (lhs, rhs) {
-            case (.notDownloaded, .notDownloaded),
+            case (.notBundled, .notBundled),
                  (.available, .available),
                  (.loaded, .loaded):
                 return true
-            case let (.downloading(p1), .downloading(p2)):
-                return abs(p1 - p2) < 0.01
             case let (.loading(p1), .loading(p2)):
                 return abs(p1 - p2) < 0.01
             case let (.error(e1), .error(e2)):
@@ -56,102 +56,72 @@ actor KyutaiPocketModelManager {
 
         var displayText: String {
             switch self {
-            case .notDownloaded: return "Not Downloaded"
-            case .downloading(let progress): return "Downloading \(Int(progress * 100))%"
-            case .available: return "Ready to Load"
+            case .notBundled: return "Models Not Bundled"
+            case .available: return "Ready"
             case .loading(let progress): return "Loading \(Int(progress * 100))%"
-            case .loaded: return "Loaded"
+            case .loaded: return "Ready (Server)"
             case .error(let message): return "Error: \(message)"
             }
         }
     }
 
-    private(set) var state: ModelState = .notDownloaded
+    private(set) var state: ModelState = .notBundled
 
-    // MARK: - Loaded Models
+    // MARK: - Model Information
 
-    /// CoreML models when loaded
-    struct LoadedModels: @unchecked Sendable {
-        let transformer: MLModel
-        let sampler: MLModel
-        let mimiDecoder: MLModel
-        let voiceEmbeddings: [[Float]]
+    /// Information about bundled model files
+    struct ModelInfo: Sendable {
+        let modelPath: URL?
+        let tokenizerPath: URL?
+        let voicesDirectory: URL?
+        let totalSizeMB: Float
+
+        var hasAllFiles: Bool {
+            modelPath != nil && tokenizerPath != nil && voicesDirectory != nil
+        }
     }
 
-    private var loadedModels: LoadedModels?
+    private var modelInfo: ModelInfo?
 
     // MARK: - Configuration
 
-    /// Base URL for model downloads
-    private let baseDownloadURL = "https://models.unamentis.com/tts/kyutai-pocket"
-
-    /// Model component names
+    /// Model component paths relative to bundle
     private enum ModelComponent: String, CaseIterable {
-        case transformer = "KyutaiPocketTransformer"
-        case sampler = "KyutaiPocketSampler"
-        case mimiDecoder = "KyutaiPocketMimiDecoder"
-        case tokenizer = "tokenizer"
-        case voices = "voices"
+        case model = "kyutai-pocket-ios/model"
+        case tokenizer = "kyutai-pocket-ios/tokenizer"
+        case voices = "kyutai-pocket-ios/voices"
 
-        var filename: String {
+        /// Bundle resource name (directory path)
+        var bundleResourceName: String {
+            rawValue
+        }
+
+        /// Bundle resource extension
+        var bundleExtension: String {
             switch self {
-            case .transformer, .sampler, .mimiDecoder:
-                return "\(rawValue).mlpackage"
+            case .model:
+                return "safetensors"
             case .tokenizer:
-                return "tokenizer.model"
+                return "model"
             case .voices:
-                return "voices.bin"
+                return ""  // Directory
             }
         }
 
-        var downloadFilename: String {
-            switch self {
-            case .transformer, .sampler, .mimiDecoder:
-                return "\(rawValue).mlpackage.zip"
-            case .tokenizer:
-                return "tokenizer.model"
-            case .voices:
-                return "voices.bin"
-            }
-        }
-
-        var isMLModel: Bool {
-            switch self {
-            case .transformer, .sampler, .mimiDecoder:
-                return true
-            case .tokenizer, .voices:
-                return false
-            }
-        }
-
-        /// Approximate size in MB for progress calculation
+        /// Approximate size in MB
         var approximateSizeMB: Float {
             switch self {
-            case .transformer: return 280.0
-            case .sampler: return 40.0
-            case .mimiDecoder: return 80.0
-            case .tokenizer: return 0.5
-            case .voices: return 4.0
+            case .model: return 225.0
+            case .tokenizer: return 0.06
+            case .voices: return 4.2
             }
         }
-    }
-
-    /// Directory where models are stored
-    private let modelsDirectory: URL
-
-    /// Manifest URL for checksums
-    private var manifestURL: URL {
-        URL(string: "\(baseDownloadURL)/manifest.json")!
     }
 
     // MARK: - Initialization
 
     init() {
-        // Model storage location
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        self.modelsDirectory = documentsURL.appendingPathComponent("models/kyutai-pocket", isDirectory: true)
-
-        // Check if models already exist
+        // Check model availability on init
         Task {
             await checkModelAvailability()
         }
@@ -164,329 +134,112 @@ actor KyutaiPocketModelManager {
         await state
     }
 
-    /// Check if models are downloaded
-    func isDownloaded() -> Bool {
-        for component in ModelComponent.allCases {
-            let path = modelsDirectory.appendingPathComponent(component.filename)
-            if !FileManager.default.fileExists(atPath: path.path) {
-                return false
-            }
-        }
-        return true
+    /// Check if models are available (bundled with the app)
+    func isAvailable() -> Bool {
+        modelInfo?.hasAllFiles ?? false
     }
 
-    /// Get total download size in MB
-    func totalDownloadSizeMB() -> Float {
+    /// Legacy method for backwards compatibility
+    func isDownloaded() -> Bool {
+        isAvailable()
+    }
+
+    /// Get total model size in MB
+    func totalSizeMB() -> Float {
         ModelComponent.allCases.reduce(0) { $0 + $1.approximateSizeMB }
     }
 
-    /// Download all model components
-    /// - Parameter progressHandler: Called with download progress (0.0-1.0)
-    func downloadModels(progressHandler: @Sendable @escaping (Float) -> Void) async throws {
-        logger.info("Starting Kyutai Pocket TTS model download")
-        state = .downloading(0.0)
-        progressHandler(0.0)
-
-        // Create models directory
-        try FileManager.default.createDirectory(at: modelsDirectory, withIntermediateDirectories: true)
-
-        // Download manifest first to get checksums
-        let manifest = try await downloadManifest()
-
-        // Download each component
-        let totalSize = totalDownloadSizeMB()
-        var downloadedSize: Float = 0.0
-
-        for component in ModelComponent.allCases {
-            let componentURL = URL(string: "\(baseDownloadURL)/\(component.downloadFilename)")!
-            let destinationURL = modelsDirectory.appendingPathComponent(component.filename)
-            let expectedChecksum = manifest?.components[component.rawValue]?.checksum
-
-            logger.info("Downloading \(component.rawValue)...")
-
-            // Capture current value to avoid data race
-            let currentDownloadedSize = downloadedSize
-
-            try await downloadComponent(
-                from: componentURL,
-                to: destinationURL,
-                expectedChecksum: expectedChecksum,
-                isZipped: component.isMLModel,
-                progressHandler: { componentProgress in
-                    let overallProgress = (currentDownloadedSize + componentProgress * component.approximateSizeMB) / totalSize
-                    self.state = .downloading(overallProgress)
-                    progressHandler(overallProgress)
-                }
-            )
-
-            downloadedSize += component.approximateSizeMB
-        }
-
-        state = .available
-        progressHandler(1.0)
-        logger.info("All models downloaded successfully")
+    /// Legacy method - models are bundled, no download needed
+    func totalDownloadSizeMB() -> Float {
+        totalSizeMB()
     }
 
-    /// Load models into memory
-    /// - Parameter config: Configuration for compute units
+    /// Load model configuration (validates bundled files)
+    /// - Parameter config: Configuration (used for logging only, inference is server-side)
     func loadModels(config: KyutaiPocketTTSConfig) async throws {
-        logger.info("Loading Kyutai Pocket TTS models")
+        logger.info("Validating Kyutai Pocket TTS model files")
         state = .loading(0.0)
 
-        guard isDownloaded() else {
-            let error = "Models not downloaded"
-            logger.error("\(error)")
-            state = .error(error)
-            throw KyutaiPocketModelError.modelsNotDownloaded
+        // For now, models are available but inference happens server-side
+        // This validates that the bundled files are present for future offline support
+        guard isAvailable() else {
+            // Models not bundled, but server inference still works
+            logger.warning("Model files not bundled - server inference only")
+            state = .loaded  // Still usable via server
+            return
         }
 
-        do {
-            // Configure compute units based on config
-            let mlConfig = MLModelConfiguration()
-            mlConfig.computeUnits = config.useNeuralEngine ? .all : .cpuOnly
+        state = .loading(0.5)
 
-            // Load transformer (33% progress)
-            state = .loading(0.1)
-            let transformerURL = modelsDirectory.appendingPathComponent(ModelComponent.transformer.filename)
-            let transformer = try await MLModel.load(contentsOf: transformerURL, configuration: mlConfig)
-            logger.info("Transformer loaded")
-            state = .loading(0.33)
-
-            // Load sampler (66% progress)
-            let samplerURL = modelsDirectory.appendingPathComponent(ModelComponent.sampler.filename)
-            let sampler = try await MLModel.load(contentsOf: samplerURL, configuration: mlConfig)
-            logger.info("Sampler loaded")
-            state = .loading(0.66)
-
-            // Load Mimi decoder (90% progress)
-            let decoderURL = modelsDirectory.appendingPathComponent(ModelComponent.mimiDecoder.filename)
-            let mimiDecoder = try await MLModel.load(contentsOf: decoderURL, configuration: mlConfig)
-            logger.info("Mimi decoder loaded")
-            state = .loading(0.9)
-
-            // Load voice embeddings (100% progress)
-            let voiceEmbeddings = try loadVoiceEmbeddings()
-            logger.info("Voice embeddings loaded: \(voiceEmbeddings.count) voices")
-
-            loadedModels = LoadedModels(
-                transformer: transformer,
-                sampler: sampler,
-                mimiDecoder: mimiDecoder,
-                voiceEmbeddings: voiceEmbeddings
-            )
-
-            state = .loaded
-            logger.info("All models loaded successfully")
-
-        } catch {
-            let errorMsg = "Failed to load models: \(error.localizedDescription)"
-            logger.error("\(errorMsg)")
-            state = .error(errorMsg)
-            throw KyutaiPocketModelError.loadFailed(error)
+        // Validate model files exist
+        if let info = modelInfo {
+            logger.info("Model file: \(info.modelPath?.path ?? "not found")")
+            logger.info("Tokenizer: \(info.tokenizerPath?.path ?? "not found")")
+            logger.info("Voices: \(info.voicesDirectory?.path ?? "not found")")
         }
+
+        state = .loaded
+        logger.info("Model validation complete - ready for server-side inference")
     }
 
-    /// Unload models from memory
+    /// Unload models from memory (currently no-op since inference is server-side)
     func unloadModels() {
-        logger.info("Unloading Kyutai Pocket TTS models")
-        loadedModels = nil
+        logger.info("Resetting Kyutai Pocket TTS state")
         state = .available
     }
 
-    /// Get loaded models for inference
-    func getLoadedModels() throws -> LoadedModels {
-        guard let models = loadedModels else {
-            throw KyutaiPocketModelError.modelsNotLoaded
-        }
-        return models
+    /// Get model info for server-side inference
+    func getModelInfo() -> ModelInfo? {
+        modelInfo
     }
 
-    /// Get voice embedding for a specific voice
-    func getVoiceEmbedding(for voice: KyutaiPocketVoice) throws -> [Float] {
-        guard let models = loadedModels else {
-            throw KyutaiPocketModelError.modelsNotLoaded
-        }
-        guard voice.rawValue < models.voiceEmbeddings.count else {
-            throw KyutaiPocketModelError.invalidVoice
-        }
-        return models.voiceEmbeddings[voice.rawValue]
-    }
-
-    /// Delete downloaded models
-    func deleteModels() async throws {
-        logger.info("Deleting Kyutai Pocket TTS models")
-
-        // Unload first if loaded
-        if loadedModels != nil {
-            unloadModels()
-        }
-
-        // Remove directory
-        if FileManager.default.fileExists(atPath: modelsDirectory.path) {
-            try FileManager.default.removeItem(at: modelsDirectory)
-        }
-
-        state = .notDownloaded
-        logger.info("Models deleted")
+    /// Get available voice names
+    func getAvailableVoices() -> [String] {
+        KyutaiPocketVoice.allCases.map { $0.displayName }
     }
 
     // MARK: - Private Helpers
 
     private func checkModelAvailability() {
-        if isDownloaded() {
+        // Check for bundled model files
+        let modelPath = findBundledFile(name: "model", extension: "safetensors", inDirectory: "kyutai-pocket-ios")
+        let tokenizerPath = findBundledFile(name: "tokenizer", extension: "model", inDirectory: "kyutai-pocket-ios")
+        let voicesDir = findBundledDirectory(name: "voices", inDirectory: "kyutai-pocket-ios")
+
+        modelInfo = ModelInfo(
+            modelPath: modelPath,
+            tokenizerPath: tokenizerPath,
+            voicesDirectory: voicesDir,
+            totalSizeMB: totalSizeMB()
+        )
+
+        if modelInfo?.hasAllFiles == true {
             state = .available
-            logger.info("Models found at \(self.modelsDirectory.path)")
+            logger.info("Bundled model files found")
         } else {
-            state = .notDownloaded
-            logger.info("Models not downloaded")
+            // Not an error - server inference still works without bundled models
+            state = .available
+            logger.info("Model files not bundled - using server-side inference")
         }
     }
 
-    private func downloadManifest() async throws -> ModelManifest? {
-        guard let url = URL(string: "\(baseDownloadURL)/manifest.json") else {
-            return nil
+    private func findBundledFile(name: String, extension ext: String, inDirectory directory: String) -> URL? {
+        // Try finding in models subdirectory first
+        if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: directory) {
+            return url
         }
-
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let manifest = try JSONDecoder().decode(ModelManifest.self, from: data)
-            return manifest
-        } catch {
-            logger.warning("Could not download manifest: \(error.localizedDescription)")
-            return nil
-        }
+        // Try at top level
+        return Bundle.main.url(forResource: name, withExtension: ext)
     }
 
-    private func downloadComponent(
-        from sourceURL: URL,
-        to destinationURL: URL,
-        expectedChecksum: String?,
-        isZipped: Bool,
-        progressHandler: @escaping (Float) -> Void
-    ) async throws {
-        // Create download task with progress
-        let (localURL, response) = try await URLSession.shared.download(from: sourceURL)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-            throw KyutaiPocketModelError.downloadFailed("Status \(status)")
-        }
-
-        // Verify checksum if provided
-        if let expectedChecksum = expectedChecksum {
-            let actualChecksum = try computeChecksum(for: localURL)
-            guard actualChecksum == expectedChecksum else {
-                throw KyutaiPocketModelError.checksumMismatch
-            }
-        }
-
-        // Handle zipped mlpackage files
-        if isZipped {
-            try await unzipModel(from: localURL, to: destinationURL)
-        } else {
-            // Just move the file
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
-                try FileManager.default.removeItem(at: destinationURL)
-            }
-            try FileManager.default.moveItem(at: localURL, to: destinationURL)
-        }
-
-        progressHandler(1.0)
-    }
-
-    private func unzipModel(from sourceURL: URL, to destinationURL: URL) async throws {
-        // Remove existing if present
-        if FileManager.default.fileExists(atPath: destinationURL.path) {
-            try FileManager.default.removeItem(at: destinationURL)
-        }
-
-        // CoreML mlpackage files are directories, not archives, so we just move them
-        // If we receive a compressed archive, we need to use a library like ZIPFoundation
-        // For now, assume the server provides uncompressed mlpackage directories
-        let fm = FileManager.default
-
-        // Check if source is a directory (mlpackage)
+    private func findBundledDirectory(name: String, inDirectory directory: String) -> URL? {
+        guard let baseURL = Bundle.main.resourceURL else { return nil }
+        let dirURL = baseURL.appendingPathComponent(directory).appendingPathComponent(name)
         var isDirectory: ObjCBool = false
-        if fm.fileExists(atPath: sourceURL.path, isDirectory: &isDirectory), isDirectory.boolValue {
-            // Just move the directory
-            try fm.moveItem(at: sourceURL, to: destinationURL)
-        } else {
-            // For compressed files, throw an error asking for proper library
-            // Production should use ZIPFoundation or similar
-            logger.error("Compressed model archives require ZIPFoundation library")
-            throw KyutaiPocketModelError.unzipFailed
+        if FileManager.default.fileExists(atPath: dirURL.path, isDirectory: &isDirectory), isDirectory.boolValue {
+            return dirURL
         }
-    }
-
-    private func computeChecksum(for url: URL) throws -> String {
-        let data = try Data(contentsOf: url)
-        // Use CryptoKit for SHA256
-        // Note: Implementation placeholder
-        return data.hashValue.description
-    }
-
-    private func loadVoiceEmbeddings() throws -> [[Float]] {
-        let voicesURL = modelsDirectory.appendingPathComponent(ModelComponent.voices.filename)
-        let data = try Data(contentsOf: voicesURL)
-
-        let embeddingDim = 256  // From config
-        let numVoices = 8
-
-        // Parse binary float array
-        let floatCount = data.count / MemoryLayout<Float>.size
-        var floats = [Float](repeating: 0, count: floatCount)
-
-        data.withUnsafeBytes { buffer in
-            _ = floats.withUnsafeMutableBytes { dest in
-                buffer.copyBytes(to: dest)
-            }
-        }
-
-        // Split into per-voice embeddings
-        var embeddings: [[Float]] = []
-        for i in 0..<numVoices {
-            let start = i * embeddingDim
-            let end = start + embeddingDim
-            if end <= floats.count {
-                embeddings.append(Array(floats[start..<end]))
-            }
-        }
-
-        return embeddings
-    }
-}
-
-// MARK: - Model Manifest
-
-/// Manifest JSON structure for model downloads
-struct ModelManifest: Codable {
-    let version: String
-    let modelId: String
-    let license: String
-    let platform: String
-    let totalSizeMB: Float
-    let components: [String: ComponentInfo]
-
-    struct ComponentInfo: Codable {
-        let filename: String
-        let sizeMB: Float
-        let checksum: String
-
-        enum CodingKeys: String, CodingKey {
-            case filename
-            case sizeMB = "size_mb"
-            case checksum
-        }
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case version
-        case modelId = "model_id"
-        case license
-        case platform
-        case totalSizeMB = "total_size_mb"
-        case components
+        return nil
     }
 }
 
@@ -494,33 +247,24 @@ struct ModelManifest: Codable {
 
 /// Errors for Kyutai Pocket model operations
 enum KyutaiPocketModelError: Error, LocalizedError {
-    case modelsNotDownloaded
-    case modelsNotLoaded
-    case downloadFailed(String)
-    case checksumMismatch
-    case unzipFailed
-    case loadFailed(Error)
+    case modelsNotBundled
+    case serverUnavailable
+    case networkError(Error)
     case invalidVoice
     case inferenceError(String)
 
     var errorDescription: String? {
         switch self {
-        case .modelsNotDownloaded:
-            return "Models not downloaded. Please download the Kyutai Pocket TTS models first."
-        case .modelsNotLoaded:
-            return "Models not loaded into memory. Please load the models first."
-        case .downloadFailed(let reason):
-            return "Failed to download models: \(reason)"
-        case .checksumMismatch:
-            return "Model checksum verification failed. The download may be corrupted."
-        case .unzipFailed:
-            return "Failed to unzip model package."
-        case .loadFailed(let error):
-            return "Failed to load models: \(error.localizedDescription)"
+        case .modelsNotBundled:
+            return "Kyutai Pocket TTS models are not bundled with the app."
+        case .serverUnavailable:
+            return "TTS server is not available. Check your network connection."
+        case .networkError(let error):
+            return "Network error: \(error.localizedDescription)"
         case .invalidVoice:
-            return "Invalid voice index specified."
+            return "Invalid voice specified."
         case .inferenceError(let reason):
-            return "Inference failed: \(reason)"
+            return "Speech synthesis failed: \(reason)"
         }
     }
 }
@@ -530,7 +274,7 @@ enum KyutaiPocketModelError: Error, LocalizedError {
 /// Observable wrapper for model state
 @MainActor
 final class KyutaiPocketModelStateObserver: ObservableObject {
-    @Published var state: KyutaiPocketModelManager.ModelState = .notDownloaded
+    @Published var state: KyutaiPocketModelManager.ModelState = .notBundled
 
     private let manager: KyutaiPocketModelManager
 

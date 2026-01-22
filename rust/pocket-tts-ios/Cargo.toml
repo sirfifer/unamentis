@@ -1,0 +1,61 @@
+[package]
+name = "pocket-tts-ios"
+version = "0.1.0"
+edition = "2021"
+authors = ["UnaMentis"]
+description = "Kyutai Pocket TTS for iOS via Candle"
+license = "MIT"
+
+[lib]
+name = "pocket_tts_ios"
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+# Candle ML framework
+candle-core = "0.8"
+candle-nn = "0.8"
+candle-transformers = "0.8"
+
+# Model loading
+safetensors = "0.4"
+tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
+
+# Audio processing
+hound = "3.5"
+rubato = "0.15"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# FFI bindings
+uniffi = { version = "0.28", features = ["cli"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Async (for streaming)
+tokio = { version = "1.0", features = ["sync", "rt"], optional = true }
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
+
+[features]
+default = []
+metal = ["candle-core/metal"]
+streaming = ["tokio"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi_bindgen.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

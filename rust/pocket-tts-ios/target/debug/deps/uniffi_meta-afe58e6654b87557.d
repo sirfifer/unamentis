@@ -1,0 +1,10 @@
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/uniffi_meta-afe58e6654b87557.d: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/ffi_names.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/group.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/reader.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/types.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/metadata.rs
+
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/libuniffi_meta-afe58e6654b87557.rmeta: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/ffi_names.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/group.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/reader.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/types.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/metadata.rs
+
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/lib.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/ffi_names.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/group.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/reader.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/types.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/uniffi_meta-0.28.3/src/metadata.rs:

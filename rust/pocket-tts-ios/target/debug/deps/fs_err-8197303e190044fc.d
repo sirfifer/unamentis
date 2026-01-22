@@ -1,0 +1,12 @@
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/fs_err-8197303e190044fc.d: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/dir.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/errors.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/file.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/open_options.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os/unix.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/path.rs
+
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/libfs_err-8197303e190044fc.rmeta: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/dir.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/errors.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/file.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/open_options.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os/unix.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/path.rs
+
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/lib.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/dir.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/errors.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/file.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/open_options.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/os/unix.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fs-err-2.11.0/src/path.rs:

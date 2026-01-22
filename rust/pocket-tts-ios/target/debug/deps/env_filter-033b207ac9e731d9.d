@@ -1,0 +1,10 @@
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/env_filter-033b207ac9e731d9.d: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/directive.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filter.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filtered_log.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/op.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/parser.rs
+
+/Users/ramerman/dev/unamentis/rust/pocket-tts-ios/target/debug/deps/libenv_filter-033b207ac9e731d9.rmeta: /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/lib.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/directive.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filter.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filtered_log.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/op.rs /Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/parser.rs
+
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/lib.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/directive.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filter.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/filtered_log.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/op.rs:
+/Users/ramerman/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/env_filter-0.1.4/src/parser.rs:

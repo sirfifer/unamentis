@@ -14,9 +14,7 @@ final class KyutaiPocketSettingsViewModel: ObservableObject {
 
     // MARK: - Model State
 
-    @Published var modelState: KyutaiPocketModelManager.ModelState = .notDownloaded
-    @Published var downloadProgress: Float = 0.0
-    @Published var isDownloading = false
+    @Published var modelState: KyutaiPocketModelManager.ModelState = .notBundled
     @Published var isLoading = false
 
     // MARK: - Preset Selection
@@ -125,25 +123,6 @@ final class KyutaiPocketSettingsViewModel: ObservableObject {
         modelState = await manager.currentState()
     }
 
-    func downloadModels() async {
-        guard let manager = modelManager else { return }
-        isDownloading = true
-        downloadProgress = 0.0
-
-        do {
-            try await manager.downloadModels { [weak self] progress in
-                Task { @MainActor in
-                    self?.downloadProgress = progress
-                }
-            }
-            modelState = .available
-        } catch {
-            modelState = .error(error.localizedDescription)
-        }
-
-        isDownloading = false
-    }
-
     func loadModels() async {
         guard let manager = modelManager else { return }
         isLoading = true
@@ -163,12 +142,6 @@ final class KyutaiPocketSettingsViewModel: ObservableObject {
         guard let manager = modelManager else { return }
         await manager.unloadModels()
         modelState = .available
-    }
-
-    func deleteModels() async {
-        guard let manager = modelManager else { return }
-        try? await manager.deleteModels()
-        modelState = .notDownloaded
     }
 
     // MARK: - Configuration

@@ -11,12 +11,12 @@ use crate::audio;
 use crate::config::TTSConfig;
 use crate::error::PocketTTSError;
 use crate::models::PocketTTSModel;
-use crate::modules::embeddings::VoiceEmbedding;
 use crate::{AudioChunk, SynthesisResult, TTSEventHandler};
 
 /// Main TTS engine exposed to Swift
 pub struct PocketTTSEngine {
     model: Arc<Mutex<Option<PocketTTSModel>>>,
+    #[allow(dead_code)]
     model_path: PathBuf,
     config: Mutex<TTSConfig>,
     is_cancelled: Mutex<bool>,
@@ -194,7 +194,7 @@ impl PocketTTSEngine {
         let samples = audio::bytes_to_samples(&audio_data);
 
         // Resample to 24kHz if needed
-        let samples = if sample_rate != 24000 {
+        let _samples = if sample_rate != 24000 {
             audio::resample(&samples, sample_rate, 24000)?
         } else {
             samples

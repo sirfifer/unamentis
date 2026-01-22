@@ -7,7 +7,9 @@ use candle_nn::{Conv1d as CandleConv1d, Conv1dConfig, ConvTranspose1d as CandleC
 #[derive(Debug)]
 pub struct Conv1d {
     conv: CandleConv1d,
+    #[allow(dead_code)]
     kernel_size: usize,
+    #[allow(dead_code)]
     padding: usize,
 }
 
@@ -47,6 +49,7 @@ impl Module for Conv1d {
 #[derive(Debug)]
 pub struct CausalConv1d {
     conv: CandleConv1d,
+    #[allow(dead_code)]
     kernel_size: usize,
 }
 
@@ -88,7 +91,9 @@ impl Module for CausalConv1d {
 #[derive(Debug)]
 pub struct ConvTranspose1d {
     conv: CandleConvTranspose1d,
+    #[allow(dead_code)]
     kernel_size: usize,
+    #[allow(dead_code)]
     stride: usize,
 }
 

@@ -3,10 +3,10 @@
 //! Converts latent representations to audio waveforms using
 //! a series of upsampling convolution blocks.
 
-use candle_core::{Device, Result, Tensor};
+use candle_core::{Result, Tensor};
 use candle_nn::{Module, VarBuilder};
 
-use crate::modules::conv::{CausalConv1d, ConvTranspose1d, SEANetDecoderBlock};
+use crate::modules::conv::{CausalConv1d, SEANetDecoderBlock};
 
 /// SEANet decoder configuration
 #[derive(Debug, Clone)]

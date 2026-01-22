@@ -1,6 +1,6 @@
 //! Multi-head attention modules
 
-use candle_core::{DType, Device, Result, Tensor};
+use candle_core::{Device, Result, Tensor};
 use candle_nn::{Linear, Module, VarBuilder};
 
 use super::rotary::RotaryEmbedding;

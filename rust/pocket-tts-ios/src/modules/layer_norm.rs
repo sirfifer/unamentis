@@ -1,6 +1,6 @@
 //! Layer normalization modules
 
-use candle_core::{DType, Device, Result, Tensor};
+use candle_core::{DType, Result, Tensor};
 use candle_nn::{Module, VarBuilder};
 
 /// RMS Layer Normalization (used in modern transformers)
@@ -16,7 +16,7 @@ impl RMSNorm {
         Ok(Self { weight, eps })
     }
 
-    pub fn load(hidden_size: usize, eps: f64, weight: Tensor) -> Self {
+    pub fn load(_hidden_size: usize, eps: f64, weight: Tensor) -> Self {
         Self { weight, eps }
     }
 }

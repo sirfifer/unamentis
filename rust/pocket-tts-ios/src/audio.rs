@@ -86,7 +86,7 @@ pub fn resample(
     ).map_err(|e| PocketTTSError::AudioEncodingFailed(e.to_string()))?;
 
     let mut output = Vec::new();
-    let mut input_frames: Vec<Vec<f32>> = vec![samples.to_vec()];
+    let input_frames: Vec<Vec<f32>> = vec![samples.to_vec()];
 
     // Process in chunks
     for chunk in input_frames[0].chunks(chunk_size) {

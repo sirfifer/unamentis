@@ -3,7 +3,7 @@
 //! 6-layer transformer backbone that generates latent representations
 //! from text tokens and voice embeddings.
 
-use candle_core::{DType, Device, Result, Tensor};
+use candle_core::{Device, Result, Tensor};
 use candle_nn::{Module, VarBuilder};
 
 use crate::modules::{

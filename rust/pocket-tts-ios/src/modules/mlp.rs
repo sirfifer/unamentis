@@ -124,7 +124,7 @@ impl MLPSampler {
         Ok(current)
     }
 
-    fn top_p_sample(&self, logits: &Tensor, top_p: f32) -> Result<Tensor> {
+    fn top_p_sample(&self, logits: &Tensor, _top_p: f32) -> Result<Tensor> {
         // Softmax to get probabilities
         let probs = candle_nn::ops::softmax(logits, candle_core::D::Minus1)?;
 

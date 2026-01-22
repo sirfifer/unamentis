@@ -5,9 +5,8 @@
 
 use std::path::Path;
 
-use candle_core::{DType, Device, Result, Tensor};
+use candle_core::{DType, Device, Tensor};
 use candle_nn::VarBuilder;
-use safetensors::SafeTensors;
 
 use super::flowlm::{FlowLM, FlowLMConfig};
 use super::mimi::{MimiConfig, MimiDecoder};

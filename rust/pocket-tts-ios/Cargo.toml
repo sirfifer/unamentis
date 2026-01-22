@@ -18,7 +18,9 @@ candle-transformers = "0.8"
 
 # Model loading
 safetensors = "0.4"
-tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
+
+# Regex for tokenization (pure Rust, no C deps)
+regex = "1.10"
 
 # Audio processing
 hound = "3.5"

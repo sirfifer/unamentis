@@ -1,6 +1,6 @@
 //! Rotary Position Embeddings (RoPE)
 
-use candle_core::{DType, Device, Result, Tensor};
+use candle_core::{Device, Result, Tensor};
 
 /// Rotary Position Embedding
 #[derive(Debug, Clone)]
@@ -14,7 +14,7 @@ pub struct RotaryEmbedding {
 impl RotaryEmbedding {
     pub fn new(dim: usize, max_seq_len: usize, base: f32, device: &Device) -> Result<Self> {
         let inv_freq = Self::compute_inv_freq(dim, base, device)?;
-        let (cos_cache, sin_cache) = Self::compute_cache(&inv_freq, max_seq_len, device)?;
+        let (cos_cache, sin_cache) = Self::compute_cache(&inv_freq, max_seq_len)?;
 
         Ok(Self {
             cos_cache,
@@ -33,16 +33,15 @@ impl RotaryEmbedding {
         Tensor::from_vec(inv_freq, (half_dim,), device)
     }
 
-    fn compute_cache(inv_freq: &Tensor, max_seq_len: usize, device: &Device) -> Result<(Tensor, Tensor)> {
+    fn compute_cache(inv_freq: &Tensor, max_seq_len: usize) -> Result<(Tensor, Tensor)> {
+        let device = inv_freq.device();
         let positions: Vec<f32> = (0..max_seq_len).map(|i| i as f32).collect();
         let positions = Tensor::from_vec(positions, (max_seq_len, 1), device)?;
 
-        // Outer product: positions @ inv_freq.T
+        // Outer product: positions @ inv_freq.T -> [max_seq_len, half_dim]
         let freqs = positions.matmul(&inv_freq.unsqueeze(0)?)?;
 
-        // Duplicate for complex rotation
-        let freqs = Tensor::cat(&[&freqs, &freqs], 1)?;
-
+        // cos/sin have shape [seq, half_dim] - NOT doubled
         let cos_cache = freqs.cos()?;
         let sin_cache = freqs.sin()?;
 
@@ -50,6 +49,7 @@ impl RotaryEmbedding {
     }
 
     /// Apply rotary embeddings to query and key tensors
+    /// Input shape: [batch, seq, num_heads, head_dim]
     pub fn forward(&self, q: &Tensor, k: &Tensor, offset: usize) -> Result<(Tensor, Tensor)> {
         let seq_len = q.dim(1)?;
         let end = offset + seq_len;
@@ -61,6 +61,7 @@ impl RotaryEmbedding {
             )));
         }
 
+        // cos/sin have shape [seq, half_dim]
         let cos = self.cos_cache.narrow(0, offset, seq_len)?;
         let sin = self.sin_cache.narrow(0, offset, seq_len)?;
 
@@ -73,14 +74,17 @@ impl RotaryEmbedding {
     fn apply_rotary(&self, x: &Tensor, cos: &Tensor, sin: &Tensor) -> Result<Tensor> {
         let half_dim = self.dim / 2;
 
-        // Split into two halves
+        // x has shape [batch, seq, heads, head_dim]
+        // Split into two halves along last dimension
         let x1 = x.narrow(candle_core::D::Minus1, 0, half_dim)?;
         let x2 = x.narrow(candle_core::D::Minus1, half_dim, half_dim)?;
 
-        // Rotate: [x1, x2] -> [x1*cos - x2*sin, x1*sin + x2*cos]
-        let cos = cos.unsqueeze(0)?.unsqueeze(2)?; // Add batch and head dims
+        // cos/sin have shape [seq, half_dim]
+        // Reshape to [1, seq, 1, half_dim] for broadcasting with [batch, seq, heads, half_dim]
+        let cos = cos.unsqueeze(0)?.unsqueeze(2)?;
         let sin = sin.unsqueeze(0)?.unsqueeze(2)?;
 
+        // Rotate: [x1, x2] -> [x1*cos - x2*sin, x1*sin + x2*cos]
         let rotated_x1 = (x1.broadcast_mul(&cos)? - x2.broadcast_mul(&sin)?)?;
         let rotated_x2 = (x1.broadcast_mul(&sin)? + x2.broadcast_mul(&cos)?)?;
 

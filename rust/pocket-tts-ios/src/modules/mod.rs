@@ -10,6 +10,9 @@ pub mod conv;
 pub mod rotary;
 pub mod layer_norm;
 
+#[cfg(test)]
+mod tests;
+
 pub use attention::{MultiHeadAttention, CausalSelfAttention};
 pub use embeddings::{TextEmbedding, VoiceEmbedding};
 pub use mlp::{MLP, GatedMLP};

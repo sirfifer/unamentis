@@ -3,7 +3,7 @@
 //! Neural audio codec decoder that converts quantized latents
 //! to high-quality 24kHz audio.
 
-use candle_core::{Device, Result, Tensor};
+use candle_core::{Result, Tensor};
 use candle_nn::{Module, VarBuilder};
 
 use super::seanet::{SEANetConfig, SEANetDecoder};

@@ -11,7 +11,15 @@ pub mod tokenizer;
 pub mod audio;
 pub mod engine;
 
-use std::sync::Arc;
+// Test modules
+#[cfg(test)]
+mod config_tests;
+#[cfg(test)]
+mod audio_tests;
+#[cfg(test)]
+mod error_tests;
+#[cfg(test)]
+mod lib_tests;
 
 pub use config::{TTSConfig, VoiceInfo};
 pub use error::PocketTTSError;

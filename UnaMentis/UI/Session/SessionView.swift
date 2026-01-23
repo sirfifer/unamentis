@@ -1532,6 +1532,9 @@ class SessionViewModel: ObservableObject {
                 logger.warning("Deepgram TTS API key not configured, falling back to Apple TTS")
                 ttsService = AppleTTSService()
             }
+        case .kyutaiPocket:
+            logger.info("Using Kyutai Pocket TTS (on-device Rust/Candle)")
+            ttsService = KyutaiPocketTTSService()
         default:
             logger.info("Using Apple TTS as default TTS provider")
             ttsService = AppleTTSService()

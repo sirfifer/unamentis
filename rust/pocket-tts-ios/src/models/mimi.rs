@@ -2,6 +2,10 @@
 //!
 //! Neural audio codec decoder that converts quantized latents
 //! to high-quality 24kHz audio.
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Result, Tensor};
 use candle_nn::{Module, VarBuilder};

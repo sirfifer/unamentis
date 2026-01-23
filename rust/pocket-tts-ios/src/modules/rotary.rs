@@ -1,4 +1,8 @@
 //! Rotary Position Embeddings (RoPE)
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Device, Result, Tensor};
 

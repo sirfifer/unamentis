@@ -1,4 +1,8 @@
 //! Audio processing utilities for Pocket TTS
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use std::io::Cursor;
 use hound::{WavWriter, WavSpec, SampleFormat};

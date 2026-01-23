@@ -1,4 +1,8 @@
 //! MLP (Feed-Forward) modules
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Result, Tensor};
 use candle_nn::{Linear, Module, VarBuilder};

@@ -2,6 +2,10 @@
 //!
 //! Converts latent representations to audio waveforms using
 //! a series of upsampling convolution blocks.
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Result, Tensor};
 use candle_nn::{Module, VarBuilder};

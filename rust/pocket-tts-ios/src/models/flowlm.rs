@@ -2,6 +2,10 @@
 //!
 //! 6-layer transformer backbone that generates latent representations
 //! from text tokens and voice embeddings.
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Device, Result, Tensor};
 use candle_nn::{Module, VarBuilder};

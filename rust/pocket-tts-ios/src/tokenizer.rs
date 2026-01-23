@@ -2,6 +2,11 @@
 //!
 //! Pure Rust implementation for iOS cross-compilation compatibility.
 //! Supports loading vocabulary from JSON and basic BPE-style tokenization.
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
+//! Note: Adapted to use JSON format vocabulary instead of SentencePiece for iOS compatibility
 
 use std::collections::HashMap;
 use std::path::Path;

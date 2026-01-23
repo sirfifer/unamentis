@@ -2,6 +2,10 @@
 //!
 //! Combines FlowLM transformer, MLP sampler, and Mimi decoder
 //! into a complete text-to-speech pipeline.
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use std::path::Path;
 

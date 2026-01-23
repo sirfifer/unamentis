@@ -104,6 +104,16 @@ kyutai-pocket-ios/
 - Real-time factor: ~3-4x on iPhone 15 Pro (estimated)
 - Memory usage: ~150MB during inference
 
+## Credits
+
+This implementation builds upon excellent work from:
+
+- **[Kyutai Labs](https://kyutai.org/)** - Original Pocket TTS model architecture and trained weights
+- **[babybirdprd/pocket-tts](https://github.com/babybirdprd/pocket-tts)** - Complete Rust/Candle port that made iOS integration possible
+- **[HuggingFace Candle](https://github.com/huggingface/candle)** - ML framework for efficient inference
+
+See [ATTRIBUTION.md](ATTRIBUTION.md) for detailed attribution information.
+
 ## License
 
 MIT (code), CC-BY-4.0 (model weights)

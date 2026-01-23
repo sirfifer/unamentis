@@ -1,4 +1,8 @@
 //! Layer normalization modules
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{DType, Result, Tensor};
 use candle_nn::{Module, VarBuilder};

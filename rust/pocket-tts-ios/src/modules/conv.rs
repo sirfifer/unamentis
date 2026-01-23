@@ -1,4 +1,8 @@
 //! Convolution modules for audio processing
+//!
+//! Portions of this file derived from:
+//! https://github.com/babybirdprd/pocket-tts
+//! Licensed under MIT
 
 use candle_core::{Result, Tensor};
 use candle_nn::{Conv1d as CandleConv1d, Conv1dConfig, ConvTranspose1d as CandleConvTranspose1d, ConvTranspose1dConfig, Module, VarBuilder};

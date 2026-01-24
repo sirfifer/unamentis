@@ -303,25 +303,12 @@ public struct VoiceSettingsView: View {
                 .accessibilityHint("Select the AI's voice")
             }
 
-            // Kyutai Pocket TTS settings
+            // Kyutai Pocket TTS settings (disabled - xcframework not linked)
             if viewModel.ttsProvider == .kyutaiPocket {
-                NavigationLink {
-                    KyutaiPocketSettingsView()
-                } label: {
-                    HStack {
-                        Label("Kyutai Pocket Settings", systemImage: "cpu")
-                        Spacer()
-                        Text(viewModel.kyutaiPocketPresetName)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                // Model status indicator
                 HStack {
-                    Image(systemName: viewModel.kyutaiPocketModelLoaded ? "checkmark.circle.fill" : "arrow.down.circle")
-                        .foregroundStyle(viewModel.kyutaiPocketModelLoaded ? .green : .orange)
-                    Text(viewModel.kyutaiPocketModelLoaded ? "Model Ready" : "Download Required")
+                    Image(systemName: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                    Text("Kyutai Pocket TTS is not available in this build")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -526,9 +513,9 @@ class VoiceSettingsViewModel: ObservableObject {
         ChatterboxPreset(rawValue: chatterboxPresetRaw)?.displayName ?? "Default"
     }
 
-    /// Kyutai Pocket preset display name
+    /// Kyutai Pocket preset display name (disabled - xcframework not linked)
     var kyutaiPocketPresetName: String {
-        KyutaiPocketPreset(rawValue: kyutaiPocketPresetRaw)?.displayName ?? "Default"
+        "Unavailable"
     }
 
     /// Get discovered voices for the currently selected TTS provider
@@ -642,14 +629,11 @@ class VoiceSettingsViewModel: ObservableObject {
         }
     }
 
-    /// Check Kyutai Pocket TTS model availability
+    /// Check Kyutai Pocket TTS model availability (disabled - xcframework not linked)
     private func checkKyutaiPocketModelStatus() async {
-        let modelManager = KyutaiPocketModelManager()
-        // Wait a moment for the model manager to initialize and copy models if needed
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-        let isAvailable = await modelManager.isModelAvailable()
+        // Kyutai Pocket TTS is not available in this build
         await MainActor.run {
-            kyutaiPocketModelLoaded = isAvailable
+            kyutaiPocketModelLoaded = false
         }
     }
 

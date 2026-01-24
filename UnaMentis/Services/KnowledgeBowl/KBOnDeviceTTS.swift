@@ -337,9 +337,11 @@ actor KBOnDeviceTTS {
             ttsService = AppleTTSService()
 
         case .kyutaiPocket:
-            logger.info("Using Kyutai Pocket TTS (on-device Rust/Candle)")
-            NSLog("🔵 Creating KyutaiPocketTTSService")
-            ttsService = KyutaiPocketTTSService()
+            // Kyutai Pocket TTS is not available in this build (xcframework not linked)
+            // Fall back to Apple TTS
+            logger.warning("Kyutai Pocket TTS unavailable, using Apple TTS")
+            NSLog("🔵 Kyutai Pocket unavailable, using AppleTTSService")
+            ttsService = AppleTTSService()
 
         case .selfHosted, .vibeVoice, .chatterbox, .elevenLabsFlash, .elevenLabsTurbo, .deepgramAura2:
             // For server-based TTS, fall back to Apple TTS for Knowledge Bowl

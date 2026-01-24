@@ -354,7 +354,7 @@ public final class SessionManager: ObservableObject {
         }
 
         // Check maintenance mode feature flag
-        if await FeatureFlagService.shared.isEnabled(FeatureFlagKeys.maintenanceMode) {
+        if await FeatureFlagService.shared.isEnabled(SessionFeatureFlagKeys.maintenanceMode) {
             logger.warning("Session start blocked: maintenance mode is enabled")
             throw SessionError.maintenanceMode
         }
@@ -1609,10 +1609,10 @@ public final class SessionManager: ObservableObject {
     }
 }
 
-// MARK: - Feature Flag Keys
+// MARK: - Session Feature Flag Keys
 
 /// Feature flag keys used by SessionManager
-private enum FeatureFlagKeys {
+private enum SessionFeatureFlagKeys {
     static let maintenanceMode = "ops_maintenance_mode"
 }
 

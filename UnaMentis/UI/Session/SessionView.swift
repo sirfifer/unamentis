@@ -1533,8 +1533,10 @@ class SessionViewModel: ObservableObject {
                 ttsService = AppleTTSService()
             }
         case .kyutaiPocket:
-            logger.info("Using Kyutai Pocket TTS (on-device Rust/Candle)")
-            ttsService = KyutaiPocketTTSService()
+            // Kyutai Pocket TTS is not available in this build (xcframework not linked)
+            // Fall back to Apple TTS
+            logger.warning("Kyutai Pocket TTS unavailable, using Apple TTS")
+            ttsService = AppleTTSService()
         default:
             logger.info("Using Apple TTS as default TTS provider")
             ttsService = AppleTTSService()

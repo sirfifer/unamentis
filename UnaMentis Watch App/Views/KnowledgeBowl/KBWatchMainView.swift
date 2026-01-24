@@ -13,7 +13,7 @@ import SwiftUI
 
 /// Main entry point for Knowledge Bowl practice on watchOS
 struct KBWatchMainView: View {
-    @StateObject private var viewModel = KBWatchMainViewModel()
+    @State private var viewModel = KBWatchMainViewModel()
 
     var body: some View {
         NavigationStack {

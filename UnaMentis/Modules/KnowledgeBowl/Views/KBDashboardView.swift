@@ -659,7 +659,7 @@ struct DomainMasteryCard: View {
                 .font(.title2)
                 .foregroundStyle(domain.color)
 
-            Text(domain.rawValue)
+            Text(domain.displayName)
                 .font(.caption)
                 .lineLimit(1)
 
@@ -826,8 +826,8 @@ struct KBDomainDetailView: View {
     @StateObject private var statsManager = KBStatsManager.shared
 
     private var domainStats: DomainStats? {
-        let domainId = domain.rawValue.lowercased().replacingOccurrences(of: " & ", with: "-").replacingOccurrences(of: " ", with: "-")
-        return statsManager.domainStats[domainId]
+        // Use the raw value directly since KBDomain now uses lowercase identifiers
+        return statsManager.domainStats[domain.rawValue]
     }
 
     var body: some View {
@@ -839,7 +839,7 @@ struct KBDomainDetailView: View {
                         .foregroundStyle(domain.color)
 
                     VStack(alignment: .leading) {
-                        Text(domain.rawValue)
+                        Text(domain.displayName)
                             .font(.title2.bold())
                         Text("\(Int(domain.weight * 100))% of competition questions")
                             .font(.subheadline)
@@ -872,7 +872,7 @@ struct KBDomainDetailView: View {
                 }
             }
         }
-        .navigationTitle(domain.rawValue)
+        .navigationTitle(domain.displayName)
     }
 }
 

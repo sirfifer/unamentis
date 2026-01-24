@@ -680,15 +680,8 @@ public actor LatencyTestCoordinator {
             return AppleTTSService()
 
         case .kyutaiPocket:
-            // On-device Kyutai Pocket TTS
-            let kyutaiConfig = KyutaiPocketTTSConfig.fromUserDefaults()
-            let kyutaiTTS = KyutaiPocketTTSService(config: kyutaiConfig)
-            do {
-                try await kyutaiTTS.ensureLoaded()
-                return kyutaiTTS
-            } catch {
-                throw TestCoordinatorError.providerCreationFailed("Kyutai Pocket models not available: \(error)")
-            }
+            // On-device Kyutai Pocket TTS (disabled - xcframework not linked)
+            throw TestCoordinatorError.providerCreationFailed("Kyutai Pocket TTS is not available in this build")
 
         case .selfHosted:
             // Piper TTS

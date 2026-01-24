@@ -45,6 +45,13 @@ struct KBTransformer: QuestionTransformer {
             return nil
         }
 
+        // Clean Quiz Bowl markers from question text
+        let cleanedText = TextCleaner.cleanQuizBowlText(imported.text)
+
+        // Clean Science Bowl prefixes from answer
+        let cleanedAnswer = TextCleaner.cleanScienceBowlAnswer(imported.answer)
+        let cleanedAcceptable = imported.acceptableAnswers?.map { TextCleaner.cleanScienceBowlAnswer($0) }
+
         // Map difficulty
         let difficulty = mapDifficulty(imported.difficulty)
 
@@ -57,19 +64,19 @@ struct KBTransformer: QuestionTransformer {
         )
 
         // Estimate read time (~150 words per minute for competition reading)
-        let wordCount = imported.text.split(separator: " ").count
+        let wordCount = cleanedText.split(separator: " ").count
         let readTime = Double(wordCount) / 150.0 * 60.0  // seconds
 
         // Create answer model
         let answer = KBAnswer(
-            primary: imported.answer,
-            acceptable: imported.acceptableAnswers,
-            answerType: inferAnswerType(imported.answer)
+            primary: cleanedAnswer,
+            acceptable: cleanedAcceptable,
+            answerType: inferAnswerType(cleanedAnswer)
         )
 
         return KBQuestion(
             id: UUID(),
-            text: imported.text,
+            text: cleanedText,
             answer: answer,
             domain: domain,
             subdomain: imported.subdomain,
@@ -237,7 +244,8 @@ struct KBTransformer: QuestionTransformer {
     /// Transform a canonical question to KB format.
     ///
     /// Uses the best available text form and maps domains/difficulty
-    /// to KB-specific types.
+    /// to KB-specific types. Cleans any Quiz Bowl or Science Bowl
+    /// markers that may be present in the source question.
     ///
     /// - Parameter canonical: Universal question format
     /// - Returns: KB-formatted question, or nil if incompatible
@@ -251,9 +259,12 @@ struct KBTransformer: QuestionTransformer {
         }
 
         // Get best text form (prefer medium for KB)
-        let text = canonical.content.mediumForm.isEmpty
+        var text = canonical.content.mediumForm.isEmpty
             ? canonical.content.shortForm
             : canonical.content.mediumForm
+
+        // Clean Quiz Bowl markers (e.g., "For 10 points,") from text
+        text = TextCleaner.cleanQuizBowlText(text)
 
         guard !text.isEmpty else { return nil }
 
@@ -268,10 +279,13 @@ struct KBTransformer: QuestionTransformer {
             requiresVisual: canonical.transformationHints.requiresVisual
         )
 
-        // Map answer
+        // Map answer (clean Science Bowl letter prefixes if present)
+        let cleanPrimary = TextCleaner.cleanScienceBowlAnswer(canonical.answer.primary)
+        let cleanAcceptable = canonical.answer.acceptable?.map { TextCleaner.cleanScienceBowlAnswer($0) }
+
         let answer = KBAnswer(
-            primary: canonical.answer.primary,
-            acceptable: canonical.answer.acceptable,
+            primary: cleanPrimary,
+            acceptable: cleanAcceptable,
             answerType: mapAnswerType(canonical.answer.answerType)
         )
 

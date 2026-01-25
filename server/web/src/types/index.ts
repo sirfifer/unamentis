@@ -3,6 +3,9 @@
 // Re-export TTS Pre-Generation types
 export * from './tts-pregen';
 
+// Re-export Question Pack types
+export * from './question-packs';
+
 export interface LogEntry {
   id: string;
   timestamp: string;

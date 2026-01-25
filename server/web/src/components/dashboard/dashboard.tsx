@@ -53,6 +53,7 @@ import { LatencyHarnessPanel } from './latency-harness-panel';
 import { FOVContextPanel } from './fov-context-panel';
 import { ReprocessPanel } from './reprocess-panel';
 import { ModulesPanel } from './modules-panel';
+import { QuestionPacksContainer } from './question-packs-container';
 import { BatchJobPanel } from '@/components/tts-pregen';
 import { ModelSelectionPanel } from './model-selection-panel';
 import { TTSLabPanel } from './tts-lab-panel';
@@ -79,6 +80,7 @@ const OPS_TABS = [
 const CONTENT_TABS = [
   'curricula',
   'modules',
+  'packs',
   'sources',
   'plugins',
   'imports',
@@ -300,6 +302,13 @@ export function Dashboard() {
           {activeTab === 'modules' && (
             <div className="animate-in fade-in duration-300">
               <ModulesPanel />
+            </div>
+          )}
+
+          {/* Question Packs Tab */}
+          {activeTab === 'packs' && (
+            <div className="animate-in fade-in duration-300">
+              <QuestionPacksContainer />
             </div>
           )}
 

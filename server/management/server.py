@@ -78,6 +78,9 @@ from audio_ws import AudioWebSocketHandler, register_audio_websocket
 # Import modules API for server-driven training modules
 from modules_api import register_modules_routes, schedule_kb_audio_prefetch
 
+# Import KB Packs API for question pack management
+from kb_packs_api import register_kb_packs_routes
+
 # Import session management (for UserSession, UserVoiceConfig)
 from fov_context import SessionManager, UserVoiceConfig
 
@@ -4659,6 +4662,9 @@ def create_app() -> web.Application:
 
     # Training Modules System (server-driven module discovery and download)
     register_modules_routes(app)
+
+    # KB Packs System (Question Pack Management)
+    register_kb_packs_routes(app)
 
     # TTS Pre-Generation System (Profiles, Batch Jobs, Comparison)
     register_tts_pregen_routes(app)

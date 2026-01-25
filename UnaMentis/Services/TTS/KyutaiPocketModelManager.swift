@@ -71,7 +71,7 @@ actor KyutaiPocketModelManager {
     /// Base directory for Kyutai Pocket TTS models
     private var modelDirectory: URL {
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsPath.appendingPathComponent("models/kyutai-pocket-ios", isDirectory: true)
+        return documentsPath.appendingPathComponent("models/PocketTTS", isDirectory: true)
     }
 
     /// Path to main model weights
@@ -79,9 +79,9 @@ actor KyutaiPocketModelManager {
         modelDirectory.appendingPathComponent("model.safetensors")
     }
 
-    /// Path to tokenizer (JSON vocab)
+    /// Path to tokenizer (SentencePiece model)
     private var tokenizerPath: URL {
-        modelDirectory.appendingPathComponent("tokenizer.json")
+        modelDirectory.appendingPathComponent("tokenizer.model")
     }
 
     /// Path to voices directory
@@ -208,7 +208,7 @@ actor KyutaiPocketModelManager {
             return false
         }
 
-        let bundleModelDir = bundleURL.appendingPathComponent("kyutai-pocket-ios")
+        let bundleModelDir = bundleURL.appendingPathComponent("Models")
         guard fm.fileExists(atPath: bundleModelDir.path) else {
             logger.info("Models not found in app bundle at: \(bundleModelDir.path)")
             return false
@@ -222,7 +222,7 @@ actor KyutaiPocketModelManager {
 
             // Copy model files (only if they don't already exist)
             let bundleModel = bundleModelDir.appendingPathComponent("model.safetensors")
-            let bundleTokenizer = bundleModelDir.appendingPathComponent("tokenizer.json")
+            let bundleTokenizer = bundleModelDir.appendingPathComponent("tokenizer.model")
             let bundleVoices = bundleModelDir.appendingPathComponent("voices")
 
             // Copy files if they don't already exist
@@ -236,7 +236,7 @@ actor KyutaiPocketModelManager {
             }
             if !tokenizerExists && fm.fileExists(atPath: bundleTokenizer.path) {
                 try fm.copyItem(at: bundleTokenizer, to: tokenizerPath)
-                logger.info("Copied tokenizer.json")
+                logger.info("Copied tokenizer.model")
             }
             if !voicesExist && fm.fileExists(atPath: bundleVoices.path) {
                 try fm.copyItem(at: bundleVoices, to: voicesDirectory)

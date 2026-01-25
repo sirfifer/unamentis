@@ -255,6 +255,7 @@
 		F783D46C95CC3B355BB1B64D /* TodoManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B13B8360D25C4CABBF08E74 /* TodoManagerTests.swift */; };
 		F98DD78B3D71992AFF824066 /* HelpComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6087261F00AD3F73BC9BDBA9 /* HelpComponents.swift */; };
 		FB4536FB09E712F73760A143 /* llama-3.2-3b-instruct-q4_k_m.gguf in Resources */ = {isa = PBXBuildFile; fileRef = 9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */; };
+		FB4A3C8D1E2F5B7A9D0C6E4F /* Models in Resources */ = {isa = PBXBuildFile; fileRef = 3A8B7C9D2E1F4A5B6C0D8E9F /* Models */; };
 		FB59364BBC02872920BD0323 /* ref-botticelli-birth-venus.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 14F5F7B4594AB0DD6CE717E7 /* ref-botticelli-birth-venus.jpg */; };
 		FCE743169EB584B645CBF92E /* KBTrendChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A740E44A3A7C9CE7621ED1D1 /* KBTrendChartView.swift */; };
 		FFF26AE98F6DDE371CA0B169 /* VADService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F889719749AE4061E8AD19F /* VADService.swift */; };
@@ -445,6 +446,7 @@
 		989C18A720EAFD5142D9BA3C /* KBDomainDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBDomainDrillView.swift; sourceTree = "<group>"; };
 		99F01835E4A6FD36F8723764 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		9A39F3F414367641F29F2D0D /* CurriculumService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumService.swift; sourceTree = "<group>"; };
+		3A8B7C9D2E1F4A5B6C0D8E9F /* Models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Models; sourceTree = "<group>"; };
 		9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */ = {isa = PBXFileReference; path = "llama-3.2-3b-instruct-q4_k_m.gguf"; sourceTree = "<group>"; };
 		9AFF6371BD4BDA82DAB5A4A0 /* TodoItemStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemStatus.swift; sourceTree = "<group>"; };
 		9D1EBB7D03EDF301847EC00B /* KBSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSessionTests.swift; sourceTree = "<group>"; };
@@ -580,6 +582,7 @@
 			isa = PBXGroup;
 			children = (
 				9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */,
+				3A8B7C9D2E1F4A5B6C0D8E9F /* Models */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -1599,6 +1602,7 @@
 				428458E96DDEB6FE689D6996 /* kb-sample-questions.json in Resources */,
 				9A8789D7EA550B8EE53D745E /* kb-sample-questions.json.backup in Resources */,
 				FB4536FB09E712F73760A143 /* llama-3.2-3b-instruct-q4_k_m.gguf in Resources */,
+				FB4A3C8D1E2F5B7A9D0C6E4F /* Models in Resources */,
 				FB59364BBC02872920BD0323 /* ref-botticelli-birth-venus.jpg in Resources */,
 				386607876FAA5946DB4856BB /* ref-durer-engravings.jpg in Resources */,
 				E5FE812F426A7313F53B1E76 /* ref-museum-virtual-tours.jpg in Resources */,

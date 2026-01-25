@@ -53,7 +53,7 @@ import { LatencyHarnessPanel } from './latency-harness-panel';
 import { FOVContextPanel } from './fov-context-panel';
 import { ReprocessPanel } from './reprocess-panel';
 import { ModulesPanel } from './modules-panel';
-import { ProfilesPanel } from '@/components/tts-pregen';
+import { BatchJobPanel } from '@/components/tts-pregen';
 import { ModelSelectionPanel } from './model-selection-panel';
 import { TTSLabPanel } from './tts-lab-panel';
 import type { DashboardStats } from '@/types';
@@ -84,7 +84,7 @@ const CONTENT_TABS = [
   'imports',
   'reprocess',
 ] as const;
-const VOICELAB_TABS = ['model-selection', 'tts-lab', 'tts-profiles'] as const;
+const VOICELAB_TABS = ['model-selection', 'tts-lab', 'batch'] as const;
 const ALL_TABS = [...OPS_TABS, ...CONTENT_TABS, ...VOICELAB_TABS] as const;
 
 export function Dashboard() {
@@ -331,10 +331,10 @@ export function Dashboard() {
             </div>
           )}
 
-          {/* TTS Profiles Tab */}
-          {activeTab === 'tts-profiles' && (
+          {/* Batch Tab */}
+          {activeTab === 'batch' && (
             <div className="animate-in fade-in duration-300">
-              <ProfilesPanel />
+              <BatchJobPanel />
             </div>
           )}
 

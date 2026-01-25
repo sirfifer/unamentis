@@ -20,7 +20,7 @@ import {
   RefreshCw,
   Volume2,
   Settings,
-  Mic,
+  Zap,
 } from 'lucide-react';
 
 // Section types
@@ -49,7 +49,7 @@ export type ContentTabId =
   | 'reprocess';
 
 // Voice Lab tabs
-export type VoiceLabTabId = 'model-selection' | 'tts-lab' | 'tts-profiles';
+export type VoiceLabTabId = 'model-selection' | 'tts-lab' | 'batch';
 
 // Combined tab type
 export type TabId = OpsTabId | ContentTabId | VoiceLabTabId;
@@ -107,7 +107,7 @@ const voiceLabTabs: {
 }[] = [
   { id: 'model-selection', label: 'TTS Models', shortLabel: 'TTS', icon: FlaskConical },
   { id: 'tts-lab', label: 'TTS Experimentation', shortLabel: 'Lab', icon: Settings },
-  { id: 'tts-profiles', label: 'Batch Profiles', shortLabel: 'Profiles', icon: Mic },
+  { id: 'batch', label: 'Batch', shortLabel: 'Batch', icon: Zap },
 ];
 
 export function SectionNav({ activeSection, onSectionChange }: SectionNavProps) {

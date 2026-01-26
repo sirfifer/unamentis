@@ -106,6 +106,19 @@ jobs:
         touch models/llama-3.2-3b-instruct-q4_k_m.gguf
         touch models/ministral-3b-instruct-q4_k_m.gguf
         touch models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+
+        # Create Pocket TTS model placeholders (required for bundle)
+        mkdir -p models/Models/voices
+        touch models/Models/model.safetensors
+        touch models/Models/tokenizer.model
+        touch models/Models/voices/alba.safetensors
+        touch models/Models/voices/marius.safetensors
+        touch models/Models/voices/jean.safetensors
+        touch models/Models/voices/fantine.safetensors
+        touch models/Models/voices/cosette.safetensors
+        touch models/Models/voices/eponine.safetensors
+        touch models/Models/voices/javert.safetensors
+        touch models/Models/voices/azelma.safetensors
         echo "Created placeholder model files for CI build"
 
     - name: Build
@@ -224,6 +237,19 @@ jobs:
         touch models/llama-3.2-3b-instruct-q4_k_m.gguf
         touch models/ministral-3b-instruct-q4_k_m.gguf
         touch models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+
+        # Create Pocket TTS model placeholders (required for bundle)
+        mkdir -p models/Models/voices
+        touch models/Models/model.safetensors
+        touch models/Models/tokenizer.model
+        touch models/Models/voices/alba.safetensors
+        touch models/Models/voices/marius.safetensors
+        touch models/Models/voices/jean.safetensors
+        touch models/Models/voices/fantine.safetensors
+        touch models/Models/voices/cosette.safetensors
+        touch models/Models/voices/eponine.safetensors
+        touch models/Models/voices/javert.safetensors
+        touch models/Models/voices/azelma.safetensors
         echo "Created placeholder model files for CI build"
 
     - name: Build

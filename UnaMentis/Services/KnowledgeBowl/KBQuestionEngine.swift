@@ -306,7 +306,7 @@ extension KBQuestionEngine {
             KBQuestion(
                 id: UUID(),
                 text: "What is the square root of 144?",
-                answer: KBAnswer(primary: "12", acceptable: ["twelve"], answerType: .number),
+                answer: KBAnswer(primary: "12", acceptable: ["twelve"], answerType: .numeric),
                 domain: .mathematics,
                 difficulty: .foundational,
                 gradeLevel: .middleSchool,

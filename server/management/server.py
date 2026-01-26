@@ -20,6 +20,25 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
 
+
+# Load .env file for local development (simple implementation, no external dependency)
+def _load_env_file():
+    """Load environment variables from .env file if present."""
+    env_path = Path(__file__).parent / ".env"
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, _, value = line.partition("=")
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    if key and key not in os.environ:  # Don't override existing env vars
+                        os.environ[key] = value
+
+
+_load_env_file()
+
 # Import resource monitoring and idle management
 from resource_monitor import resource_monitor, ResourceMonitor
 from idle_manager import idle_manager, IdleManager, IdleState
@@ -77,6 +96,9 @@ from audio_ws import AudioWebSocketHandler, register_audio_websocket
 
 # Import modules API for server-driven training modules
 from modules_api import register_modules_routes, schedule_kb_audio_prefetch
+
+# Import KB Packs API for question pack management
+from kb_packs_api import register_kb_packs_routes
 
 # Import session management (for UserSession, UserVoiceConfig)
 from fov_context import SessionManager, UserVoiceConfig
@@ -4660,6 +4682,9 @@ def create_app() -> web.Application:
     # Training Modules System (server-driven module discovery and download)
     register_modules_routes(app)
 
+    # KB Packs System (Question Pack Management)
+    register_kb_packs_routes(app)
+
     # TTS Pre-Generation System (Profiles, Batch Jobs, Comparison)
     register_tts_pregen_routes(app)
 
@@ -4866,6 +4891,15 @@ def create_app() -> web.Application:
                     logger.info("[Startup] Database connected and auth routes initialized")
                 else:
                     logger.warning("[Startup] Auth routes setup failed")
+
+                # Initialize KB Questions repository
+                try:
+                    from kb_questions_repository import KBQuestionsRepository
+
+                    app["kb_repo"] = KBQuestionsRepository(db_pool)
+                    logger.info("[Startup] KB Questions repository initialized")
+                except Exception as e:
+                    logger.warning(f"[Startup] KB Questions repository failed: {e}")
             except Exception as e:
                 logger.error(f"[Startup] Database connection failed: {e}")
         elif "token_service" in app:

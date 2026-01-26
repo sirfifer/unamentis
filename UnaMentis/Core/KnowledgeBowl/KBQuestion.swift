@@ -144,15 +144,39 @@ struct KBAnswer: Codable, Hashable, Sendable {
 // MARK: - Answer Type
 
 /// Type of answer for specialized matching logic
-enum KBAnswerType: String, Codable, CaseIterable, Sendable {
+enum KBAnswerType: String, CaseIterable, Sendable {
     case text           // Generic text answer
     case person         // Person's name (handle first/last order, titles)
     case place          // Geographic location (handle "the", abbreviations)
-    case number         // Numeric answer (parse written numbers)
+    case numeric        // Numeric answer (parse written numbers)
     case date           // Date answer (handle multiple formats)
     case title          // Book/movie/work title (handle "The")
     case scientific     // Scientific term (handle formulas, abbreviations)
     case multipleChoice // MCQ letter (A, B, C, D)
+}
+
+extension KBAnswerType: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        // Handle legacy "number" value from bundled question data
+        if rawValue == "number" {
+            self = .numeric
+            return
+        }
+        guard let value = KBAnswerType(rawValue: rawValue) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unknown KBAnswerType: \(rawValue)"
+            )
+        }
+        self = value
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
 }
 
 // MARK: - Difficulty Level
@@ -191,6 +215,19 @@ enum KBDifficulty: String, Codable, CaseIterable, Comparable, Sendable {
 
     static func < (lhs: KBDifficulty, rhs: KBDifficulty) -> Bool {
         lhs.level < rhs.level
+    }
+
+    /// Create difficulty from integer level (1-6)
+    static func from(level: Int) -> KBDifficulty {
+        switch level {
+        case 1: return .overview
+        case 2: return .foundational
+        case 3: return .intermediate
+        case 4: return .varsity
+        case 5: return .championship
+        case 6: return .research
+        default: return .varsity
+        }
     }
 }
 

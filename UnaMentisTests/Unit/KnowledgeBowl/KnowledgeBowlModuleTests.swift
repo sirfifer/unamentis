@@ -99,18 +99,19 @@ final class KnowledgeBowlModuleTests: XCTestCase {
     func testDomain_allCases_containsExpectedDomains() {
         let domains = Set(KBDomain.allCases.map { $0.rawValue })
 
-        XCTAssertTrue(domains.contains("Science"))
-        XCTAssertTrue(domains.contains("Mathematics"))
-        XCTAssertTrue(domains.contains("Literature"))
-        XCTAssertTrue(domains.contains("History"))
-        XCTAssertTrue(domains.contains("Social Studies"))
-        XCTAssertTrue(domains.contains("Arts"))
-        XCTAssertTrue(domains.contains("Current Events"))
-        XCTAssertTrue(domains.contains("Language"))
-        XCTAssertTrue(domains.contains("Technology"))
-        XCTAssertTrue(domains.contains("Pop Culture"))
-        XCTAssertTrue(domains.contains("Religion & Philosophy"))
-        XCTAssertTrue(domains.contains("Miscellaneous"))
+        // Raw values are lowercase
+        XCTAssertTrue(domains.contains("science"))
+        XCTAssertTrue(domains.contains("mathematics"))
+        XCTAssertTrue(domains.contains("literature"))
+        XCTAssertTrue(domains.contains("history"))
+        XCTAssertTrue(domains.contains("socialStudies"))
+        XCTAssertTrue(domains.contains("arts"))
+        XCTAssertTrue(domains.contains("currentEvents"))
+        XCTAssertTrue(domains.contains("language"))
+        XCTAssertTrue(domains.contains("technology"))
+        XCTAssertTrue(domains.contains("popCulture"))
+        XCTAssertTrue(domains.contains("religionPhilosophy"))
+        XCTAssertTrue(domains.contains("miscellaneous"))
     }
 
     func testDomain_id_equalsRawValue() {
@@ -142,7 +143,7 @@ final class KnowledgeBowlModuleTests: XCTestCase {
     }
 
     func testDomain_iconName_areValidSFSymbols() {
-        // These are the expected SF Symbol names
+        // These are the expected SF Symbol names matching KBDomain.icon
         let expectedIcons: [KBDomain: String] = [
             .science: "atom",
             .mathematics: "function",
@@ -151,11 +152,11 @@ final class KnowledgeBowlModuleTests: XCTestCase {
             .socialStudies: "globe.americas",
             .arts: "paintpalette",
             .currentEvents: "newspaper",
-            .language: "character.book.closed",
+            .language: "textformat",
             .technology: "cpu",
             .popCulture: "star",
             .religionPhilosophy: "sparkles",
-            .miscellaneous: "puzzlepiece"
+            .miscellaneous: "questionmark.circle"
         ]
 
         for domain in KBDomain.allCases {

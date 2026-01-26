@@ -15,6 +15,7 @@
 | tech-dev-tools | C0A5Q9ZSPR8 | devtools, tools, dev |
 | tech-github | C0A5QH109FD | github, gh, git |
 | tech-qa | C0A67TD1603 | qa, testing, test, quality |
+| tech-voice | C0AASTHE7MX | voice, tts, speech, audio |
 | social | C0A512BL0LF | fun, random |
 | issues | C0A7T8V1T8T | bugs, problems |
 

@@ -164,7 +164,7 @@ struct KBTransformer: QuestionTransformer {
 
         // Check for numbers
         if Double(normalized) != nil || normalized.contains(where: { "0123456789".contains($0) }) {
-            return .number
+            return .numeric
         }
 
         // Check for common person indicators
@@ -506,7 +506,7 @@ struct KBTransformer: QuestionTransformer {
         case .text: return .text
         case .person: return .person
         case .place: return .place
-        case .number: return .number
+        case .number: return .numeric
         case .date: return .date
         case .title: return .title
         case .scientific: return .scientific
@@ -519,7 +519,7 @@ struct KBTransformer: QuestionTransformer {
         case .text: return .text
         case .person: return .person
         case .place: return .place
-        case .number: return .number
+        case .numeric: return .number
         case .date: return .date
         case .title: return .title
         case .scientific: return .scientific

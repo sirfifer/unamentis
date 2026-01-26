@@ -4,8 +4,11 @@
 //
 //  Domain drill view for Knowledge Bowl.
 //  Allows focused practice on a single domain with progressive difficulty.
+//  Supports both written-only and audio modes.
 //
 
+import AVFoundation
+import Logging
 import SwiftUI
 
 // MARK: - Domain Drill View
@@ -27,6 +30,8 @@ struct KBDomainDrillView: View {
             switch viewModel.state {
             case .setup:
                 setupView
+            case .readingQuestion:
+                readingQuestionView
             case .drilling:
                 drillingView
             case .feedback:
@@ -43,6 +48,8 @@ struct KBDomainDrillView: View {
                     Button("End") {
                         viewModel.endDrill()
                     }
+                    .accessibilityLabel("End drill")
+                    .accessibilityHint("Ends the current drill session and shows results")
                 }
             }
         }
@@ -87,6 +94,8 @@ struct KBDomainDrillView: View {
                             )
                         }
                         Slider(value: $viewModel.questionCountDouble, in: 5...30, step: 5)
+                            .accessibilityLabel("Number of questions")
+                            .accessibilityValue("\(viewModel.questionCount) questions")
                     }
 
                     // Progressive difficulty
@@ -111,6 +120,35 @@ struct KBDomainDrillView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+
+                    Divider()
+
+                    // Audio mode
+                    HStack {
+                        Toggle("Read Questions Aloud", isOn: $viewModel.audioMode)
+                        InfoButton(
+                            title: "Audio Mode",
+                            content: "When enabled, questions will be read aloud using text-to-speech. The question text is still visible, so you can follow along or read ahead."
+                        )
+                    }
+                    if viewModel.audioMode {
+                        HStack(spacing: 6) {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .foregroundStyle(.blue)
+                            Text("Questions will be spoken before you answer")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    if let audioError = viewModel.audioError {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                            Text(audioError)
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                    }
                 }
                 .padding()
                 .background(Color(.secondarySystemBackground))
@@ -129,6 +167,10 @@ struct KBDomainDrillView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .disabled(viewModel.selectedDomain == nil)
+                .accessibilityLabel("Start drill")
+                .accessibilityHint(viewModel.selectedDomain != nil ?
+                    "Starts a \(viewModel.selectedDomain!.displayName) domain drill" :
+                    "Select a domain first")
             }
             .padding()
         }
@@ -160,6 +202,47 @@ struct KBDomainDrillView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Select \(domain.displayName) domain")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    // MARK: - Reading Question View (Audio Mode)
+
+    private var readingQuestionView: some View {
+        VStack(spacing: 0) {
+            // Progress header
+            drillProgressHeader
+
+            Divider()
+
+            // Reading indicator
+            Spacer()
+
+            VStack(spacing: 24) {
+                // Speaker animation
+                Image(systemName: "speaker.wave.3.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(viewModel.selectedDomain?.color ?? .blue)
+                    .symbolEffect(.variableColor.iterative, options: .repeating)
+
+                Text("Reading Question...")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+
+                // Show question text below (user can read along)
+                if let question = viewModel.currentQuestion {
+                    Text(question.text)
+                        .font(.title3)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal)
+                }
+            }
+
+            Spacer()
+        }
     }
 
     // MARK: - Drilling View
@@ -178,6 +261,17 @@ struct KBDomainDrillView: View {
                         // Timer (if time pressure mode)
                         if viewModel.timePressureMode {
                             timerView
+                        }
+
+                        // Audio mode indicator
+                        if viewModel.audioMode {
+                            HStack(spacing: 6) {
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .foregroundStyle(.blue)
+                                Text("Question was read aloud")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
 
                         // Question text
@@ -209,6 +303,8 @@ struct KBDomainDrillView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding()
+                .accessibilityLabel("Submit answer")
+                .accessibilityHint("Submits your answer for scoring")
             }
         }
     }
@@ -328,6 +424,9 @@ struct KBDomainDrillView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding()
+            .accessibilityLabel(viewModel.hasMoreQuestions ? "Next question" : "See results")
+            .accessibilityHint(viewModel.hasMoreQuestions ?
+                "Advances to the next question" : "Shows your drill results")
         }
     }
 
@@ -425,6 +524,8 @@ struct KBDomainDrillView: View {
                             .foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .accessibilityLabel("Drill again")
+                    .accessibilityHint("Starts a new drill in the same domain")
 
                     Button {
                         viewModel.resetToSetup()
@@ -432,6 +533,8 @@ struct KBDomainDrillView: View {
                         Text("Choose Different Domain")
                             .font(.subheadline)
                     }
+                    .accessibilityLabel("Choose different domain")
+                    .accessibilityHint("Returns to domain selection")
                 }
             }
             .padding()
@@ -466,12 +569,14 @@ struct DrillConfig: Sendable {
     let progressiveDifficulty: Bool
     let timePressureMode: Bool
     let timePerQuestion: TimeInterval
+    let audioMode: Bool
 
     static let `default` = DrillConfig(
         questionCount: 10,
         progressiveDifficulty: true,
         timePressureMode: false,
-        timePerQuestion: 30
+        timePerQuestion: 30,
+        audioMode: false
     )
 }
 
@@ -482,6 +587,7 @@ struct DrillConfig: Sendable {
 final class KBDomainDrillViewModel {
     enum State {
         case setup
+        case readingQuestion  // TTS reading question (audio mode only)
         case drilling
         case feedback
         case results
@@ -495,8 +601,40 @@ final class KBDomainDrillViewModel {
     var questionCountDouble: Double = 10
     var progressiveDifficulty: Bool = true
     var timePressureMode: Bool = false
+    var audioMode: Bool = false  // Audio toggle for TTS question reading
 
     var questionCount: Int { Int(questionCountDouble) }
+
+    // Audio
+    private var speechSynthesizer: AVSpeechSynthesizer?
+    private var speechDelegate: SpeechDelegate?
+    private(set) var isSpeaking: Bool = false
+    private(set) var audioError: String?
+
+    private static let logger = Logger(label: "com.unamentis.kb.domaindrill")
+
+    /// Thread-safe delegate class for AVSpeechSynthesizer that handles completion and cancellation
+    @MainActor
+    private final class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate {
+        var continuation: CheckedContinuation<Void, Never>?
+
+        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+            Task { @MainActor in
+                self.finish()
+            }
+        }
+
+        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+            Task { @MainActor in
+                self.finish()
+            }
+        }
+
+        func finish() {
+            continuation?.resume()
+            continuation = nil
+        }
+    }
 
     // Drilling
     private(set) var questions: [KBQuestion] = []
@@ -559,6 +697,7 @@ final class KBDomainDrillViewModel {
         self.progressiveDifficulty = config.progressiveDifficulty
         self.timePressureMode = config.timePressureMode
         self.timeRemaining = config.timePerQuestion
+        self.audioMode = config.audioMode
     }
 
     // MARK: - Actions
@@ -575,7 +714,69 @@ final class KBDomainDrillViewModel {
         bestStreak = 0
         currentStreak = 0
         userAnswer = ""
+        audioError = nil
 
+        // Start drill with or without audio
+        if audioMode {
+            Task {
+                state = .readingQuestion
+                await speakCurrentQuestion()
+            }
+        } else {
+            state = .drilling
+            startQuestionTimer()
+        }
+    }
+
+    /// Setup speech synthesizer for TTS
+    private func setupSpeechSynthesizer() {
+        if speechSynthesizer == nil {
+            speechSynthesizer = AVSpeechSynthesizer()
+            speechDelegate = SpeechDelegate()
+            speechSynthesizer?.delegate = speechDelegate
+            Self.logger.info("Speech synthesizer setup complete")
+        }
+    }
+
+    /// Speak the current question via TTS
+    private func speakCurrentQuestion() async {
+        guard let question = currentQuestion else {
+            // Fall through to drilling state if no question
+            state = .drilling
+            startQuestionTimer()
+            return
+        }
+
+        setupSpeechSynthesizer()
+
+        guard let synthesizer = speechSynthesizer else {
+            state = .drilling
+            startQuestionTimer()
+            return
+        }
+
+        isSpeaking = true
+
+        // Use continuation to wait for speech completion
+        await withCheckedContinuation { continuation in
+            speechDelegate?.continuation = continuation
+
+            let utterance = AVSpeechUtterance(string: question.text)
+            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9  // Slightly slower for clarity
+            utterance.pitchMultiplier = 1.0
+            utterance.volume = 1.0
+
+            // Use a natural-sounding voice if available
+            if let voice = AVSpeechSynthesisVoice(language: "en-US") {
+                utterance.voice = voice
+            }
+
+            synthesizer.speak(utterance)
+        }
+
+        isSpeaking = false
+
+        // Transition to drilling state after TTS completes
         state = .drilling
         startQuestionTimer()
     }
@@ -614,9 +815,21 @@ final class KBDomainDrillViewModel {
     func nextQuestion() {
         if hasMoreQuestions {
             currentIndex += 1
-            state = .drilling
-            startQuestionTimer()
+            if audioMode {
+                // Read the next question with TTS
+                Task {
+                    state = .readingQuestion
+                    await speakCurrentQuestion()
+                }
+            } else {
+                state = .drilling
+                startQuestionTimer()
+            }
         } else {
+            // Cleanup speech synthesizer
+            speechSynthesizer?.stopSpeaking(at: .immediate)
+            speechSynthesizer = nil
+            speechDelegate = nil
             state = .results
         }
     }
@@ -624,6 +837,9 @@ final class KBDomainDrillViewModel {
     func endDrill() {
         stopTimer()
         totalQuestions = questionResults.count
+        speechSynthesizer?.stopSpeaking(at: .immediate)
+        speechSynthesizer = nil
+        speechDelegate = nil
         state = .results
     }
 
@@ -633,6 +849,9 @@ final class KBDomainDrillViewModel {
 
     func resetToSetup() {
         stopTimer()
+        speechSynthesizer?.stopSpeaking(at: .immediate)
+        speechSynthesizer = nil
+        speechDelegate = nil
         state = .setup
     }
 

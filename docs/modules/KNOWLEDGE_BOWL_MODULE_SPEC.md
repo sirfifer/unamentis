@@ -1,8 +1,8 @@
 # Knowledge Bowl Module Technical Specification
 
 **Module ID:** `com.unamentis.knowledgebowl`
-**Version:** 1.2
-**Last Updated:** 2026-01-24
+**Version:** 1.3
+**Last Updated:** 2026-01-25
 **Status:** Phase 2 Complete - Phase 3 Near Complete (User Testing Pending)
 
 ---
@@ -529,10 +529,13 @@ All Knowledge Bowl core services operate on-device to enable:
 - ✅ **Scalability** - Server not in critical path for practice sessions
 
 **Server Role** (secondary, supporting):
+- **Question Pack Management**: Full CRUD for packs and questions via REST API (port 8766)
 - **Question Delivery**: Download question packs (bundled JSON + audio)
 - **Team Coordination**: WebSocket session orchestration for distributed team practice
 - **Statistics Aggregation**: Aggregate individual/team performance for leaderboards
 - **Configuration Management**: Deliver regional configs, feature flags, model availability
+
+See [Knowledge Bowl API Specification](../api-spec/09-KNOWLEDGE-BOWL.md) for complete server API documentation.
 
 ### 4.1 KB Question Service
 

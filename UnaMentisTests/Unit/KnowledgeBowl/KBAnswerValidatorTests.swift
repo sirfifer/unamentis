@@ -199,7 +199,7 @@ final class KBAnswerValidatorTests: XCTestCase {
 
     func testValidate_numberType_parsesWrittenNumbers() {
         let validator = KBAnswerValidator()
-        let question = makeQuestion(primary: "12", answerType: .number)
+        let question = makeQuestion(primary: "12", answerType: .numeric)
 
         XCTAssertTrue(validator.validate(userAnswer: "twelve", question: question).isCorrect)
         XCTAssertTrue(validator.validate(userAnswer: "12", question: question).isCorrect)
@@ -207,7 +207,7 @@ final class KBAnswerValidatorTests: XCTestCase {
 
     func testValidate_numberType_handlesCommas() {
         let validator = KBAnswerValidator()
-        let question = makeQuestion(primary: "1000000", answerType: .number)
+        let question = makeQuestion(primary: "1000000", answerType: .numeric)
 
         XCTAssertTrue(validator.validate(userAnswer: "1,000,000", question: question).isCorrect)
         XCTAssertTrue(validator.validate(userAnswer: "1000000", question: question).isCorrect)

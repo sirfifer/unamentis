@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -19,14 +20,19 @@ import {
   Play,
   Download,
   Settings,
-  Zap,
   Volume2,
   FileAudio,
   RefreshCw,
   Trash2,
   Copy,
+  Save,
+  FolderPlus,
+  X,
+  Check,
+  Loader2,
 } from 'lucide-react';
-import { BatchJobPanel } from '@/components/tts-pregen/batch-job-panel';
+import { createTTSProfile } from '@/lib/api-client';
+import type { TTSProvider } from '@/types/tts-pregen';
 
 /**
  * TTS Lab Panel - Experimentation Interface
@@ -135,6 +141,13 @@ const kyutaiVoices = [
   { id: 'emma-calm', name: 'Emma (Calm)', emotional: true },
 ];
 
+// Map model IDs to providers
+const modelToProvider: Record<string, TTSProvider> = {
+  'kyutai-tts-1.6b': 'chatterbox',
+  'kyutai-pocket-tts': 'chatterbox',
+  'fish-speech-v1.5': 'vibevoice',
+};
+
 export function TTSLabPanel() {
   const [config, setConfig] = useState<TTSConfig>(defaultConfig);
   const [testText, setTestText] = useState(
@@ -143,6 +156,18 @@ export function TTSLabPanel() {
   const [generatedAudios, setGeneratedAudios] = useState<GeneratedAudio[]>([]);
   const [generating, setGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('configure');
+
+  // Save as Profile state
+  const [saveProfileModalOpen, setSaveProfileModalOpen] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [profileDescription, setProfileDescription] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveProfileSuccess, setSaveProfileSuccess] = useState(false);
+  const [saveProfileError, setSaveProfileError] = useState<string | null>(null);
+
+  // Save to Library state
+  const [savingToLibrary, setSavingToLibrary] = useState<string | null>(null);
+  const [savedToLibrary, setSavedToLibrary] = useState<Set<string>>(new Set());
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -167,6 +192,73 @@ export function TTSLabPanel() {
 
   const handleClearAll = () => {
     setGeneratedAudios([]);
+  };
+
+  const handleOpenSaveProfile = () => {
+    const model = ttsModels.find((m) => m.id === config.model);
+    const voice = kyutaiVoices.find((v) => v.id === config.voice);
+    setProfileName(`${model?.name || 'Custom'} - ${voice?.name || config.voice}`);
+    setProfileDescription('');
+    setSaveProfileSuccess(false);
+    setSaveProfileError(null);
+    setSaveProfileModalOpen(true);
+  };
+
+  const handleSaveAsProfile = async () => {
+    if (!profileName.trim()) {
+      setSaveProfileError('Please enter a profile name');
+      return;
+    }
+
+    setSavingProfile(true);
+    setSaveProfileError(null);
+
+    try {
+      const provider = modelToProvider[config.model] || 'chatterbox';
+      await createTTSProfile({
+        name: profileName.trim(),
+        description: profileDescription.trim() || undefined,
+        provider,
+        voice_id: config.voice,
+        settings: {
+          speed: 1.0, // Default, could map from paddingBonus
+          cfg_weight: config.cfgCoef,
+          extra: {
+            n_q: config.nQ,
+            padding_between: config.paddingBetween,
+            padding_bonus: config.paddingBonus,
+            temperature: config.temperature,
+            top_p: config.topP,
+            model_id: config.model,
+          },
+        },
+        tags: ['experimentation', config.model],
+        use_case: 'Generated from TTS Lab experimentation',
+        generate_sample: true,
+        sample_text: testText.slice(0, 200),
+      });
+
+      setSaveProfileSuccess(true);
+      setTimeout(() => {
+        setSaveProfileModalOpen(false);
+        setSaveProfileSuccess(false);
+      }, 1500);
+    } catch (err) {
+      setSaveProfileError(err instanceof Error ? err.message : 'Failed to save profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSaveToLibrary = async (audioId: string) => {
+    setSavingToLibrary(audioId);
+
+    // Simulate saving to library - in real implementation, this would call an API
+    // to persist the audio file to the audio library for baselines/A-B testing
+    setTimeout(() => {
+      setSavedToLibrary((prev) => new Set([...prev, audioId]));
+      setSavingToLibrary(null);
+    }, 1000);
   };
 
   const selectedModel = ttsModels.find((m) => m.id === config.model);
@@ -194,10 +286,6 @@ export function TTSLabPanel() {
                 {generatedAudios.length}
               </Badge>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="batch">
-            <Zap className="mr-2 h-4 w-4" />
-            Batch Jobs
           </TabsTrigger>
         </TabsList>
 
@@ -396,19 +484,25 @@ export function TTSLabPanel() {
                 <p className="text-sm text-slate-400">
                   {testText.length} characters · Est. duration: {(testText.length / 15).toFixed(1)}s
                 </p>
-                <Button onClick={handleGenerate} disabled={generating || !testText}>
-                  {generating ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Generate Audio
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleOpenSaveProfile}>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save as Profile
+                  </Button>
+                  <Button onClick={handleGenerate} disabled={generating || !testText}>
+                    {generating ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-4 w-4" />
+                        Generate Audio
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -455,6 +549,20 @@ export function TTSLabPanel() {
                         </CardDescription>
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSaveToLibrary(audio.id)}
+                          disabled={savingToLibrary === audio.id || savedToLibrary.has(audio.id)}
+                        >
+                          {savedToLibrary.has(audio.id) ? (
+                            <Check className="h-4 w-4 text-emerald-400" />
+                          ) : savingToLibrary === audio.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <FolderPlus className="h-4 w-4" />
+                          )}
+                        </Button>
                         <Button variant="outline" size="sm">
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -513,12 +621,112 @@ export function TTSLabPanel() {
             </div>
           )}
         </TabsContent>
-
-        {/* Batch Jobs Tab */}
-        <TabsContent value="batch" className="space-y-6">
-          <BatchJobPanel />
-        </TabsContent>
       </Tabs>
+
+      {/* Save as Profile Modal */}
+      {saveProfileModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="bg-slate-900 border-slate-700 w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800 pb-4">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Save className="w-5 h-5 text-orange-400" />
+                Save as Profile
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSaveProfileModalOpen(false)}
+                disabled={savingProfile}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </CardHeader>
+
+            <CardContent className="pt-6 space-y-4">
+              {saveProfileSuccess ? (
+                <div className="flex flex-col items-center py-8">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+                    <Check className="w-6 h-6 text-emerald-400" />
+                  </div>
+                  <p className="text-lg font-medium text-white">Profile Saved!</p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Your profile is now available in the Batch tab
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {saveProfileError && (
+                    <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 text-sm">
+                      {saveProfileError}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="profileName">Profile Name</Label>
+                    <Input
+                      id="profileName"
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      placeholder="e.g., Expressive Quiz Voice"
+                      className="bg-slate-800 border-slate-700"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="profileDesc">Description (optional)</Label>
+                    <Textarea
+                      id="profileDesc"
+                      value={profileDescription}
+                      onChange={(e) => setProfileDescription(e.target.value)}
+                      placeholder="What is this profile optimized for?"
+                      rows={2}
+                      className="bg-slate-800 border-slate-700"
+                    />
+                  </div>
+
+                  {/* Config Summary */}
+                  <div className="p-3 bg-slate-800/50 rounded-lg space-y-2 text-sm">
+                    <div className="font-medium text-slate-300">Configuration Summary</div>
+                    <div className="grid grid-cols-2 gap-2 text-slate-400">
+                      <div>Model: {selectedModel?.name}</div>
+                      <div>Voice: {config.voice}</div>
+                      <div>CFG: {config.cfgCoef.toFixed(1)}</div>
+                      <div>Temp: {config.temperature.toFixed(2)}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSaveProfileModalOpen(false)}
+                      disabled={savingProfile}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveAsProfile}
+                      disabled={savingProfile || !profileName.trim()}
+                      className="bg-orange-500 hover:bg-orange-600"
+                    >
+                      {savingProfile ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Save Profile
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

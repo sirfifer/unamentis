@@ -1,0 +1,7 @@
+# Gemfile for UnaMentis development scripts
+# Requires Ruby 2.6+ (system Ruby on macOS works)
+
+source 'https://rubygems.org'
+
+# Xcode project manipulation (same as CocoaPods uses)
+gem 'xcodeproj', '~> 1.24'

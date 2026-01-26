@@ -53,6 +53,8 @@ PUBLIC_PREFIXES: List[str] = [
     '/api/sessions',        # FOV session management
     '/api/tts',             # TTS cache and generation (dev mode)
     '/api/deployments',     # Scheduled deployments (dev mode)
+    '/api/kb',              # Knowledge Bowl packs and questions
+    '/api/modules',         # Module management
     '/ws',                  # WebSocket connections
 ]
 

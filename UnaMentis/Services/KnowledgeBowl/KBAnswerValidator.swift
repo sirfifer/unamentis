@@ -172,7 +172,7 @@ actor KBAnswerValidator {
         case .place:
             normalized = normalizePlace(normalized)
 
-        case .number:
+        case .numeric:
             normalized = normalizeNumber(normalized)
 
         case .date:

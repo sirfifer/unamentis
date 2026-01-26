@@ -20,7 +20,9 @@ import {
   RefreshCw,
   Volume2,
   Settings,
-  Mic,
+  Zap,
+  Package,
+  HelpCircle,
 } from 'lucide-react';
 
 // Section types
@@ -43,13 +45,15 @@ export type OpsTabId =
 export type ContentTabId =
   | 'curricula'
   | 'modules'
+  | 'questions'
+  | 'packs'
   | 'sources'
   | 'plugins'
   | 'imports'
   | 'reprocess';
 
 // Voice Lab tabs
-export type VoiceLabTabId = 'model-selection' | 'tts-lab' | 'tts-profiles';
+export type VoiceLabTabId = 'model-selection' | 'tts-lab' | 'batch';
 
 // Combined tab type
 export type TabId = OpsTabId | ContentTabId | VoiceLabTabId;
@@ -93,6 +97,8 @@ const contentTabs: {
 }[] = [
   { id: 'curricula', label: 'Curricula', shortLabel: 'Curricula', icon: BookOpen },
   { id: 'modules', label: 'Modules', shortLabel: 'Modules', icon: Brain },
+  { id: 'questions', label: 'Questions', shortLabel: 'Questions', icon: HelpCircle },
+  { id: 'packs', label: 'Question Packs', shortLabel: 'Packs', icon: Package },
   { id: 'sources', label: 'Sources', shortLabel: 'Sources', icon: Library },
   { id: 'plugins', label: 'Plugins', shortLabel: 'Plugins', icon: Puzzle },
   { id: 'imports', label: 'Import Jobs', shortLabel: 'Imports', icon: Download },
@@ -107,7 +113,7 @@ const voiceLabTabs: {
 }[] = [
   { id: 'model-selection', label: 'TTS Models', shortLabel: 'TTS', icon: FlaskConical },
   { id: 'tts-lab', label: 'TTS Experimentation', shortLabel: 'Lab', icon: Settings },
-  { id: 'tts-profiles', label: 'Batch Profiles', shortLabel: 'Profiles', icon: Mic },
+  { id: 'batch', label: 'Batch', shortLabel: 'Batch', icon: Zap },
 ];
 
 export function SectionNav({ activeSection, onSectionChange }: SectionNavProps) {

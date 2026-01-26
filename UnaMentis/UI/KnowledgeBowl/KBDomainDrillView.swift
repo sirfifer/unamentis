@@ -610,18 +610,29 @@ final class KBDomainDrillViewModel {
     private var speechDelegate: SpeechDelegate?
     private(set) var isSpeaking: Bool = false
     private(set) var audioError: String?
-    private var speechCompletion: (() -> Void)?
 
     private static let logger = Logger(label: "com.unamentis.kb.domaindrill")
 
-    /// Simple delegate class for AVSpeechSynthesizer
-    private final class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
-        var onFinished: (() -> Void)?
+    /// Thread-safe delegate class for AVSpeechSynthesizer that handles completion and cancellation
+    @MainActor
+    private final class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate {
+        var continuation: CheckedContinuation<Void, Never>?
 
-        func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
             Task { @MainActor in
-                self.onFinished?()
+                self.finish()
             }
+        }
+
+        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+            Task { @MainActor in
+                self.finish()
+            }
+        }
+
+        func finish() {
+            continuation?.resume()
+            continuation = nil
         }
     }
 
@@ -748,9 +759,7 @@ final class KBDomainDrillViewModel {
 
         // Use continuation to wait for speech completion
         await withCheckedContinuation { continuation in
-            speechDelegate?.onFinished = {
-                continuation.resume()
-            }
+            speechDelegate?.continuation = continuation
 
             let utterance = AVSpeechUtterance(string: question.text)
             utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9  // Slightly slower for clarity

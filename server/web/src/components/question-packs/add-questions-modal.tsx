@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   X,
   Plus,
@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   Loader2,
   AlertCircle,
+  Database,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type {
@@ -21,6 +22,7 @@ import type {
   QuestionSource,
   DifficultyTier,
 } from '@/types/question-packs';
+import { QuestionSelector } from './question-selector';
 
 // Domain labels
 const DOMAIN_LABELS: Record<DomainId, string> = {
@@ -80,8 +82,6 @@ async function createQuestion(input: CreateQuestionData): Promise<KBQuestion> {
   return data.question;
 }
 
-// Note: addQuestionsToPackApi will be used in the "Copy from Pack" flow
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function addQuestionsToPackApi(packId: string, questionIds: string[]): Promise<void> {
   const response = await fetch(`/api/kb/packs/${packId}/questions`, {
     method: 'POST',
@@ -110,7 +110,7 @@ interface AddQuestionsModalProps {
   onSuccess: () => void;
 }
 
-type AddMode = 'select' | 'single' | 'import' | 'copy';
+type AddMode = 'select' | 'single' | 'import' | 'copy' | 'browse';
 
 export function AddQuestionsModal({
   packId,
@@ -142,6 +142,37 @@ export function AddQuestionsModal({
   const [availablePacks, setAvailablePacks] = useState<QuestionPack[]>([]);
   const [selectedSourcePack, setSelectedSourcePack] = useState<string | null>(null);
   const [packsLoading, setPacksLoading] = useState(false);
+
+  // Browse all questions state
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+  const [selectedQuestionsData, setSelectedQuestionsData] = useState<KBQuestion[]>([]);
+
+  // Handle selection changes from QuestionSelector
+  const handleBrowseSelectionChange = useCallback((ids: string[], questions: KBQuestion[]) => {
+    setSelectedQuestionIds(ids);
+    setSelectedQuestionsData(questions);
+  }, []);
+
+  // Handle adding selected questions to pack
+  const handleAddSelectedQuestions = async () => {
+    if (selectedQuestionIds.length === 0) {
+      setError('Please select at least one question');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await addQuestionsToPackApi(packId, selectedQuestionIds);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add questions');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setQuestionText('');
@@ -254,6 +285,22 @@ export function AddQuestionsModal({
             <p className="text-slate-400 text-sm mb-6">How would you like to add questions?</p>
 
             <button
+              onClick={() => setMode('browse')}
+              className="w-full flex items-center gap-4 p-4 bg-slate-800 border border-slate-700 rounded-lg hover:border-purple-500 transition-colors text-left"
+            >
+              <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                <Database className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-slate-200">Browse All Questions</div>
+                <div className="text-sm text-slate-400">
+                  Search and filter from all available questions
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-500" />
+            </button>
+
+            <button
               onClick={() => setMode('single')}
               className="w-full flex items-center gap-4 p-4 bg-slate-800 border border-slate-700 rounded-lg hover:border-purple-500 transition-colors text-left"
             >
@@ -299,6 +346,73 @@ export function AddQuestionsModal({
               </div>
               <ChevronRight className="w-5 h-5 text-slate-500" />
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Browse all questions view
+  if (mode === 'browse') {
+    return (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div className="bg-slate-900 border border-slate-700 rounded-lg w-full max-w-6xl max-h-[90vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMode('select')}
+                className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <h2 className="text-lg font-semibold text-white">Browse All Questions</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 flex-1 overflow-hidden">
+            {error && (
+              <div className="flex items-center gap-2 p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <QuestionSelector
+              onSelectionChange={handleBrowseSelectionChange}
+              maxHeight="calc(90vh - 200px)"
+            />
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-700 flex-shrink-0">
+            <div className="text-sm text-slate-400">
+              Adding to: <span className="text-slate-200">{packName}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddSelectedQuestions}
+                disabled={loading || selectedQuestionIds.length === 0}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Add {selectedQuestionIds.length} Question
+                {selectedQuestionIds.length !== 1 ? 's' : ''}
+              </button>
+            </div>
           </div>
         </div>
       </div>

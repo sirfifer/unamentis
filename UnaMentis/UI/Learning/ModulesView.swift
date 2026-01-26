@@ -1,10 +1,10 @@
 // UnaMentis - Modules View
-// Lists available specialized training modules from the server
+// Lists available specialized training modules
 //
-// Modules are server-delivered, not bundled with the app:
-// - Fetches available modules from the connected server
-// - Users can download modules they want to use
-// - Shows both available and downloaded modules
+// Module sources:
+// - Bundled modules: Always available, shipped with the app (e.g., Knowledge Bowl)
+// - Server modules: Fetched from connected server for additional content
+// - Downloaded modules: Previously downloaded from server
 
 import SwiftUI
 import Logging
@@ -12,6 +12,36 @@ import Logging
 /// Wrapper for module ID to make it Identifiable for fullScreenCover
 struct LaunchedModuleIdentifier: Identifiable {
     let id: String
+}
+
+/// Represents a bundled module that ships with the app
+struct BundledModule: Identifiable {
+    let id: String
+    let name: String
+    let description: String
+    let iconName: String
+    let themeColorHex: String
+    let supportsTeamMode: Bool
+    let supportsSpeedTraining: Bool
+    let supportsCompetitionSim: Bool
+
+    var themeColor: Color {
+        Color(hex: themeColorHex) ?? .purple
+    }
+
+    /// All bundled modules that ship with the app
+    static let all: [BundledModule] = [
+        BundledModule(
+            id: "knowledge-bowl",
+            name: "Knowledge Bowl",
+            description: "Academic competition training with 12 domains. Practice for oral rounds, written tests, and full competition simulation.",
+            iconName: "brain.head.profile",
+            themeColorHex: "#8B5CF6",  // Purple
+            supportsTeamMode: true,
+            supportsSpeedTraining: true,
+            supportsCompetitionSim: true
+        )
+    ]
 }
 
 /// View displaying available specialized training modules
@@ -22,53 +52,54 @@ struct ModulesView: View {
 
     @State private var availableModules: [ModuleSummary] = []
     @State private var isLoading = true
-    @State private var errorMessage: String?
+    @State private var serverError: String?  // Renamed from errorMessage to clarify it's server-specific
     @State private var selectedModule: ModuleSummary?
+    @State private var selectedBundledModule: BundledModule?
     @State private var showingModuleDetail = false
     @State private var launchedModule: LaunchedModuleIdentifier?
 
     private static let logger = Logger(label: "com.unamentis.modules.view")
 
     var body: some View {
-        Group {
-            if isLoading {
-                loadingView
-            } else if let error = errorMessage {
-                errorView(message: error)
-            } else if availableModules.isEmpty && moduleRegistry.allDownloaded.isEmpty {
-                emptyStateView
-            } else {
-                moduleListView
+        // Always show the module list, even if server is unreachable
+        // Bundled modules are always available
+        moduleListView
+            .task {
+                await configureAndFetch()
             }
-        }
-        .task {
-            await configureAndFetch()
-        }
-        .refreshable {
-            await fetchModules()
-        }
-        .sheet(item: $selectedModule) { module in
-            NavigationStack {
-                ModuleDetailSheet(
-                    module: module,
-                    isDownloaded: moduleRegistry.isDownloaded(moduleId: module.id),
-                    onDownload: { await downloadModule(module) },
-                    onLaunch: { launchModule(module) }
-                )
+            .refreshable {
+                await fetchModules()
             }
-        }
-        .fullScreenCover(item: $launchedModule) { module in
-            NavigationStack {
-                moduleViewForId(module.id)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Close") {
-                                launchedModule = nil
+            .sheet(item: $selectedModule) { module in
+                NavigationStack {
+                    ModuleDetailSheet(
+                        module: module,
+                        isDownloaded: moduleRegistry.isDownloaded(moduleId: module.id),
+                        onDownload: { await downloadModule(module) },
+                        onLaunch: { launchModule(module) }
+                    )
+                }
+            }
+            .sheet(item: $selectedBundledModule) { module in
+                NavigationStack {
+                    BundledModuleDetailSheet(
+                        module: module,
+                        onLaunch: { launchBundledModule(module) }
+                    )
+                }
+            }
+            .fullScreenCover(item: $launchedModule) { module in
+                NavigationStack {
+                    moduleViewForId(module.id)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Close") {
+                                    launchedModule = nil
+                                }
                             }
                         }
-                    }
+                }
             }
-        }
     }
 
     /// Returns the appropriate view for a module ID
@@ -89,57 +120,38 @@ struct ModulesView: View {
     // MARK: - Views
 
     @ViewBuilder
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-            Text("Loading modules...")
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    @ViewBuilder
-    private func errorView(message: String) -> some View {
-        ContentUnavailableView {
-            Label("Connection Error", systemImage: "wifi.exclamationmark")
-        } description: {
-            Text(message)
-        } actions: {
-            Button("Retry") {
-                Task { await fetchModules() }
-            }
-            .buttonStyle(.borderedProminent)
-        }
-    }
-
-    @ViewBuilder
-    private var emptyStateView: some View {
-        ContentUnavailableView {
-            Label("No Modules Available", systemImage: "puzzlepiece.extension")
-        } description: {
-            Text("Connect to a server to browse available training modules.")
-        } actions: {
-            Button("Refresh") {
-                Task { await fetchModules() }
-            }
-            .buttonStyle(.bordered)
-        }
-    }
-
-    @ViewBuilder
     private var moduleListView: some View {
         List {
+            // Bundled modules section - ALWAYS shown, no server required
+            Section {
+                ForEach(BundledModule.all) { module in
+                    BundledModuleRow(module: module)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            selectedBundledModule = module
+                        }
+                }
+            } header: {
+                Text("Installed")
+            } footer: {
+                Text("These modules are ready to use without any downloads.")
+            }
+
             // Downloaded modules section
             if !moduleRegistry.allDownloaded.isEmpty {
                 Section {
                     ForEach(moduleRegistry.allDownloaded, id: \.id) { module in
-                        DownloadedModuleRow(module: module)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                // Launch downloaded module
-                                if let summary = availableModules.first(where: { $0.id == module.id }) {
-                                    launchModule(summary)
+                        // Skip if this is a bundled module (avoid duplicates)
+                        if !BundledModule.all.contains(where: { $0.id == module.id }) {
+                            DownloadedModuleRow(module: module)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    // Launch downloaded module
+                                    if let summary = availableModules.first(where: { $0.id == module.id }) {
+                                        launchModule(summary)
+                                    }
                                 }
-                            }
+                        }
                     }
                     .onDelete(perform: deleteDownloadedModules)
                 } header: {
@@ -149,24 +161,70 @@ struct ModulesView: View {
                 }
             }
 
-            // Available modules from server
+            // Available modules from server (only if connected)
             if !availableModules.isEmpty {
-                Section {
-                    ForEach(availableModules) { module in
-                        ServerModuleRow(
-                            module: module,
-                            isDownloaded: moduleRegistry.isDownloaded(moduleId: module.id)
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedModule = module
-                        }
-                    }
-                } header: {
-                    Text("Available on Server")
-                } footer: {
-                    Text("Modules provide specialized training for competitions and skill development.")
+                // Filter out bundled modules to avoid duplicates
+                let serverOnlyModules = availableModules.filter { serverModule in
+                    !BundledModule.all.contains { $0.id == serverModule.id }
                 }
+
+                if !serverOnlyModules.isEmpty {
+                    Section {
+                        ForEach(serverOnlyModules) { module in
+                            ServerModuleRow(
+                                module: module,
+                                isDownloaded: moduleRegistry.isDownloaded(moduleId: module.id)
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedModule = module
+                            }
+                        }
+                    } header: {
+                        Text("Available on Server")
+                    } footer: {
+                        Text("Additional modules available for download.")
+                    }
+                }
+            }
+
+            // Server status section
+            Section {
+                if isLoading {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Checking server...")
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let error = serverError {
+                    HStack {
+                        Image(systemName: "wifi.exclamationmark")
+                            .foregroundStyle(.orange)
+                        VStack(alignment: .leading) {
+                            Text("Server Unavailable")
+                                .font(.subheadline)
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Retry") {
+                            Task { await fetchModules() }
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                    }
+                } else {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("Connected to server")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("Server Connection")
             }
         }
         .toolbar {
@@ -192,25 +250,30 @@ struct ModulesView: View {
             try await moduleService.configure(host: host, port: 8766)
             await fetchModules()
         } catch {
-            Self.logger.error("Failed to configure module service: \(error)")
-            errorMessage = "Failed to connect to server"
+            Self.logger.info("Server not available, continuing with bundled modules only")
+            serverError = "Server not configured or unreachable"
             isLoading = false
         }
     }
 
     private func fetchModules() async {
         isLoading = true
-        errorMessage = nil
+        serverError = nil
 
         do {
             availableModules = try await moduleService.fetchAvailableModules()
-            Self.logger.info("Fetched \(availableModules.count) modules")
+            Self.logger.info("Fetched \(availableModules.count) modules from server")
         } catch {
-            Self.logger.error("Failed to fetch modules: \(error)")
-            errorMessage = error.localizedDescription
+            Self.logger.info("Could not fetch from server: \(error.localizedDescription)")
+            serverError = error.localizedDescription
         }
 
         isLoading = false
+    }
+
+    private func launchBundledModule(_ module: BundledModule) {
+        Self.logger.info("Launching bundled module: \(module.name)")
+        launchedModule = LaunchedModuleIdentifier(id: module.id)
     }
 
     private func downloadModule(_ module: ModuleSummary) async {
@@ -517,6 +580,165 @@ struct FeatureRow: View {
                 Text(description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+// MARK: - Bundled Module Row
+
+struct BundledModuleRow: View {
+    let module: BundledModule
+
+    var body: some View {
+        HStack(spacing: 16) {
+            // Module icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(module.themeColor.opacity(0.15))
+                    .frame(width: 56, height: 56)
+
+                Image(systemName: module.iconName)
+                    .font(.title2)
+                    .foregroundStyle(module.themeColor)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(module.name)
+                        .font(.headline)
+
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(.green)
+                        .font(.caption)
+                }
+
+                Text(module.description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+
+                // Feature badges
+                HStack(spacing: 8) {
+                    if module.supportsTeamMode {
+                        FeatureBadge(text: "Team", icon: "person.2.fill", color: .blue)
+                    }
+                    if module.supportsSpeedTraining {
+                        FeatureBadge(text: "Speed", icon: "bolt.fill", color: .orange)
+                    }
+                    if module.supportsCompetitionSim {
+                        FeatureBadge(text: "Competition", icon: "trophy.fill", color: .yellow)
+                    }
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .foregroundStyle(.tertiary)
+                .font(.caption)
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Bundled Module Detail Sheet
+
+struct BundledModuleDetailSheet: View {
+    let module: BundledModule
+    let onLaunch: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                // Header
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(module.themeColor.opacity(0.15))
+                            .frame(width: 80, height: 80)
+
+                        Image(systemName: module.iconName)
+                            .font(.largeTitle)
+                            .foregroundStyle(module.themeColor)
+                    }
+
+                    HStack {
+                        Text(module.name)
+                            .font(.title.bold())
+
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundStyle(.green)
+                    }
+
+                    Text(module.description)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+
+                // Launch button - always available for bundled modules
+                Button {
+                    onLaunch()
+                    dismiss()
+                } label: {
+                    Label("Start Practicing", systemImage: "play.fill")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(module.themeColor)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .padding(.horizontal)
+
+                Text("No download required")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+
+                // Features
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Features")
+                        .font(.headline)
+
+                    if module.supportsTeamMode {
+                        FeatureRow(
+                            icon: "person.2.fill",
+                            title: "Team Mode",
+                            description: "Practice with your team in synchronized sessions"
+                        )
+                    }
+                    if module.supportsSpeedTraining {
+                        FeatureRow(
+                            icon: "bolt.fill",
+                            title: "Speed Training",
+                            description: "Build quick recall with timed drills"
+                        )
+                    }
+                    if module.supportsCompetitionSim {
+                        FeatureRow(
+                            icon: "trophy.fill",
+                            title: "Competition Simulation",
+                            description: "Practice in realistic competition conditions"
+                        )
+                    }
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+
+                Spacer()
+            }
+        }
+        .navigationTitle("Module Details")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close") { dismiss() }
             }
         }
     }

@@ -141,7 +141,7 @@ tags = ["core", "web"]
 [instances.feature-flags]
 template = "feature-flags"
 port = 3063
-working_dir = "${PROJECT_ROOT}/server/feature_flags"
+working_dir = "${PROJECT_ROOT}/server/feature-flags"
 auto_start = false
 tags = ["development", "feature-flags"]
 

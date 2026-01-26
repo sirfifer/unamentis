@@ -34,6 +34,11 @@ from modules_api import load_module_content
 
 logger = logging.getLogger(__name__)
 
+
+def get_kb_repo(request: web.Request):
+    """Get KB questions repository from request app, if database is available."""
+    return request.app.get("kb_repo")
+
 # Data directory for packs storage
 DATA_DIR = Path(__file__).parent / "data"
 PACKS_DIR = DATA_DIR / "kb_packs"
@@ -905,24 +910,55 @@ async def handle_list_questions(request: web.Request) -> web.Response:
     - offset: Pagination offset
     """
     try:
-        questions_store = load_questions_store()
-        registry = load_packs_registry()
-
         # Parse query params
         pack_id = request.query.get("pack_id")
         domain_id = request.query.get("domain_id")
         subcategory = request.query.get("subcategory")
         difficulty_str = request.query.get("difficulty")
         question_type = request.query.get("question_type")
-        has_audio = request.query.get("has_audio")
+        has_audio_str = request.query.get("has_audio")
         status = request.query.get("status")
-        search = request.query.get("search", "").lower()
+        search = request.query.get("search", "").lower() or None
         limit = min(int(request.query.get("limit", 20)), 100)
         offset = int(request.query.get("offset", 0))
 
         difficulties = None
         if difficulty_str:
             difficulties = [int(d) for d in difficulty_str.split(",") if d.isdigit()]
+
+        has_audio = None
+        if has_audio_str is not None:
+            has_audio = has_audio_str.lower() == "true"
+
+        # Try database first
+        repo = get_kb_repo(request)
+        if repo:
+            questions, total = await repo.list_questions(
+                pack_id=pack_id,
+                domain_id=domain_id,
+                subcategory=subcategory,
+                difficulties=difficulties,
+                question_type=question_type,
+                has_audio=has_audio,
+                status=status,
+                search=search,
+                limit=limit,
+                offset=offset,
+            )
+            return web.json_response(
+                {
+                    "success": True,
+                    "questions": questions,
+                    "total": total,
+                    "limit": limit,
+                    "offset": offset,
+                    "source": "database",
+                }
+            )
+
+        # Fallback to JSON store
+        questions_store = load_questions_store()
+        registry = load_packs_registry()
 
         # Get questions to filter
         all_questions = list(questions_store.get("questions", {}).values())
@@ -951,9 +987,9 @@ async def handle_list_questions(request: web.Request) -> web.Response:
                 continue
             if has_audio is not None:
                 q_has_audio = q.get("has_audio", False)
-                if has_audio.lower() == "true" and not q_has_audio:
+                if has_audio and not q_has_audio:
                     continue
-                if has_audio.lower() == "false" and q_has_audio:
+                if not has_audio and q_has_audio:
                     continue
             if status and q.get("status") != status:
                 continue
@@ -976,6 +1012,7 @@ async def handle_list_questions(request: web.Request) -> web.Response:
                 "total": total,
                 "limit": limit,
                 "offset": offset,
+                "source": "json",
             }
         )
 
@@ -1421,8 +1458,299 @@ async def handle_import_from_module(request: web.Request) -> web.Response:
         return web.json_response({"success": False, "error": "Internal server error"}, status=500)
 
 
+async def handle_list_domains(request: web.Request) -> web.Response:
+    """GET /api/kb/domains
+
+    List all Knowledge Bowl domains.
+    """
+    try:
+        repo = get_kb_repo(request)
+        if repo:
+            domains = await repo.list_domains()
+            return web.json_response({"success": True, "domains": domains, "source": "database"})
+
+        # Fallback to hardcoded domains from module
+        module_content = load_module_content("knowledge-bowl")
+        if module_content:
+            domains = [
+                {
+                    "id": d["id"],
+                    "name": d["name"],
+                    "icon_name": d.get("icon_name"),
+                    "weight": d.get("weight", 0.1),
+                    "subcategories": d.get("subcategories", []),
+                }
+                for d in module_content.get("domains", [])
+            ]
+            return web.json_response({"success": True, "domains": domains, "source": "module"})
+
+        return web.json_response({"success": True, "domains": [], "source": "none"})
+
+    except Exception:
+        logger.exception("Error listing domains")
+        return web.json_response({"success": False, "error": "Internal server error"}, status=500)
+
+
+def _convert_difficulty_to_numeric(difficulty: str) -> int:
+    """Convert string difficulty tier to numeric 1-5 scale."""
+    mapping = {
+        "elementary": 1,
+        "middle_school": 2,
+        "jv": 3,
+        "varsity": 4,
+        "championship": 5,
+        "college": 5,
+    }
+    return mapping.get(difficulty.lower().replace(" ", "_"), 3)
+
+
+def _transform_importer_question(q: dict) -> dict:
+    """Transform a question from importer format to database format."""
+    answer = q.get("answer", {})
+    if isinstance(answer, str):
+        answer_text = answer
+        acceptable = []
+    else:
+        answer_text = answer.get("primary", "")
+        acceptable = answer.get("acceptable", [])
+
+    # Determine question type from tags
+    tags = q.get("tags", [])
+    question_type = "toss_up"
+    if "bonus" in tags:
+        question_type = "bonus"
+    elif "lightning" in tags:
+        question_type = "lightning"
+
+    # Map domain names
+    domain = q.get("domain", "miscellaneous").lower().replace(" ", "_")
+    domain_mapping = {
+        "science": "science",
+        "biology": "science",
+        "chemistry": "science",
+        "physics": "science",
+        "earth_science": "science",
+        "math": "mathematics",
+        "mathematics": "mathematics",
+        "history": "history",
+        "geography": "social_studies",
+        "social_science": "social_studies",
+        "literature": "literature",
+        "fine_arts": "arts",
+        "arts": "arts",
+        "music": "arts",
+        "current_events": "current_events",
+        "mythology": "religion_philosophy",
+        "religion": "religion_philosophy",
+        "philosophy": "religion_philosophy",
+        "sports": "pop_culture",
+        "pop_culture": "pop_culture",
+        "technology": "technology",
+        "trash": "miscellaneous",
+    }
+    domain_id = domain_mapping.get(domain, "miscellaneous")
+
+    # Determine difficulty
+    diff_str = q.get("difficulty", "varsity")
+    if isinstance(diff_str, int):
+        difficulty = max(1, min(5, diff_str))
+    else:
+        difficulty = _convert_difficulty_to_numeric(diff_str)
+
+    # Determine source
+    source_str = q.get("source", "")
+    if "science bowl" in source_str.lower():
+        question_source = "nsb"
+    elif "naqt" in source_str.lower():
+        question_source = "naqt"
+    elif "qbreader" in source_str.lower() or "packet" in source_str.lower():
+        question_source = "qb_packets"
+    elif "opentriviadb" in source_str.lower() or "trivia" in source_str.lower():
+        question_source = "custom"
+    else:
+        question_source = "custom"
+
+    return {
+        "id": q.get("id"),
+        "domain_id": domain_id,
+        "subcategory": q.get("subdomain", q.get("subcategory", "General")),
+        "question_text": q.get("text", q.get("question_text", "")),
+        "answer_text": answer_text,
+        "acceptable_answers": acceptable,
+        "difficulty": difficulty,
+        "difficulty_tier": diff_str if isinstance(diff_str, str) else None,
+        "speed_target_seconds": 5.0,
+        "question_type": question_type,
+        "question_source": question_source,
+        "buzzable": q.get("suitability", {}).get("forOral", True),
+        "hints": q.get("hints", []),
+        "explanation": q.get("explanation", ""),
+        "has_audio": False,
+        "status": "active",
+    }
+
+
+def _load_importer_questions() -> list[dict]:
+    """Load questions from importer output files."""
+    questions = []
+    seen_ids = set()
+
+    # Paths to check for importer output
+    importer_paths = [
+        Path(__file__).parent.parent / "importers" / "output" / "kb-all-questions.json",
+        Path(__file__).parent.parent / "importers" / "plugins" / "sources" / "output" / "kb-all-questions.json",
+    ]
+
+    for path in importer_paths:
+        if path.exists():
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+                    q_list = data.get("questions", data) if isinstance(data, dict) else data
+                    if isinstance(q_list, list):
+                        for q in q_list:
+                            q_id = q.get("id")
+                            if q_id and q_id not in seen_ids:
+                                seen_ids.add(q_id)
+                                transformed = _transform_importer_question(q)
+                                if transformed.get("question_text"):
+                                    questions.append(transformed)
+                logger.info(f"Loaded {len(questions)} questions from {path}")
+            except Exception as e:
+                logger.warning(f"Failed to load questions from {path}: {e}")
+
+    return questions
+
+
+async def handle_sync_to_database(request: web.Request) -> web.Response:
+    """POST /api/kb/sync-to-database
+
+    Sync all questions from Knowledge Bowl module and importer outputs into the database.
+    This is the primary way to populate the database with questions.
+    """
+    try:
+        repo = get_kb_repo(request)
+        if not repo:
+            return web.json_response(
+                {"success": False, "error": "Database not available. Check DATABASE_URL configuration."},
+                status=503,
+            )
+
+        questions_to_import = []
+        seen_ids = set()
+
+        # 1. Load from KB module content (sample questions)
+        module_content = load_module_content("knowledge-bowl")
+        if module_content:
+            for domain in module_content.get("domains", []):
+                domain_id = domain.get("id")
+                for q in domain.get("questions", []):
+                    q_id = q.get("id")
+                    if q_id and q_id not in seen_ids:
+                        seen_ids.add(q_id)
+                        question = {
+                            "id": q_id,
+                            "domain_id": q.get("domain_id", domain_id),
+                            "subcategory": q.get("subcategory", "General"),
+                            "question_text": q.get("question_text", ""),
+                            "answer_text": q.get("answer_text", ""),
+                            "acceptable_answers": q.get("acceptable_answers", []),
+                            "difficulty": q.get("difficulty", 2),
+                            "speed_target_seconds": q.get("speed_target_seconds", 5.0),
+                            "question_type": q.get("question_type", "toss-up").replace("-", "_"),
+                            "question_source": "naqt",
+                            "buzzable": True,
+                            "hints": q.get("hints", []),
+                            "explanation": q.get("explanation", ""),
+                            "has_audio": False,
+                            "status": "active",
+                        }
+                        questions_to_import.append(question)
+
+        module_count = len(questions_to_import)
+        logger.info(f"Loaded {module_count} questions from module content")
+
+        # 2. Load from importer output files
+        importer_questions = _load_importer_questions()
+        for q in importer_questions:
+            q_id = q.get("id")
+            if q_id and q_id not in seen_ids:
+                seen_ids.add(q_id)
+                questions_to_import.append(q)
+
+        importer_count = len(questions_to_import) - module_count
+        logger.info(f"Loaded {importer_count} additional questions from importers")
+
+        # Import all questions in batches
+        batch_size = 1000
+        total_imported = 0
+        for i in range(0, len(questions_to_import), batch_size):
+            batch = questions_to_import[i : i + batch_size]
+            imported = await repo.import_questions_bulk(batch)
+            total_imported += imported
+            logger.info(f"Imported batch {i // batch_size + 1}: {imported} questions")
+
+        total_count = await repo.get_question_count()
+        domain_counts = await repo.get_domain_question_counts()
+
+        logger.info(f"Synced {total_imported} questions to database. Total: {total_count}")
+
+        return web.json_response(
+            {
+                "success": True,
+                "imported_count": total_imported,
+                "module_questions": module_count,
+                "importer_questions": importer_count,
+                "total_questions": total_count,
+                "domain_counts": domain_counts,
+            }
+        )
+
+    except Exception:
+        logger.exception("Error syncing to database")
+        return web.json_response({"success": False, "error": "Internal server error"}, status=500)
+
+
+async def handle_database_status(request: web.Request) -> web.Response:
+    """GET /api/kb/database-status
+
+    Check the status of the KB questions database.
+    """
+    try:
+        repo = get_kb_repo(request)
+        if not repo:
+            return web.json_response(
+                {
+                    "success": True,
+                    "database_available": False,
+                    "message": "Database not configured. Using JSON storage.",
+                }
+            )
+
+        total_count = await repo.get_question_count()
+        domain_counts = await repo.get_domain_question_counts()
+
+        return web.json_response(
+            {
+                "success": True,
+                "database_available": True,
+                "total_questions": total_count,
+                "domain_counts": domain_counts,
+            }
+        )
+
+    except Exception:
+        logger.exception("Error checking database status")
+        return web.json_response({"success": False, "error": "Internal server error"}, status=500)
+
+
 def register_kb_packs_routes(app: web.Application):
     """Register all KB packs management routes."""
+    # Database status and sync
+    app.router.add_get("/api/kb/database-status", handle_database_status)
+    app.router.add_post("/api/kb/sync-to-database", handle_sync_to_database)
+    app.router.add_get("/api/kb/domains", handle_list_domains)
+
     # Pack management
     app.router.add_get("/api/kb/packs", handle_list_packs)
     app.router.add_post("/api/kb/packs", handle_create_pack)

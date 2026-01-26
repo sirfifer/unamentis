@@ -510,6 +510,7 @@ Skills are focused workflows that provide consistency and predictability. Invoke
 | `/read-external` | Cross-repo read access | Reference external repos |
 | `/comms` | Post to Slack/Trello with natural language | Team communication |
 | `/worktree` | Manage git worktrees for parallel development | Parallel task isolation |
+| `/xcode-project` | Add files/frameworks to Xcode projects | After creating Swift files |
 
 ### Key Skills
 

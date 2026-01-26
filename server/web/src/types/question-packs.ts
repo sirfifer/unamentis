@@ -17,7 +17,13 @@ export type DifficultyTier =
   | 'college'; // Undergraduate
 
 /**
+ * Competition types - determines filtering and question format
+ */
+export type CompetitionType = 'knowledge_bowl' | 'quiz_bowl';
+
+/**
  * Question types per KNOWLEDGE_BOWL_EXTENSIONS.md
+ * Note: These are primarily Quiz Bowl formats
  */
 export type QuestionType = 'toss_up' | 'bonus' | 'pyramid' | 'lightning';
 
@@ -68,6 +74,17 @@ export const KB_DOMAINS = {
 export type DomainId = keyof typeof KB_DOMAINS;
 export type Subcategory = (typeof KB_DOMAINS)[DomainId][number];
 
+/**
+ * KB Domain from database
+ */
+export interface KBDomain {
+  id: string;
+  name: string;
+  icon_name?: string;
+  weight?: number;
+  subcategories?: string[];
+}
+
 // ============================================================================
 // Question Types
 // ============================================================================
@@ -77,7 +94,8 @@ export type Subcategory = (typeof KB_DOMAINS)[DomainId][number];
  */
 export interface KBQuestion {
   id: string;
-  domain_id: DomainId;
+  domain_id: DomainId | string; // Allow string for flexibility with database values
+  domain_name?: string; // Computed from join with domains table
   subcategory: string;
   question_text: string;
   answer_text: string;
@@ -95,7 +113,7 @@ export interface KBQuestion {
   buzzable?: boolean;
 
   // Pack management
-  pack_ids: string[];
+  pack_ids?: string[];
   status: EntityStatus;
 
   // Audio status

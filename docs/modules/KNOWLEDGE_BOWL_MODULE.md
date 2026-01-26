@@ -373,6 +373,140 @@ Knowledge Bowl competitions have annual cycles. The module supports:
 
 ---
 
+## Question Pack Management
+
+### Overview
+
+The Knowledge Bowl module includes a comprehensive question pack management system accessible via REST API and the Operations Console UI. This system enables content organization, curation, and distribution for competition preparation.
+
+### Pack Types
+
+| Type | Description | Editable |
+|------|-------------|----------|
+| `system` | Bundled with the module, read-only | No |
+| `custom` | User-created packs | Yes |
+| `bundle` | Aggregation of multiple packs | Yes |
+
+### Question Organization
+
+Questions are organized with the following taxonomy:
+
+```
+Question Pack
+├── Domain (12 categories)
+│   └── Subcategory (6-12 per domain)
+│       └── Questions
+│           ├── Question Text
+│           ├── Answer (primary + acceptable alternatives)
+│           ├── Difficulty (1-5 numeric + tier label)
+│           ├── Question Type (toss_up, bonus, pyramid, lightning)
+│           └── Audio Status
+```
+
+### Difficulty Tiers
+
+| Tier | Grade Level | Competition Context |
+|------|-------------|---------------------|
+| `elementary` | Grades 3-5 | Elementary competitions |
+| `middle_school` | Grades 6-8 | Middle school competitions |
+| `jv` | Grades 9-10 | Junior Varsity |
+| `varsity` | Grades 11-12 | Varsity level |
+| `championship` | All grades | State/National finals |
+| `college` | Undergraduate | College bowl |
+
+### REST API Endpoints
+
+The Question Pack API is available at `http://localhost:8766/api/kb/`:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/packs` | GET | List all packs with filtering |
+| `/packs` | POST | Create a new pack |
+| `/packs/{id}` | GET | Get pack details with domain groups |
+| `/packs/{id}` | PATCH | Update pack metadata |
+| `/packs/{id}` | DELETE | Delete a pack |
+| `/packs/{id}/questions` | POST | Add questions to pack |
+| `/packs/{id}/questions/{qid}` | DELETE | Remove question from pack |
+| `/packs/bundle` | POST | Create bundle from multiple packs |
+| `/packs/preview-dedup` | POST | Preview duplicates before bundling |
+| `/questions` | GET | List questions with filtering |
+| `/questions` | POST | Create a new question |
+| `/questions/{id}` | GET/PATCH/DELETE | Question CRUD |
+| `/questions/bulk-update` | POST | Bulk update questions |
+| `/import-from-module` | POST | Import from KB module |
+
+See [Knowledge Bowl API Specification](../api-spec/09-KNOWLEDGE-BOWL.md) for complete documentation.
+
+### Operations Console UI
+
+The Operations Console (port 3000) provides a web interface for pack management:
+
+**Pack Browser:**
+- View all packs with filtering by type, status, and search
+- See pack statistics (question count, domain count, audio coverage)
+- Quick actions for edit, delete, and view
+
+**Pack Detail View:**
+- Questions organized by domain and subcategory
+- Difficulty and type distribution charts
+- Audio coverage status
+- Add/remove questions interface
+
+**Question Browser:**
+- Search and filter questions across all packs
+- Filter by domain, subcategory, difficulty, type, audio status
+- Bulk selection for operations
+- Edit question metadata inline
+
+**Bundle Creation:**
+- Select multiple source packs
+- Preview duplicates before creation
+- Choose deduplication strategy
+- Exclude specific questions
+
+### Bundle Deduplication
+
+When creating bundles from multiple packs, the system can detect and handle duplicate questions:
+
+**Deduplication Strategies:**
+- `keep_first`: Keep first occurrence, skip duplicates
+- `keep_all`: Include all questions (no deduplication)
+- `manual`: Preview duplicates and manually exclude
+
+**Detection Method:**
+- Questions are compared by `question_text`
+- Preview endpoint shows all duplicate groups
+- Statistics show total duplicates and unique count
+
+### Content Import
+
+Questions can be imported from:
+
+1. **KB Module Content**: Import from bundled Knowledge Bowl module
+   - Filter by domain and difficulty
+   - Skip existing questions
+   - Assign to target pack
+
+2. **Custom Creation**: Create individual questions via API
+   - Required: domain_id, question_text, answer_text
+   - Optional: acceptable_answers, hints, explanation, audio
+
+### Audio Integration
+
+Questions can have pre-generated TTS audio for:
+- Question text (for oral round practice)
+- Answer text (for answer reveal)
+- Hints (for scaffolded learning)
+- Explanation (for remediation)
+
+Audio status is tracked per question:
+- `has_audio`: Boolean indicating any audio exists
+- `audio_segments`: Object tracking individual audio pieces
+
+Use the Voice Lab Batch Jobs feature to generate audio for packs.
+
+---
+
 ## Assessment and Reinforcement
 
 ### Question Types

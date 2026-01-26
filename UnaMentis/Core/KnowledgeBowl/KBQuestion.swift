@@ -148,7 +148,7 @@ enum KBAnswerType: String, Codable, CaseIterable, Sendable {
     case text           // Generic text answer
     case person         // Person's name (handle first/last order, titles)
     case place          // Geographic location (handle "the", abbreviations)
-    case number         // Numeric answer (parse written numbers)
+    case numeric        // Numeric answer (parse written numbers)
     case date           // Date answer (handle multiple formats)
     case title          // Book/movie/work title (handle "The")
     case scientific     // Scientific term (handle formulas, abbreviations)

@@ -324,43 +324,43 @@ final class KBSynonymDictionariesTests: XCTestCase {
     // MARK: - Mathematics Synonyms (10 tests)
 
     func testMath_Pi_Symbol() {
-        XCTAssertTrue(matcher.areSynonyms("pi", "π", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("pi", "π", for: .numeric))
     }
 
     func testMath_E_EulersNumber() {
-        XCTAssertTrue(matcher.areSynonyms("e", "Eulers Number", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("e", "Eulers Number", for: .numeric))
     }
 
     func testMath_Phi_GoldenRatio() {
-        XCTAssertTrue(matcher.areSynonyms("phi", "Golden Ratio", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("phi", "Golden Ratio", for: .numeric))
     }
 
     func testMath_Sqrt_SquareRoot() {
-        XCTAssertTrue(matcher.areSynonyms("sqrt", "Square Root", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("sqrt", "Square Root", for: .numeric))
     }
 
     func testMath_Log_Logarithm() {
-        XCTAssertTrue(matcher.areSynonyms("log", "Logarithm", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("log", "Logarithm", for: .numeric))
     }
 
     func testMath_Ln_NaturalLog() {
-        XCTAssertTrue(matcher.areSynonyms("ln", "Natural Log", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("ln", "Natural Log", for: .numeric))
     }
 
     func testMath_Sin_Sine() {
-        XCTAssertTrue(matcher.areSynonyms("sin", "Sine", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("sin", "Sine", for: .numeric))
     }
 
     func testMath_Cos_Cosine() {
-        XCTAssertTrue(matcher.areSynonyms("cos", "Cosine", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("cos", "Cosine", for: .numeric))
     }
 
     func testMath_Tan_Tangent() {
-        XCTAssertTrue(matcher.areSynonyms("tan", "Tangent", for: .number))
+        XCTAssertTrue(matcher.areSynonyms("tan", "Tangent", for: .numeric))
     }
 
     func testMath_NotSynonyms() {
-        XCTAssertFalse(matcher.areSynonyms("sin", "cos", for: .number))
+        XCTAssertFalse(matcher.areSynonyms("sin", "cos", for: .numeric))
     }
 
     // MARK: - Cross-Domain (Non-Matches)

@@ -107,7 +107,7 @@ final class KBAnswerValidationIntegrationTests: XCTestCase {
 
     func testValidation_numericExact_returnsCorrect() async {
         // Given - a numeric question
-        let question = makeQuestion(answer: "42", acceptable: nil, answerType: .number)
+        let question = makeQuestion(answer: "42", acceptable: nil, answerType: .numeric)
 
         // When - validate
         let result = await answerValidator.validate(userAnswer: "42", question: question)
@@ -121,7 +121,7 @@ final class KBAnswerValidationIntegrationTests: XCTestCase {
         let question = makeQuestion(
             answer: "1000000",
             acceptable: ["1,000,000", "one million"],
-            answerType: .number
+            answerType: .numeric
         )
 
         // When - validate with comma formatting

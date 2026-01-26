@@ -135,7 +135,7 @@ public actor KyutaiPocketTTSService: TTSService {
 
         // Perform synchronous synthesis using Rust engine BEFORE creating the stream
         // This allows errors to be thrown normally rather than swallowed inside AsyncStream
-        let result: PocketTtsResult
+        let result: SynthesisResult
         do {
             result = try engine.synthesize(text: text)
         } catch let error as PocketTtsError {

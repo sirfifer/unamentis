@@ -8,6 +8,40 @@
 import AVFoundation
 import OSLog
 
+// MARK: - Audio Player Manager
+
+/// MainActor-isolated audio player manager to properly retain AVAudioPlayer during playback
+@MainActor
+private final class AudioPlayerManager {
+    static let shared = AudioPlayerManager()
+    private var currentPlayer: AVAudioPlayer?
+
+    private init() {}
+
+    /// Play audio from URL and wait for completion
+    func playAndWait(url: URL) async throws -> TimeInterval {
+        // Clean up any previous player
+        currentPlayer?.stop()
+        currentPlayer = nil
+
+        let player = try AVAudioPlayer(contentsOf: url)
+        player.prepareToPlay()
+        currentPlayer = player  // Retain the player!
+
+        let duration = player.duration
+        NSLog("🟡 AudioPlayerManager: duration=\(duration)s, playing...")
+        player.play()
+
+        return duration
+    }
+
+    /// Clear the current player after playback completes
+    func clearPlayer() {
+        currentPlayer?.stop()
+        currentPlayer = nil
+    }
+}
+
 // MARK: - Knowledge Bowl TTS Adapter
 
 /// TTS adapter for Knowledge Bowl that delegates to the user's configured TTS provider
@@ -22,6 +56,7 @@ actor KBOnDeviceTTS {
 
     private var ttsService: TTSService?
     private let logger = Logger(subsystem: "com.unamentis", category: "KBOnDeviceTTS")
+
 
     // MARK: - Configuration
 
@@ -212,6 +247,16 @@ actor KBOnDeviceTTS {
 
         NSLog("🟡 playAudioChunks: combined data size: \(combinedData.count) bytes, sampleRate: \(sampleRate), isFloat32: \(isFloat32)")
 
+        // Convert float32 to int16 PCM for better AVAudioPlayer compatibility
+        // Also applies fade-in to eliminate pop/click at start
+        var pcmData: Data
+        if isFloat32 {
+            pcmData = convertFloat32ToInt16(combinedData, fadeInMs: 10, sampleRate: sampleRate)
+            NSLog("🟡 Converted to int16 PCM: \(pcmData.count) bytes")
+        } else {
+            pcmData = combinedData
+        }
+
         progress = 0.6
 
         do {
@@ -221,8 +266,8 @@ actor KBOnDeviceTTS {
             try session.setActive(true)
             NSLog("🟡 Audio session configured for playback")
 
-            // Create WAV file for AVAudioPlayer
-            let wavData = createWAVFile(pcm: combinedData, sampleRate: Int(sampleRate), isFloat32: isFloat32)
+            // Create standard PCM WAV file (int16) for AVAudioPlayer
+            let wavData = createWAVFile(pcm: pcmData, sampleRate: Int(sampleRate), isFloat32: false)
             NSLog("🟡 WAV data created: \(wavData.count) bytes")
 
             // Write to Documents directory for analysis (DEBUG: keep file for verification)
@@ -234,20 +279,14 @@ actor KBOnDeviceTTS {
 
             progress = 0.7
 
-            // Play using AVAudioPlayer - must be created and played on MainActor
-            let duration = await MainActor.run { () -> TimeInterval in
-                do {
-                    let player = try AVAudioPlayer(contentsOf: tempURL)
-                    player.prepareToPlay()
-                    let duration = player.duration
-                    NSLog("🟡 AVAudioPlayer duration: \(duration) seconds")
-                    player.play()
-                    return duration
-                } catch {
-                    logger.error("Failed to play audio: \(error.localizedDescription)")
-                    NSLog("🔴 AVAudioPlayer error: \(error.localizedDescription)")
-                    return 0
-                }
+            // Play using MainActor-isolated player manager (retains player during playback)
+            let duration: TimeInterval
+            do {
+                duration = try await AudioPlayerManager.shared.playAndWait(url: tempURL)
+            } catch {
+                logger.error("Failed to play audio: \(error.localizedDescription)")
+                NSLog("🔴 AudioPlayerManager error: \(error.localizedDescription)")
+                return
             }
 
             progress = 0.8
@@ -256,6 +295,9 @@ actor KBOnDeviceTTS {
             if duration > 0 {
                 try? await Task.sleep(nanoseconds: UInt64((duration + 0.5) * 1_000_000_000))
             }
+
+            // Clear the retained player after playback
+            await AudioPlayerManager.shared.clearPlayer()
 
             // DEBUG: Keep WAV file for analysis - do NOT delete
             // try? FileManager.default.removeItem(at: tempURL)
@@ -301,6 +343,39 @@ actor KBOnDeviceTTS {
         return wavData
     }
 
+    /// Convert float32 PCM to int16 PCM with optional fade-in
+    /// AVAudioPlayer has better support for int16 PCM than IEEE float
+    private func convertFloat32ToInt16(_ data: Data, fadeInMs: Double, sampleRate: Double) -> Data {
+        let sampleCount = data.count / MemoryLayout<Float>.size
+        let fadeSamples = Int(sampleRate * fadeInMs / 1000.0)
+
+        var int16Data = Data(capacity: sampleCount * MemoryLayout<Int16>.size)
+
+        data.withUnsafeBytes { buffer in
+            guard let floatPtr = buffer.baseAddress?.assumingMemoryBound(to: Float.self) else { return }
+
+            for i in 0..<sampleCount {
+                var sample = floatPtr[i]
+
+                // Apply fade-in for first few samples
+                if i < fadeSamples {
+                    let fadeMultiplier = Float(i) / Float(fadeSamples)
+                    sample *= fadeMultiplier
+                }
+
+                // Clamp to [-1, 1] and convert to int16
+                let clamped = max(-1.0, min(1.0, sample))
+                let int16Value = Int16(clamped * Float(Int16.max))
+
+                // Append as little-endian bytes
+                withUnsafeBytes(of: int16Value.littleEndian) { int16Data.append(contentsOf: $0) }
+            }
+        }
+
+        NSLog("🟡 Converted \(sampleCount) float32 samples to int16 with \(fadeInMs)ms fade-in")
+        return int16Data
+    }
+
     /// Ensure TTS service is configured based on user settings
     private func ensureServiceConfigured() async {
         NSLog("🔵 KBOnDeviceTTS.ensureServiceConfigured() START")
@@ -337,11 +412,10 @@ actor KBOnDeviceTTS {
             ttsService = AppleTTSService()
 
         case .kyutaiPocket:
-            // Kyutai Pocket TTS is not available in this build (xcframework not linked)
-            // Fall back to Apple TTS
-            logger.warning("Kyutai Pocket TTS unavailable, using Apple TTS")
-            NSLog("🔵 Kyutai Pocket unavailable, using AppleTTSService")
-            ttsService = AppleTTSService()
+            // Use Kyutai Pocket TTS (on-device Rust/Candle inference)
+            logger.info("Using Kyutai Pocket TTS (on-device)")
+            NSLog("🔵 Creating KyutaiPocketTTSService")
+            ttsService = KyutaiPocketTTSService()
 
         case .selfHosted, .vibeVoice, .chatterbox, .elevenLabsFlash, .elevenLabsTurbo, .deepgramAura2:
             // For server-based TTS, fall back to Apple TTS for Knowledge Bowl

@@ -22,6 +22,7 @@ import {
   Settings,
   Zap,
   Package,
+  HelpCircle,
 } from 'lucide-react';
 
 // Section types
@@ -44,6 +45,7 @@ export type OpsTabId =
 export type ContentTabId =
   | 'curricula'
   | 'modules'
+  | 'questions'
   | 'packs'
   | 'sources'
   | 'plugins'
@@ -95,6 +97,7 @@ const contentTabs: {
 }[] = [
   { id: 'curricula', label: 'Curricula', shortLabel: 'Curricula', icon: BookOpen },
   { id: 'modules', label: 'Modules', shortLabel: 'Modules', icon: Brain },
+  { id: 'questions', label: 'Questions', shortLabel: 'Questions', icon: HelpCircle },
   { id: 'packs', label: 'Question Packs', shortLabel: 'Packs', icon: Package },
   { id: 'sources', label: 'Sources', shortLabel: 'Sources', icon: Library },
   { id: 'plugins', label: 'Plugins', shortLabel: 'Plugins', icon: Puzzle },

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -43,11 +43,13 @@
 		1962B904D596A073BF12C889 /* MetricsUploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E6EEC2F14ED183AE90840F /* MetricsUploadService.swift */; };
 		19D4163A160E01203D4094FD /* TodoItemTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51CF56A3139827837D71F2A9 /* TodoItemTypeTests.swift */; };
 		19F4320EA3D555CA6445EE51 /* UnaMentis Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 4395224BC2351CE460388263 /* UnaMentis Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1D83667DACFC147FFBF62CC8 /* KBDomainAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 259C6F930129E00C2DCF72AB /* KBDomainAssignment.swift */; };
 		1DA453924E57428F4DFC2BFD /* SessionControlComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763D987FBD0652F4B464871F /* SessionControlComponents.swift */; };
 		200EA3A8F12FE2F110E69B22 /* KBConferenceTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8547EA56A2C142505B48968C /* KBConferenceTrainingView.swift */; };
 		2040E1BCBAC62EB1FA16B3D8 /* OpenAIEmbeddingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7255225D19D4EFBCDC467F4B /* OpenAIEmbeddingServiceTests.swift */; };
 		20DB633257DA7CE49DA3235C /* KBSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76FE0A9424900E15895DF64 /* KBSessionManager.swift */; };
 		2211F59FFE4E0A1465945499 /* img-last-supper.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C3D38106108693AAA2162BE /* img-last-supper.jpg */; };
+		22403C3B46F1095D6EB7EABA /* KBLocalTeamSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B7838E28014DBC800C6699 /* KBLocalTeamSync.swift */; };
 		22CAB21EA4D1D715987E1013 /* WatchConnectivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB55A7777AA7B176D7BB4A7 /* WatchConnectivityService.swift */; };
 		2353C0717E17DDE868F4FFDC /* STTProviderRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8D215C843AA2A1228353BAB /* STTProviderRouterTests.swift */; };
 		2467F0FB59C751C8C82A1FF9 /* AudioSegmentCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFA55B44CB97E17309115809 /* AudioSegmentCache.swift */; };
@@ -60,12 +62,14 @@
 		2EEEEB5DB12A23BDB9B21EFE /* PronunciationProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0B5CEA1C6A76F74C78EE9C5 /* PronunciationProcessor.swift */; };
 		2F51936EA2E9409450AC1A6F /* KBColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5623DB8F4F9AD34F1D0B70 /* KBColors.swift */; };
 		2FB0FE81578DDA540A5C17E5 /* WatchSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2323DC6063B348BF9B07DAB /* WatchSessionState.swift */; };
+		301631BA1D46F2F3F971BAF6 /* KBTeamMember.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB7AB006A8B52D9555192F0 /* KBTeamMember.swift */; };
 		30E099403E2B3B621BCAA353 /* UMCFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72374431DEBCA136EAA215D /* UMCFParser.swift */; };
 		30FAEB94763428F187B69D1E /* SelfHostedTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3BE5EA29C7D8C9D7CC12E45 /* SelfHostedTTSService.swift */; };
 		314C1C9B84E3FDC93EE9993D /* TranscriptEntry+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 692AD0E924FA90F347A7DD25 /* TranscriptEntry+CoreDataClass.swift */; };
 		31BEA87313B331DF264325C1 /* TopicEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0036EFE850AA592D96BD5AAE /* TopicEntity.swift */; };
 		3252626A4F9A72151311B11E /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 8C4E61A36776FE76358D2014 /* Logging */; };
 		325D06F3213C406477E53AF0 /* TTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7740943D1A030000E4F25555 /* TTSService.swift */; };
+		326DF28F09A8D78ECF93C53B /* KBMemberStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780B7E50903F861E39B83F3F /* KBMemberStats.swift */; };
 		33315C429938097CC895C095 /* VoiceCloningViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9AC9C2B8A9A0039CFA690B /* VoiceCloningViews.swift */; };
 		33AA2FD019263F6062249749 /* ref-school-of-athens.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6C8B02097B0AAB34B4FE280D /* ref-school-of-athens.jpg */; };
 		3404242B7AEF97ED877C4392 /* TodoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D607F6D7A8ACDC7872BD05D /* TodoListView.swift */; };
@@ -132,6 +136,10 @@
 		79D48891D42947A1C75FDEC5 /* ModuleProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5384E221C9079A81C8B04B6F /* ModuleProtocolTests.swift */; };
 		7B9A366B9979ED7EF8840732 /* KBLLMValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1447D3D7461BA63A8D776DD1 /* KBLLMValidator.swift */; };
 		7BD1F764433F3AD10D57CABE /* ExtendedRuntimeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D04159E6953344919D1E4C5 /* ExtendedRuntimeManager.swift */; };
+		7C1A2B3D4E5F6789ABCDEF01 /* KyutaiPocketModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A2B3D4E5F6789ABCDEF02 /* KyutaiPocketModelManager.swift */; };
+		7C1A2B3D4E5F6789ABCDEF03 /* KyutaiPocketTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A2B3D4E5F6789ABCDEF04 /* KyutaiPocketTTSService.swift */; };
+		7C1A2B3D4E5F6789ABCDEF05 /* PocketTTSBindings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A2B3D4E5F6789ABCDEF06 /* PocketTTSBindings.swift */; };
+		7C1A2B3D4E5F6789ABCDEF07 /* KyutaiPocketTTSConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1A2B3D4E5F6789ABCDEF08 /* KyutaiPocketTTSConfig.swift */; };
 		7DD09A028901452470F27164 /* ContextExpansionTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC4665546472138E4949B31 /* ContextExpansionTool.swift */; };
 		7DFC50E2E89E70877D05730A /* TestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = E710FACA5B509C79D4333A7F /* TestResult.swift */; };
 		80116AD1D76A21BADBA26485 /* ElevenLabsTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CFA41056359E384BDAB5DE /* ElevenLabsTTSService.swift */; };
@@ -139,6 +147,7 @@
 		8401B497B37949F6CB6914AB /* TodoItemStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41AA6F6AD34BDEBD950CAAFE /* TodoItemStatusTests.swift */; };
 		8652341C92E028AF67C4BF51 /* UnaMentisWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5060629D9897BD2FC0768 /* UnaMentisWatchApp.swift */; };
 		87493F4642F672CD73A03DAD /* IdleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D96FBF2E03F7600EE74EED /* IdleView.swift */; };
+		888CF475107C931FCEF5CA1B /* KBTeamSyncProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C2D03633CBE0CC7F8EDE75 /* KBTeamSyncProtocol.swift */; };
 		89D988E2BB2A2C983E90C8B4 /* PersistenceControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D7B8DEB4A2EDC95013DBE36 /* PersistenceControllerTests.swift */; };
 		89F3730AAB89309815BD7845 /* TodoListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92E844F3D277CADC12137F5C /* TodoListViewModel.swift */; };
 		8F41349C818F8941D4385ACF /* FeatureFlagTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D408E617258BFD612A535 /* FeatureFlagTypes.swift */; };
@@ -159,6 +168,7 @@
 		A107A0D38E64B15E88AE25E2 /* MetricsUploadQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B4D6DE451DDF4EC8CA76B44 /* MetricsUploadQueue.swift */; };
 		A14C6A493861A1F912262F4D /* TranscriptStreamingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26E3E8684EA9678069FA39B9 /* TranscriptStreamingService.swift */; };
 		A26B130B2E6CA1F1B2C7DDD3 /* KBRegionalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AEC5707A393FD326E675F7 /* KBRegionalConfig.swift */; };
+		A2731D282773B2F694022985 /* KBTeamProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B40D74678195669AC80D6AF /* KBTeamProfile.swift */; };
 		A3D8AE762F11E3A2C5525541 /* ProgressTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B842F50989F4AED5568E96 /* ProgressTracker.swift */; };
 		A42CC2E22DCCF7F9CEDD3A5E /* TodoHelpSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F5AFD7FFE52D8ACE0A13BE /* TodoHelpSheet.swift */; };
 		A521E8140AFE34E08210E8F5 /* ServerConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E71AFF688A32DC11019438 /* ServerConfigManager.swift */; };
@@ -170,7 +180,7 @@
 		A9068AC06F5ABAB0672F24F4 /* img-us-capitol.jpg in Resources */ = {isa = PBXBuildFile; fileRef = E5D09A20B6F4E616476C9C72 /* img-us-capitol.jpg */; };
 		AA1217EE9DD3410A51349971 /* TopicSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41F54DC34E5B984062860612 /* TopicSelectionView.swift */; };
 		AB81D07EC5EFB5AE242DD039 /* STTProviderRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC492A82755816514BEE3A8 /* STTProviderRouter.swift */; };
-		AB88640F3FD9D5F9F2C462EE /* PocketTTS.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = CA2A1F0D54A17342952AEA30 /* PocketTTS.xcframework */; };
+		AB88640F3FD9D5F9F2C462EE /* PocketTTS.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA2A1F0D54A17342952AEA30 /* PocketTTS.xcframework */; };
 		ACE0339806462D109D21C98D /* KBDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83491E1405EBBA45EBF3FA7 /* KBDomain.swift */; };
 		AD2CE07D742EAF10859E996B /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F01835E4A6FD36F8723764 /* PersistenceController.swift */; };
 		AD834691D1733C2575250733 /* KBMatchSimulationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D91B8D8A11D85CBB9A0609 /* KBMatchSimulationView.swift */; };
@@ -202,6 +212,7 @@
 		C9BF237248B853C860914DEB /* RoutingConditionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9572C2C5B797C1028D1B31D5 /* RoutingConditionTests.swift */; };
 		CA17BDFD573A1985E44D00FC /* GLMASRHealthMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EC341018F542DC1654FAB6 /* GLMASRHealthMonitorTests.swift */; };
 		CA36D49FD899C6216EB21E5D /* TodoItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEF15D21526D73B31DD1A7 /* TodoItemDetailView.swift */; };
+		CAAC69EB41D95C5081D0959B /* KBTeamStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AFA3D73F4C87FDE69AB859D /* KBTeamStore.swift */; };
 		CB1516274C3ABCF8F38E1F9D /* DeviceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FF750789E7A2A37167DB35 /* DeviceCapability.swift */; };
 		CB18257709110103478B0B4E /* ProgressTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 325F5B3EC3796EEB1E776B04 /* ProgressTrackerTests.swift */; };
 		CC274F064EE58FA70FCDDEEF /* KBEnhancedValidationSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28436A73DBEAE0D2C1B361B /* KBEnhancedValidationSetupView.swift */; };
@@ -317,19 +328,21 @@
 		11D96FBF2E03F7600EE74EED /* IdleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleView.swift; sourceTree = "<group>"; };
 		1447D3D7461BA63A8D776DD1 /* KBLLMValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBLLMValidator.swift; sourceTree = "<group>"; };
 		14F5F7B4594AB0DD6CE717E7 /* ref-botticelli-birth-venus.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "ref-botticelli-birth-venus.jpg"; sourceTree = "<group>"; };
-		16858E63B3D494C0EDB79B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		16858E63B3D494C0EDB79B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		17EBDE993FB0974D3DF903FA /* KBSynonymDictionariesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSynonymDictionariesTests.swift; sourceTree = "<group>"; };
 		1881BE225A87C112361C41D0 /* FOVContextManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FOVContextManager.swift; sourceTree = "<group>"; };
 		18A41B20443F5CDE827A977D /* APIKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManager.swift; sourceTree = "<group>"; };
 		190005E1976C45AEAF544C76 /* MapAssetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapAssetView.swift; sourceTree = "<group>"; };
 		19627423210F57757F40CCFF /* KBOnDeviceTTS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBOnDeviceTTS.swift; sourceTree = "<group>"; };
 		1964399AABDA85C831C368F9 /* KnowledgeBowlModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBowlModule.swift; sourceTree = "<group>"; };
+		1B40D74678195669AC80D6AF /* KBTeamProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTeamProfile.swift; path = UnaMentis/Core/KnowledgeBowl/Team/KBTeamProfile.swift; sourceTree = "<group>"; };
 		1B9C56CADA84481B8F052E84 /* AddTodoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTodoSheet.swift; sourceTree = "<group>"; };
 		1D04159E6953344919D1E4C5 /* ExtendedRuntimeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedRuntimeManager.swift; sourceTree = "<group>"; };
 		1E9F632AA604F41529713DA0 /* ConfidenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceMonitor.swift; sourceTree = "<group>"; };
 		1EEE64B3B724CA82C6DF107E /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
 		1FC492A82755816514BEE3A8 /* STTProviderRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTProviderRouter.swift; sourceTree = "<group>"; };
 		20B9C4153BE2F4E318612CF4 /* ref-durer-engravings.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "ref-durer-engravings.jpg"; sourceTree = "<group>"; };
+		259C6F930129E00C2DCF72AB /* KBDomainAssignment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBDomainAssignment.swift; path = UnaMentis/Core/KnowledgeBowl/Team/KBDomainAssignment.swift; sourceTree = "<group>"; };
 		25FA83EC668270AD7666A687 /* PatchPanelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchPanelService.swift; sourceTree = "<group>"; };
 		26E3E8684EA9678069FA39B9 /* TranscriptStreamingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptStreamingService.swift; sourceTree = "<group>"; };
 		26E8188A6F8475A973B93691 /* ChatterboxConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxConfig.swift; sourceTree = "<group>"; };
@@ -343,7 +356,7 @@
 		2EB3F806E50B694B51E4C9D3 /* UMCFParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UMCFParserTests.swift; sourceTree = "<group>"; };
 		2ECBCC9B85EC9E804D03C3AE /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		2F70E39B59EF792368F5F1E4 /* MockServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockServices.swift; sourceTree = "<group>"; };
-		3049FED83297162DC5679BAF /* kb-sample-questions.json.backup */ = {isa = PBXFileReference; path = "kb-sample-questions.json.backup"; sourceTree = "<group>"; };
+		3049FED83297162DC5679BAF /* kb-sample-questions.json.backup */ = {isa = PBXFileReference; lastKnownFileType = text; path = "kb-sample-questions.json.backup"; sourceTree = "<group>"; };
 		31A851A19A038C3BAE8A909B /* TodoItemType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemType.swift; sourceTree = "<group>"; };
 		325F5B3EC3796EEB1E776B04 /* ProgressTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTrackerTests.swift; sourceTree = "<group>"; };
 		3278EBB83FE1A1C826F0295D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -353,6 +366,7 @@
 		3717DC2C51F0E7E22A745A9A /* TopicProgress+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TopicProgress+CoreDataClass.swift"; sourceTree = "<group>"; };
 		38431DCF251D88AA3B7D5A84 /* UnaMentisTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = UnaMentisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A18E17E0FD556EE2B873012 /* KBHelpContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBHelpContent.swift; sourceTree = "<group>"; };
+		3A8B7C9D2E1F4A5B6C0D8E9F /* Models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Models; sourceTree = "<group>"; };
 		3B97EDBDFA6980D8ECCAAD88 /* DeepgramSTTServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepgramSTTServiceTests.swift; sourceTree = "<group>"; };
 		3C18E52A4458A5963898B3B1 /* ProgressRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRingView.swift; sourceTree = "<group>"; };
 		3CD1692A56AC29CE6BF963BC /* SelfHostedLLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfHostedLLMService.swift; sourceTree = "<group>"; };
@@ -398,6 +412,7 @@
 		6819C6680DDB8F7A6C3DD0C4 /* LLMEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMEndpoint.swift; sourceTree = "<group>"; };
 		68523CDC93A642A4B00C1A3C /* KBWatchDomainDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBWatchDomainDrillView.swift; sourceTree = "<group>"; };
 		692AD0E924FA90F347A7DD25 /* TranscriptEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranscriptEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
+		6AFA3D73F4C87FDE69AB859D /* KBTeamStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTeamStore.swift; path = UnaMentis/Services/KnowledgeBowl/Team/KBTeamStore.swift; sourceTree = "<group>"; };
 		6BABF74A85DBDBE0D859DA5E /* TextCleaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCleaner.swift; sourceTree = "<group>"; };
 		6C5623DB8F4F9AD34F1D0B70 /* KBColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBColors.swift; sourceTree = "<group>"; };
 		6C8B02097B0AAB34B4FE280D /* ref-school-of-athens.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "ref-school-of-athens.jpg"; sourceTree = "<group>"; };
@@ -419,8 +434,13 @@
 		763D987FBD0652F4B464871F /* SessionControlComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionControlComponents.swift; sourceTree = "<group>"; };
 		7740943D1A030000E4F25555 /* TTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSService.swift; sourceTree = "<group>"; };
 		77FDAE9921DF5C4D8646FB7C /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
+		780B7E50903F861E39B83F3F /* KBMemberStats.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBMemberStats.swift; path = UnaMentis/Core/KnowledgeBowl/Team/KBMemberStats.swift; sourceTree = "<group>"; };
 		781A608BE48F7144C9577183 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		79D093E5A0D4463565FA507A /* KBWatchMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBWatchMainView.swift; sourceTree = "<group>"; };
+		7C1A2B3D4E5F6789ABCDEF02 /* KyutaiPocketModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyutaiPocketModelManager.swift; sourceTree = "<group>"; };
+		7C1A2B3D4E5F6789ABCDEF04 /* KyutaiPocketTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyutaiPocketTTSService.swift; sourceTree = "<group>"; };
+		7C1A2B3D4E5F6789ABCDEF06 /* PocketTTSBindings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketTTSBindings.swift; sourceTree = "<group>"; };
+		7C1A2B3D4E5F6789ABCDEF08 /* KyutaiPocketTTSConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KyutaiPocketTTSConfig.swift; sourceTree = "<group>"; };
 		7DEEEBAF2C25A9FB086E1802 /* DeviceMetricsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMetricsView.swift; sourceTree = "<group>"; };
 		7E14B5F942DC31084CDFA558 /* TodoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoManager.swift; sourceTree = "<group>"; };
 		7E28C6E637C06E56B4C0174B /* DebugConversationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugConversationViewModel.swift; sourceTree = "<group>"; };
@@ -446,8 +466,7 @@
 		989C18A720EAFD5142D9BA3C /* KBDomainDrillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBDomainDrillView.swift; sourceTree = "<group>"; };
 		99F01835E4A6FD36F8723764 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		9A39F3F414367641F29F2D0D /* CurriculumService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumService.swift; sourceTree = "<group>"; };
-		3A8B7C9D2E1F4A5B6C0D8E9F /* Models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Models; sourceTree = "<group>"; };
-		9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */ = {isa = PBXFileReference; path = "llama-3.2-3b-instruct-q4_k_m.gguf"; sourceTree = "<group>"; };
+		9ADF33B783CB8AAF071997F6 /* llama-3.2-3b-instruct-q4_k_m.gguf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "llama-3.2-3b-instruct-q4_k_m.gguf"; sourceTree = "<group>"; };
 		9AFF6371BD4BDA82DAB5A4A0 /* TodoItemStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItemStatus.swift; sourceTree = "<group>"; };
 		9D1EBB7D03EDF301847EC00B /* KBSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSessionTests.swift; sourceTree = "<group>"; };
 		9ED21B50524DB5FEFE3F9E99 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -474,7 +493,8 @@
 		AD9B85DFB702289D0E6DB73D /* KBSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSession.swift; sourceTree = "<group>"; };
 		AEB55A7777AA7B176D7BB4A7 /* WatchConnectivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityService.swift; sourceTree = "<group>"; };
 		AFC4A17E2DF38A82C06A6DB8 /* ToolCallProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolCallProcessor.swift; sourceTree = "<group>"; };
-		B0F749D0A7C343F32481093F /* UnaMentis.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UnaMentis.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0B7838E28014DBC800C6699 /* KBLocalTeamSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBLocalTeamSync.swift; path = UnaMentis/Services/KnowledgeBowl/Team/KBLocalTeamSync.swift; sourceTree = "<group>"; };
+		B0F749D0A7C343F32481093F /* UnaMentis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnaMentis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B13D54BC028D63C1771F018C /* ContextSummarizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextSummarizer.swift; sourceTree = "<group>"; };
 		B28BF0821DBE85148E339B50 /* AudioEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngineTests.swift; sourceTree = "<group>"; };
 		B6356317C3CC2BA0CD51B7B4 /* KBSynonymDictionaries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSynonymDictionaries.swift; sourceTree = "<group>"; };
@@ -505,6 +525,7 @@
 		CA835A7A6B86E694088ADD48 /* AppShortcutsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShortcutsProvider.swift; sourceTree = "<group>"; };
 		CBBE641F0A9FA891DAAC41B3 /* KBDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBDashboardView.swift; sourceTree = "<group>"; };
 		D06794D6625933C55B64860C /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
+		D2C2D03633CBE0CC7F8EDE75 /* KBTeamSyncProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTeamSyncProtocol.swift; path = UnaMentis/Services/KnowledgeBowl/Team/KBTeamSyncProtocol.swift; sourceTree = "<group>"; };
 		D35FF2EB7DEFC6C36E775126 /* KBQuestionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBQuestionEngine.swift; sourceTree = "<group>"; };
 		D51EB452B1B3D3922B7EA16F /* Document+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Document+CoreDataClass.swift"; sourceTree = "<group>"; };
 		D6B615593CB5F40AE18991D0 /* DeepgramTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepgramTTSService.swift; sourceTree = "<group>"; };
@@ -526,6 +547,7 @@
 		E8D215C843AA2A1228353BAB /* STTProviderRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTProviderRouterTests.swift; sourceTree = "<group>"; };
 		E986FBDD21EAFE16EFEF0B61 /* ChatterboxTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterboxTTSService.swift; sourceTree = "<group>"; };
 		EA5F432E2CFF89C31324A759 /* ModuleProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleProtocol.swift; sourceTree = "<group>"; };
+		ECB7AB006A8B52D9555192F0 /* KBTeamMember.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KBTeamMember.swift; path = UnaMentis/Core/KnowledgeBowl/Team/KBTeamMember.swift; sourceTree = "<group>"; };
 		ECC68E91382637D2B3590C8B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		ECECA1188C9F0BB6B441CEED /* VoiceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsView.swift; sourceTree = "<group>"; };
 		ECEFFD99F68CC43EF2662E68 /* SessionManager+FOVContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionManager+FOVContext.swift"; sourceTree = "<group>"; };
@@ -555,6 +577,7 @@
 				AFF84A9517C894E0C8AD9193 /* LiveKit in Frameworks */,
 				3252626A4F9A72151311B11E /* Logging in Frameworks */,
 				B193857C269BA7BCA353A047 /* Collections in Frameworks */,
+				AB88640F3FD9D5F9F2C462EE /* PocketTTS.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -898,6 +921,17 @@
 			path = Audio;
 			sourceTree = "<group>";
 		};
+		50923976CA62AB9779F5029B /* Team */ = {
+			isa = PBXGroup;
+			children = (
+				780B7E50903F861E39B83F3F /* KBMemberStats.swift */,
+				ECB7AB006A8B52D9555192F0 /* KBTeamMember.swift */,
+				1B40D74678195669AC80D6AF /* KBTeamProfile.swift */,
+				259C6F930129E00C2DCF72AB /* KBDomainAssignment.swift */,
+			);
+			name = Team;
+			sourceTree = "<group>";
+		};
 		511AA855EB65917327CDEBD5 /* Curriculum */ = {
 			isa = PBXGroup;
 			children = (
@@ -1062,6 +1096,16 @@
 				3FB95E92607C96AF4BC4921F /* TodoList */,
 			);
 			path = UI;
+			sourceTree = "<group>";
+		};
+		930102C5374197AAEE0C490E /* Team */ = {
+			isa = PBXGroup;
+			children = (
+				6AFA3D73F4C87FDE69AB859D /* KBTeamStore.swift */,
+				D2C2D03633CBE0CC7F8EDE75 /* KBTeamSyncProtocol.swift */,
+				B0B7838E28014DBC800C6699 /* KBLocalTeamSync.swift */,
+			);
+			name = Team;
 			sourceTree = "<group>";
 		};
 		94791FBAD0A7ED99C80AA29E /* Views */ = {
@@ -1270,6 +1314,7 @@
 				F76FE0A9424900E15895DF64 /* KBSessionManager.swift */,
 				43324C86DA128EEE5B2CBD1C /* KBSessionStore.swift */,
 				54BA5E558B777B48EC657366 /* KBTransformer.swift */,
+				930102C5374197AAEE0C490E /* Team */,
 			);
 			path = KnowledgeBowl;
 			sourceTree = "<group>";
@@ -1338,6 +1383,7 @@
 				021D1145D5C17308D7549350 /* KBQuestion.swift */,
 				A2AEC5707A393FD326E675F7 /* KBRegionalConfig.swift */,
 				AD9B85DFB702289D0E6DB73D /* KBSession.swift */,
+				50923976CA62AB9779F5029B /* Team */,
 			);
 			path = KnowledgeBowl;
 			sourceTree = "<group>";
@@ -1350,6 +1396,10 @@
 				E986FBDD21EAFE16EFEF0B61 /* ChatterboxTTSService.swift */,
 				D6B615593CB5F40AE18991D0 /* DeepgramTTSService.swift */,
 				F7CFA41056359E384BDAB5DE /* ElevenLabsTTSService.swift */,
+				7C1A2B3D4E5F6789ABCDEF02 /* KyutaiPocketModelManager.swift */,
+				7C1A2B3D4E5F6789ABCDEF08 /* KyutaiPocketTTSConfig.swift */,
+				7C1A2B3D4E5F6789ABCDEF04 /* KyutaiPocketTTSService.swift */,
+				7C1A2B3D4E5F6789ABCDEF06 /* PocketTTSBindings.swift */,
 				F0B5CEA1C6A76F74C78EE9C5 /* PronunciationProcessor.swift */,
 				A3BE5EA29C7D8C9D7CC12E45 /* SelfHostedTTSService.swift */,
 			);
@@ -1516,8 +1566,6 @@
 			dependencies = (
 			);
 			name = "UnaMentis Watch App";
-			packageProductDependencies = (
-			);
 			productName = "UnaMentis Watch App";
 			productReference = 4395224BC2351CE460388263 /* UnaMentis Watch App.app */;
 			productType = "com.apple.product-type.application";
@@ -1534,8 +1582,6 @@
 				16257DF4C58BFE4D51DFDBDA /* PBXTargetDependency */,
 			);
 			name = UnaMentisTests;
-			packageProductDependencies = (
-			);
 			productName = UnaMentisTests;
 			productReference = 38431DCF251D88AA3B7D5A84 /* UnaMentisTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -1549,12 +1595,6 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
-					250B3CE20887198C8B0639A2 = {
-						DevelopmentTeam = "";
-					};
-					8B385E9CB989C455F6041CA2 = {
-						DevelopmentTeam = "";
-					};
 					C998553426CFA644B116D266 = {
 						DevelopmentTeam = "";
 					};
@@ -1575,7 +1615,7 @@
 				725D430F7D40FF1825D85A13 /* XCRemoteSwiftPackageReference "client-sdk-swift" */,
 				3157FAD29363A7813CCFD6FA /* XCRemoteSwiftPackageReference "swift-log" */,
 			);
-			preferredProjectObjectVersion = 77;
+			productRefGroup = 35AACC824FB8E153AAFCA13B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1594,7 +1634,6 @@
 				0C1D15E13981FB86E6CC009D /* Assets.xcassets in Resources */,
 				3EE6A10EB470F1654EA8EE1C /* LaunchScreen.storyboard in Resources */,
 				4B12FB0AF2279C8F7769DCC8 /* Localizable.strings in Resources */,
-				AB88640F3FD9D5F9F2C462EE /* PocketTTS.xcframework in Resources */,
 				E7D5B56D3826F4DFBAF1C353 /* PrivacyInfo.xcprivacy in Resources */,
 				2211F59FFE4E0A1465945499 /* img-last-supper.jpg in Resources */,
 				F4A508577E57F700FFB44889 /* img-mona-lisa.jpg in Resources */,
@@ -1717,6 +1756,9 @@
 				FCE743169EB584B645CBF92E /* KBTrendChartView.swift in Sources */,
 				4F4C73D6CE3E66E703FBF0EF /* KBWrittenSessionView.swift in Sources */,
 				ECE7CA4CE04756951E658CDF /* KnowledgeBowlModule.swift in Sources */,
+				7C1A2B3D4E5F6789ABCDEF01 /* KyutaiPocketModelManager.swift in Sources */,
+				7C1A2B3D4E5F6789ABCDEF07 /* KyutaiPocketTTSConfig.swift in Sources */,
+				7C1A2B3D4E5F6789ABCDEF03 /* KyutaiPocketTTSService.swift in Sources */,
 				606486FC4527634F60886677 /* LLMEndpoint.swift in Sources */,
 				A0B7F1F73D8A304D20840717 /* LLMService.swift in Sources */,
 				F6515847BF5C9C7953D34854 /* LLMTaskType.swift in Sources */,
@@ -1739,6 +1781,7 @@
 				59786F06803B933F6C2A0AB3 /* OpenAILLMService.swift in Sources */,
 				4B78B623D73A6D9177CCECD5 /* PatchPanelService.swift in Sources */,
 				AD2CE07D742EAF10859E996B /* PersistenceController.swift in Sources */,
+				7C1A2B3D4E5F6789ABCDEF05 /* PocketTTSBindings.swift in Sources */,
 				A3D8AE762F11E3A2C5525541 /* ProgressTracker.swift in Sources */,
 				2EEEEB5DB12A23BDB9B21EFE /* PronunciationProcessor.swift in Sources */,
 				D9F762310F2C48F32BB51938 /* QuestionTransformer.swift in Sources */,
@@ -1799,6 +1842,13 @@
 				57674BAC19CFC9B1DA8F5E68 /* VoiceSettingsView.swift in Sources */,
 				4F004B03096018168CA7BBCA /* WatchConnectivityService.swift in Sources */,
 				DDE334B6B4F142D0AED12E0A /* WatchSessionState.swift in Sources */,
+				326DF28F09A8D78ECF93C53B /* KBMemberStats.swift in Sources */,
+				CAAC69EB41D95C5081D0959B /* KBTeamStore.swift in Sources */,
+				888CF475107C931FCEF5CA1B /* KBTeamSyncProtocol.swift in Sources */,
+				22403C3B46F1095D6EB7EABA /* KBLocalTeamSync.swift in Sources */,
+				301631BA1D46F2F3F971BAF6 /* KBTeamMember.swift in Sources */,
+				A2731D282773B2F694022985 /* KBTeamProfile.swift in Sources */,
+				1D83667DACFC147FFBF62CC8 /* KBDomainAssignment.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1925,6 +1975,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = UnaMentis/UnaMentis.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = W7C9Y763AX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = UnaMentis/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -1943,6 +1994,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = W7C9Y763AX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "UnaMentis Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.unamentis.app.watchkitapp;
@@ -2086,6 +2138,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = UnaMentis/UnaMentis.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = W7C9Y763AX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = UnaMentis/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -2104,6 +2157,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = W7C9Y763AX;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "UnaMentis Watch App/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = com.unamentis.app.watchkitapp;

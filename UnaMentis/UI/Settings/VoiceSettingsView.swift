@@ -303,14 +303,24 @@ public struct VoiceSettingsView: View {
                 .accessibilityHint("Select the AI's voice")
             }
 
-            // Kyutai Pocket TTS settings (disabled - xcframework not linked)
+            // Kyutai Pocket TTS settings
             if viewModel.ttsProvider == .kyutaiPocket {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .foregroundStyle(.orange)
-                    Text("Kyutai Pocket TTS is not available in this build")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                if viewModel.kyutaiPocketModelLoaded {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("Model loaded and ready")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                        Text("Model files not found. Please install Pocket TTS models.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
@@ -513,9 +523,9 @@ class VoiceSettingsViewModel: ObservableObject {
         ChatterboxPreset(rawValue: chatterboxPresetRaw)?.displayName ?? "Default"
     }
 
-    /// Kyutai Pocket preset display name (disabled - xcframework not linked)
+    /// Kyutai Pocket preset display name
     var kyutaiPocketPresetName: String {
-        "Unavailable"
+        kyutaiPocketModelLoaded ? "Default" : "Not Installed"
     }
 
     /// Get discovered voices for the currently selected TTS provider
@@ -629,11 +639,22 @@ class VoiceSettingsViewModel: ObservableObject {
         }
     }
 
-    /// Check Kyutai Pocket TTS model availability (disabled - xcframework not linked)
+    /// Check Kyutai Pocket TTS model availability
     private func checkKyutaiPocketModelStatus() async {
-        // Kyutai Pocket TTS is not available in this build
+        // Check if model files exist in the expected location
+        let fm = FileManager.default
+        let documentsPath = fm.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let modelDir = documentsPath.appendingPathComponent("models/PocketTTS")
+        let modelPath = modelDir.appendingPathComponent("model.safetensors")
+        let tokenizerPath = modelDir.appendingPathComponent("tokenizer.model")
+        let voicesPath = modelDir.appendingPathComponent("voices")
+
+        let available = fm.fileExists(atPath: modelPath.path) &&
+                       fm.fileExists(atPath: tokenizerPath.path) &&
+                       fm.fileExists(atPath: voicesPath.path)
+
         await MainActor.run {
-            kyutaiPocketModelLoaded = false
+            kyutaiPocketModelLoaded = available
         }
     }
 

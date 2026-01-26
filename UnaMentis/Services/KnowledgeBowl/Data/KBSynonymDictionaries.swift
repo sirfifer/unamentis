@@ -130,7 +130,7 @@ actor KBSynonymMatcher {
             dictionary = KBSynonymDictionaries.scientific
         case .person, .title:
             dictionary = KBSynonymDictionaries.historical
-        case .number, .date:
+        case .numeric, .date:
             dictionary = KBSynonymDictionaries.mathematics
         case .text, .multipleChoice:
             // Generic text doesn't use synonyms

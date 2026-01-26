@@ -13,6 +13,23 @@ Post messages to Slack channels and create/update Trello cards with natural lang
 /comms [message or instruction]
 ```
 
+## CRITICAL: Load MCP Tools First
+
+**MCP tools are deferred and MUST be loaded via ToolSearch before use.**
+
+Before calling any Slack or Trello tool, load it:
+```
+ToolSearch: select:mcp__slack__slack_post_message
+ToolSearch: select:mcp__trello__add_card_to_list
+```
+
+Do NOT:
+- Try bash commands to call MCP tools
+- Assume tools are unavailable if direct calls fail
+- Go searching through scripts or configs
+
+The tools ARE available. Just load them first with ToolSearch.
+
 ## Key Rules
 
 ### Trello Comments

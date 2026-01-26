@@ -488,6 +488,13 @@ See [USM Core README](../../server/usm-core/README.md) for detailed documentatio
 - **Curriculum Studio** for viewing/editing UMCF content
 - **Plugin Manager** for configuring content sources
 - **Users Dashboard** for user and session management
+- **Knowledge Bowl Question Packs** section with:
+  - **Pack Browser** - View and manage question packs with filtering
+  - **Pack Detail** - View pack contents organized by domain and subcategory
+  - **Question Browser** - Search and filter questions across all packs
+  - **Pack Creation** - Create custom packs and bundles with deduplication preview
+  - **Bulk Operations** - Bulk update question metadata
+  - **Module Import** - Import questions from Knowledge Bowl module
 - **Voice Lab** section with:
   - **AI Model Selection** - Compare and select models for all use cases (STT, TTS, LLM)
   - **TTS Lab** - Experiment with TTS models and configurations before batch processing
@@ -753,6 +760,16 @@ Multi-subject mastery for academic quiz bowl competitions with **on-device first
 - **Regional Compliance** (Colorado, Minnesota, Washington) with rule-specific validation
 - **50+ Sample Questions** bundled, with expandable question bank architecture
 
+**Question Pack Management (New):**
+- **Full CRUD Operations** for question packs via REST API
+- **Question Management** with filtering by domain, difficulty, type, and audio status
+- **Bundle Creation** to combine multiple packs with deduplication
+- **Module Import** to import questions from Knowledge Bowl module into packs
+- **Bulk Operations** for updating multiple questions at once
+- **Operations Console UI** for pack creation, viewing, and question browsing
+- **Difficulty Tiers** supporting Elementary through College levels
+- **Competition Year Tracking** for annual content organization
+
 **Advanced Answer Validation (3-Tier System):**
 - **Tier 1 (All devices, 85-90% accuracy):** Enhanced algorithms including:
   - Levenshtein fuzzy matching
@@ -766,7 +783,7 @@ Multi-subject mastery for academic quiz bowl competitions with **on-device first
 
 **Architecture Highlights:**
 - **On-device:** All practice sessions, answer validation, progress tracking, audio playback
-- **Server role:** Question delivery, team coordination, statistics aggregation, configuration
+- **Server role:** Question pack management, team coordination, statistics aggregation, configuration
 - **Offline capable:** Full practice sessions work without internet
 - **Storage optimization:** Smart content unloading based on mastery (105MB per 1,000 questions)
 
@@ -775,7 +792,8 @@ Multi-subject mastery for academic quiz bowl competitions with **on-device first
 - WebSocket-based real-time session synchronization
 - Team statistics and leaderboards
 
-See [KNOWLEDGE_BOWL_ARCHITECTURE.md](../modules/KNOWLEDGE_BOWL_ARCHITECTURE.md) for complete architecture details.
+See [KNOWLEDGE_BOWL_MODULE.md](../modules/KNOWLEDGE_BOWL_MODULE.md) for module specification.
+See [Knowledge Bowl API](../api-spec/09-KNOWLEDGE-BOWL.md) for REST API documentation.
 
 ### Future Module Candidates
 
@@ -1069,6 +1087,8 @@ See [CODE_QUALITY_INITIATIVE.md](../quality/CODE_QUALITY_INITIATIVE.md) for comp
 - **Kyutai Pocket TTS integration** (100M on-device neural TTS with full settings UI, 8 voices, voice cloning, Rust/Candle inference engine, UniFFI Swift bindings)
 - **USM Core** (Rust cross-platform service manager, HTTP/WebSocket API, C FFI, 47 tests)
 - **USM-FFI** macOS menu bar app (Swift, real-time WebSocket, 16 tests)
+- **Knowledge Bowl Question Pack API** (full CRUD for packs/questions, bundle creation with deduplication, module import)
+- **KB Pack Management UI** (Operations Console: pack browser, question browser, pack creation, bulk operations)
 
 ### In Progress
 - Android client (separate repository)
@@ -1198,6 +1218,9 @@ See [CODE_QUALITY_INITIATIVE.md](../quality/CODE_QUALITY_INITIATIVE.md) for comp
 | `server/usm-core/crates/usm-ffi/src/lib.rs` | C FFI bindings for Swift |
 | `server/usm-core/config/services.toml` | Service definitions |
 | `server/web-client/src/app/` | Web client application |
+| `server/management/kb_packs_api.py` | **Knowledge Bowl Pack Management API** |
+| `server/web/src/types/question-packs.ts` | KB pack TypeScript types |
+| `server/web/src/app/api/kb/` | KB Next.js API routes |
 
 ---
 

@@ -213,15 +213,15 @@ public actor KyutaiPocketTTSService: TTSService {
             NSLog("⏱️ [KyutaiPocket] Starting streaming synthesis...")
 
             do {
-                // startStreaming is non-blocking - it kicks off synthesis and returns immediately
+                // startTrueStreaming is non-blocking - it kicks off synthesis and returns immediately
                 // The handler will receive onAudioChunk callbacks as audio is generated
-                try capturedEngine.startStreaming(text: text, handler: handler)
-                NSLog("⏱️ [KyutaiPocket] startStreaming() returned, waiting for callbacks...")
+                try capturedEngine.startTrueStreaming(text: text, handler: handler)
+                NSLog("⏱️ [KyutaiPocket] startTrueStreaming() returned, waiting for callbacks...")
             } catch let error as PocketTtsError {
-                NSLog("🔴 [KyutaiPocket] startStreaming failed: %@", error.localizedDescription)
+                NSLog("🔴 [KyutaiPocket] startTrueStreaming failed: %@", error.localizedDescription)
                 continuation.finish()
             } catch {
-                NSLog("🔴 [KyutaiPocket] startStreaming failed: %@", error.localizedDescription)
+                NSLog("🔴 [KyutaiPocket] startTrueStreaming failed: %@", error.localizedDescription)
                 continuation.finish()
             }
         }

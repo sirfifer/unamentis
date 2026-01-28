@@ -662,8 +662,21 @@ final class KBOralSessionViewModel: ObservableObject {
 
     private let tts = KBOnDeviceTTS()
     private let stt = KBOnDeviceSTT()
-    private let validator = KBAnswerValidator()
+    private let validator: KBAnswerValidator
     private let sessionManager = KBSessionManager()
+
+    /// Create answer validator with on-device LLM if available
+    private static func createValidator() -> KBAnswerValidator {
+        // Check if on-device LLM model is available
+        if OnDeviceLLMService.areModelsAvailable {
+            // Create on-device LLM service and validator
+            let llmService = OnDeviceLLMService()
+            let llmValidator = KBLLMValidator(service: llmService)
+            return KBAnswerValidator(llmValidator: llmValidator)
+        }
+        // Fall back to validation without LLM tier
+        return KBAnswerValidator()
+    }
 
     // MARK: - Configuration
 
@@ -700,6 +713,7 @@ final class KBOralSessionViewModel: ObservableObject {
         self.regionalConfig = config.region.config
         self.session = KBSession(config: config)
         self.conferenceTimeRemaining = config.region.config.conferenceTime
+        self.validator = Self.createValidator()
 
         // Register session with manager for lifecycle management
         Task {

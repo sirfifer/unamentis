@@ -449,9 +449,12 @@ actor KBAnswerValidator {
         }
 
         // 8. LLM validation (Tier 3)
+        // LLM validator now auto-loads, so check if models are available (not in error/notAvailable state)
+        let llmState = await llmValidator?.currentState()
+        let llmAvailable = llmState == .available || llmState == .loaded || llmState == .loading
         if let llmValidator = llmValidator,
            let featureFlags = featureFlags,
-           await llmValidator.currentState() == .loaded,
+           llmAvailable,
            await featureFlags.isFeatureEnabled(.llmValidation) {
             do {
                 // LLM validates against primary answer with question context and guidance

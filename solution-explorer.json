@@ -1,0 +1,10 @@
+{
+  "solution": "UnaMentis",
+  "description": "iOS app, Android client, and shared services",
+  "repositories": [
+    {
+      "name": "unamentis",
+      "path": "."
+    }
+  ]
+}

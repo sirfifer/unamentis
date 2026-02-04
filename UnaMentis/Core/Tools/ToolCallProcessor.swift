@@ -64,6 +64,10 @@ public actor ToolCallProcessor {
     private func registerDefaultHandlers() {
         // Register the todo tool handler
         register(TodoToolHandler.shared)
+
+        // Register the web search tool handler
+        register(WebSearchToolHandler.shared)
+
         logger.info("Registered default tool handlers")
     }
 

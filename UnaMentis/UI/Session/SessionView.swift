@@ -1533,8 +1533,9 @@ class SessionViewModel: ObservableObject {
                 ttsService = AppleTTSService()
             }
         case .kyutaiPocket:
-            logger.info("Initializing Kyutai Pocket TTS (on-device)")
-            ttsService = KyutaiPocketTTSService()
+            // KyutaiPocketTTSService not currently linked - fall back to Apple TTS
+            logger.warning("Kyutai Pocket TTS not available, falling back to Apple TTS")
+            ttsService = AppleTTSService()
         default:
             logger.info("Using Apple TTS as default TTS provider")
             ttsService = AppleTTSService()

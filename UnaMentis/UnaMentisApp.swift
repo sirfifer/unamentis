@@ -263,7 +263,7 @@ struct LaunchScreenView: View {
 enum AppTab: Int {
     case learning = 0
     case chat = 1
-    case todo = 2
+    case assistant = 2
     case history = 3
     case more = 4
 }
@@ -474,11 +474,11 @@ struct ContentView: View {
             .toolbar(sessionActivityState.shouldHideTabBar ? .hidden : .visible, for: .tabBar)
             #endif
 
-            TodoListView()
+            AssistantTabView()
                 .tabItem {
-                    Label("To-Do", systemImage: "checklist")
+                    Label("Assistant", systemImage: "person.crop.circle.badge.questionmark")
                 }
-                .tag(AppTab.todo.rawValue)
+                .tag(AppTab.assistant.rawValue)
 
             HistoryView()
                 .tabItem {

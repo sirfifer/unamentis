@@ -14,6 +14,7 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
     case textToSpeech = "TTS"
     case languageModel = "LLM"
     case realtime = "RT"
+    case utility = "UTIL"
 
     public var displayName: String {
         switch self {
@@ -21,6 +22,7 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
         case .textToSpeech: return "Text-to-Speech"
         case .languageModel: return "Language Model"
         case .realtime: return "Real-time Infrastructure"
+        case .utility: return "Utility"
         }
     }
 
@@ -30,6 +32,7 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
         case .textToSpeech: return "TTS"
         case .languageModel: return "LLM"
         case .realtime: return "RT"
+        case .utility: return "UTIL"
         }
     }
 
@@ -39,6 +42,7 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
         case .textToSpeech: return "speaker.wave.3"
         case .languageModel: return "brain"
         case .realtime: return "bolt.horizontal"
+        case .utility: return "wrench.and.screwdriver"
         }
     }
 
@@ -48,6 +52,7 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
         case .textToSpeech: return .purple
         case .languageModel: return .orange
         case .realtime: return .green
+        case .utility: return .teal
         }
     }
 
@@ -61,6 +66,8 @@ public enum LMAPIProviderCategory: String, CaseIterable, Sendable {
             return "Powers the AI's intelligence and understanding"
         case .realtime:
             return "Enables low-latency real-time audio streaming"
+        case .utility:
+            return "Supporting services and tools"
         }
     }
 }
@@ -221,6 +228,8 @@ public enum LMAPIProviderRegistry {
             return liveKitInfo
         case .liveKitSecret:
             return liveKitSecretInfo
+        case .braveSearch:
+            return braveSearchInfo
         }
     }
 
@@ -697,6 +706,48 @@ public enum LMAPIProviderRegistry {
                 "Required only if you're using the LiveKit API Key",
                 "Keep this value secret and secure",
                 "Obtain from your LiveKit Cloud dashboard"
+            ]
+        )
+    }
+
+    // MARK: - Brave Search
+
+    private static var braveSearchInfo: LMAPIProviderInfo {
+        LMAPIProviderInfo(
+            id: .braveSearch,
+            name: "Brave Search",
+            categories: [.utility],
+            shortDescription: "Web search for on-device LLM",
+            fullDescription: """
+                Brave Search provides an independent web search API that gives your \
+                on-device LLM the ability to look up current information from the web.
+                """,
+            usageInApp: """
+                Brave Search is used as a tool by the on-device LLM:
+
+                - **Web Search**: LLM can search for current information
+                - **Fact Checking**: Verify answers with web sources
+                - **Current Events**: Access up-to-date information
+
+                Free tier includes 2,000 queries per month.
+                """,
+            pricing: LMAPIPricing(
+                inputCost: nil,
+                inputUnit: .free,
+                notes: "Free tier: 2,000 queries/month. Paid: $3/1,000 queries."
+            ),
+            conversationEstimate: ConversationCostEstimate(
+                tenMinuteCost: 0.00,
+                sixtyMinuteCost: 0.00,
+                assumptions: "Free tier covers typical usage."
+            ),
+            models: [],
+            websiteURL: URL(string: "https://brave.com/search/api/"),
+            apiDocsURL: URL(string: "https://api.search.brave.com/app/documentation/web-search"),
+            tips: [
+                "Free tier includes 2,000 queries per month",
+                "Sign up at brave.com/search/api/ to get an API key",
+                "Enables the LLM to search the web during conversations"
             ]
         )
     }

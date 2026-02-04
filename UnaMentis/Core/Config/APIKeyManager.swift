@@ -39,6 +39,7 @@ public actor APIKeyManager {
         case groq = "GROQ_API_KEY"
         case liveKit = "LIVEKIT_API_KEY"
         case liveKitSecret = "LIVEKIT_API_SECRET"
+        case braveSearch = "BRAVE_SEARCH_API_KEY"
 
         public var displayName: String {
             switch self {
@@ -50,6 +51,7 @@ public actor APIKeyManager {
             case .groq: return "Groq"
             case .liveKit: return "LiveKit API Key"
             case .liveKitSecret: return "LiveKit Secret"
+            case .braveSearch: return "Brave Search"
             }
         }
     }

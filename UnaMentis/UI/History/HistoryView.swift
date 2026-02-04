@@ -175,43 +175,156 @@ struct SessionRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(session.topicName ?? "General Conversation")
+            // Top row: Session type icon, title, time
+            HStack(spacing: 8) {
+                Image(systemName: session.sessionType.iconName)
+                    .foregroundStyle(sessionTypeColor)
+                    .font(.caption)
+
+                Text(sessionTitle)
                     .font(.headline)
+                    .lineLimit(1)
+
                 Spacer()
+
                 Text(formatTime(session.startTime))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
+            // Middle row: Duration, turns, cost (conditional)
             HStack(spacing: 16) {
                 Label(formatDuration(session.duration), systemImage: "clock")
-                Label("\(session.turnCount) turns", systemImage: "message")
-                Label(formatCost(session.totalCost), systemImage: "dollarsign.circle")
+                Label(session.turnCount == 1 ? "1 turn" : "\(session.turnCount) turns", systemImage: "message")
+
+                if session.shouldShowCost {
+                    Label(formatCost(session.totalCost), systemImage: "dollarsign.circle")
+                }
             }
             .font(.caption)
             .foregroundStyle(.secondary)
+
+            // Bottom row: Provider badges
+            if let providers = session.providers {
+                ProviderBadgesRow(providers: providers)
+            }
+
+            // Validation indicator if present
+            if session.hasValidation {
+                ValidationIndicator(results: session.validationResults)
+            }
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(session.topicName ?? "General Conversation")")
-        .accessibilityValue("Duration \(formatDuration(session.duration)), \(session.turnCount) turns, cost \(formatCost(session.totalCost))")
+        .accessibilityLabel("\(session.sessionType.displayName): \(sessionTitle)")
+        .accessibilityValue(accessibilityDescription)
         .accessibilityHint("Double-tap to view session details")
     }
-    
+
+    private var sessionTitle: String {
+        // For curriculum sessions, show curriculum name if available
+        if let curriculumInfo = session.curriculumInfo {
+            return curriculumInfo.curriculumName
+        }
+        return session.topicName ?? "General Conversation"
+    }
+
+    private var sessionTypeColor: Color {
+        switch session.sessionType {
+        case .chat: return .blue
+        case .module: return .purple
+        case .curriculum: return .orange
+        }
+    }
+
+    private var accessibilityDescription: String {
+        var parts = ["Duration \(formatDuration(session.duration))", "\(session.turnCount) turns"]
+        if session.shouldShowCost {
+            parts.append("cost \(formatCost(session.totalCost))")
+        }
+        return parts.joined(separator: ", ")
+    }
+
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
-    
+
     private func formatDuration(_ seconds: TimeInterval) -> String {
         let minutes = Int(seconds) / 60
         return "\(minutes)m"
     }
-    
+
     private func formatCost(_ cost: Decimal) -> String {
         String(format: "$%.2f", NSDecimalNumber(decimal: cost).doubleValue)
+    }
+}
+
+// MARK: - Provider Badges Row
+
+struct ProviderBadgesRow: View {
+    let providers: SessionProviders
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if let stt = providers.stt {
+                ProviderBadge(label: "STT", provider: stt, color: .blue)
+            }
+            if let llm = providers.llm {
+                ProviderBadge(label: "LLM", provider: llm, color: .purple)
+            }
+            if let tts = providers.tts {
+                ProviderBadge(label: "TTS", provider: tts, color: .green)
+            }
+        }
+    }
+}
+
+struct ProviderBadge: View {
+    let label: String
+    let provider: SessionProviderInfo
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: provider.location.iconName)
+                .font(.system(size: 8))
+            Text(label)
+                .font(.system(size: 9, weight: .medium))
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(color.opacity(0.15))
+        .foregroundStyle(color)
+        .clipShape(Capsule())
+        .accessibilityLabel("\(label): \(provider.providerName), \(provider.location.displayName)")
+    }
+}
+
+// MARK: - Validation Indicator
+
+struct ValidationIndicator: View {
+    let results: [SessionValidationResult]
+
+    private var passedCount: Int {
+        results.filter { $0.passed }.count
+    }
+
+    private var allPassed: Bool {
+        passedCount == results.count
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: allPassed ? "checkmark.seal.fill" : "checkmark.seal")
+                .foregroundStyle(allPassed ? .green : .orange)
+                .font(.caption2)
+
+            Text("\(passedCount)/\(results.count) passed")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -225,14 +338,40 @@ struct SessionDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Session info
-                SessionInfoCard(session: session)
+                // Session info with type badge
+                EnhancedSessionInfoCard(session: session)
 
-                // Transcript
-                TranscriptCard(entries: session.transcriptPreview)
+                // Provider information
+                if let providers = session.providers {
+                    ProvidersCard(providers: providers)
+                }
 
-                // Metrics
-                MetricsCard(latency: session.avgLatency, cost: session.totalCost)
+                // Curriculum info if applicable
+                if let curriculumInfo = session.curriculumInfo {
+                    CurriculumCard(info: curriculumInfo)
+                }
+
+                // Validation results if present
+                if !session.validationResults.isEmpty {
+                    ValidationResultsCard(results: session.validationResults)
+                }
+
+                // Transcript (adapted for curriculum sessions)
+                if session.sessionType == .curriculum, let curriculumInfo = session.curriculumInfo {
+                    CurriculumTranscriptCard(
+                        entries: session.transcriptPreview,
+                        curriculumInfo: curriculumInfo
+                    )
+                } else {
+                    TranscriptCard(entries: session.transcriptPreview)
+                }
+
+                // Metrics (cost only if applicable)
+                EnhancedMetricsCard(
+                    latency: session.avgLatency,
+                    cost: session.totalCost,
+                    showCost: session.shouldShowCost
+                )
             }
             .padding()
         }
@@ -446,6 +585,369 @@ struct MetricsCard: View {
     }
 }
 
+// MARK: - Enhanced Session Info Card
+
+struct EnhancedSessionInfoCard: View {
+    let session: SessionSummary
+
+    var body: some View {
+        VStack(spacing: 12) {
+            // Session type badge and title
+            HStack {
+                // Type badge
+                HStack(spacing: 4) {
+                    Image(systemName: session.sessionType.iconName)
+                    Text(session.sessionType.displayName)
+                }
+                .font(.caption.weight(.medium))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(sessionTypeColor.opacity(0.15))
+                .foregroundStyle(sessionTypeColor)
+                .clipShape(Capsule())
+
+                Spacer()
+
+                Text(formatDuration(session.duration))
+                    .font(.headline)
+            }
+
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(sessionTitle)
+                        .font(.headline)
+                    Text(formatDate(session.startTime))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+
+    private var sessionTitle: String {
+        if let curriculumInfo = session.curriculumInfo {
+            return curriculumInfo.curriculumName
+        }
+        return session.topicName ?? "General Conversation"
+    }
+
+    private var sessionTypeColor: Color {
+        switch session.sessionType {
+        case .chat: return .blue
+        case .module: return .purple
+        case .curriculum: return .orange
+        }
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    private func formatDuration(_ seconds: TimeInterval) -> String {
+        let minutes = Int(seconds) / 60
+        let secs = Int(seconds) % 60
+        return String(format: "%d:%02d", minutes, secs)
+    }
+}
+
+// MARK: - Providers Card
+
+struct ProvidersCard: View {
+    let providers: SessionProviders
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Models Used", systemImage: "cpu")
+                .font(.headline)
+
+            VStack(spacing: 8) {
+                if let stt = providers.stt {
+                    ProviderRow(category: "Speech-to-Text", provider: stt, color: .blue)
+                }
+                if let llm = providers.llm {
+                    ProviderRow(category: "Language Model", provider: llm, color: .purple)
+                }
+                if let tts = providers.tts {
+                    ProviderRow(category: "Text-to-Speech", provider: tts, color: .green)
+                }
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+}
+
+struct ProviderRow: View {
+    let category: String
+    let provider: SessionProviderInfo
+    let color: Color
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(category)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(provider.displayString)
+                    .font(.subheadline)
+            }
+
+            Spacer()
+
+            // Location badge
+            HStack(spacing: 4) {
+                Image(systemName: provider.location.iconName)
+                Text(provider.location.shortLabel)
+            }
+            .font(.caption)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(color.opacity(0.15))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
+        }
+    }
+}
+
+// MARK: - Curriculum Card
+
+struct CurriculumCard: View {
+    let info: CurriculumSessionInfo
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Curriculum", systemImage: "book.closed")
+                    .font(.headline)
+                Spacer()
+                if let source = info.source {
+                    Text(source)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            // Topics covered
+            if !info.topicsCovered.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Topics Covered")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    ForEach(info.topicsCovered) { topic in
+                        TopicProgressRow(topic: topic)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+}
+
+struct TopicProgressRow: View {
+    let topic: CurriculumSessionInfo.TopicSummary
+
+    var body: some View {
+        HStack {
+            Text(topic.title)
+                .font(.subheadline)
+                .lineLimit(1)
+
+            Spacer()
+
+            if let improvement = topic.masteryImprovement {
+                HStack(spacing: 4) {
+                    Image(systemName: improvement >= 0 ? "arrow.up.right" : "arrow.down.right")
+                        .foregroundStyle(improvement >= 0 ? .green : .red)
+                    Text(String(format: "%.0f%%", improvement * 100))
+                }
+                .font(.caption)
+                .foregroundStyle(improvement >= 0 ? .green : .red)
+            }
+        }
+    }
+}
+
+// MARK: - Validation Results Card
+
+struct ValidationResultsCard: View {
+    let results: [SessionValidationResult]
+
+    private var passedCount: Int {
+        results.filter { $0.passed }.count
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Validation Results", systemImage: "checkmark.seal")
+                    .font(.headline)
+                Spacer()
+                Text("\(passedCount)/\(results.count) passed")
+                    .font(.subheadline)
+                    .foregroundStyle(passedCount == results.count ? .green : .orange)
+            }
+
+            ForEach(results) { result in
+                ValidationResultRow(result: result)
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+}
+
+struct ValidationResultRow: View {
+    let result: SessionValidationResult
+
+    var body: some View {
+        HStack {
+            Image(systemName: result.type.iconName)
+                .foregroundStyle(result.passed ? .green : .red)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.type.displayName)
+                    .font(.subheadline)
+                if let details = result.details {
+                    Text(details)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            if let scoreString = result.scoreString {
+                Text(scoreString)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(result.passed ? .green : .red)
+            } else {
+                Image(systemName: result.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .foregroundStyle(result.passed ? .green : .red)
+            }
+        }
+    }
+}
+
+// MARK: - Curriculum Transcript Card
+
+struct CurriculumTranscriptCard: View {
+    let entries: [TranscriptPreview]
+    let curriculumInfo: CurriculumSessionInfo
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Session Summary", systemImage: "doc.text")
+                .font(.headline)
+
+            // Curriculum source info
+            VStack(alignment: .leading, spacing: 4) {
+                if let source = curriculumInfo.source {
+                    Text("Source: \(source)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Text("Curriculum: \(curriculumInfo.curriculumName)")
+                    .font(.subheadline)
+
+                if !curriculumInfo.topicsCovered.isEmpty {
+                    Text("Topics: \(curriculumInfo.topicsCovered.map { $0.title }.joined(separator: ", "))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding(.bottom, 8)
+
+            Divider()
+
+            // Key interactions from transcript
+            Text("Key Interactions")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+
+            ForEach(entries) { entry in
+                HStack(alignment: .top) {
+                    Image(systemName: entry.isUser ? "person.fill" : "cpu")
+                        .foregroundStyle(entry.isUser ? .blue : .purple)
+                    Text(entry.content)
+                        .font(.subheadline)
+                }
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+}
+
+// MARK: - Enhanced Metrics Card
+
+struct EnhancedMetricsCard: View {
+    let latency: TimeInterval
+    let cost: Decimal
+    let showCost: Bool
+
+    var body: some View {
+        HStack {
+            VStack {
+                Text(String(format: "%.0fms", latency * 1000))
+                    .font(.title2.bold())
+                Text("Avg Latency")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Average latency")
+            .accessibilityValue("\(Int(latency * 1000)) milliseconds")
+
+            if showCost {
+                Divider()
+
+                VStack {
+                    Text(String(format: "$%.3f", NSDecimalNumber(decimal: cost).doubleValue))
+                        .font(.title2.bold())
+                    Text("Total Cost")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Total cost")
+                .accessibilityValue(String(format: "$%.3f", NSDecimalNumber(decimal: cost).doubleValue))
+            }
+        }
+        .padding()
+        .background {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+        }
+    }
+}
+
 // MARK: - View Model
 
 @MainActor
@@ -537,7 +1039,11 @@ class HistoryViewModel: ObservableObject {
                             turnCount: transcriptEntries.count,
                             totalCost: session.totalCost as Decimal? ?? 0,
                             avgLatency: avgLatency,
-                            transcriptPreview: preview
+                            transcriptPreview: preview,
+                            sessionType: session.sessionType,
+                            providers: session.providers,
+                            curriculumInfo: session.curriculum,
+                            validationResults: session.validations
                         )
                     }
                     logger.info("loadFromCoreDataAsync() mapped \(mapped.count) session summaries")
@@ -644,6 +1150,29 @@ struct SessionSummary: Identifiable {
     let totalCost: Decimal
     let avgLatency: TimeInterval
     let transcriptPreview: [TranscriptPreview]
+
+    // Enhanced fields
+    let sessionType: SessionType
+    let providers: SessionProviders?
+    let curriculumInfo: CurriculumSessionInfo?
+    let validationResults: [SessionValidationResult]
+
+    /// Whether to show cost (only if > 0 and uses paid providers)
+    var shouldShowCost: Bool {
+        totalCost > 0 || (providers?.hasCosts ?? false)
+    }
+
+    /// Whether this session has validation results
+    var hasValidation: Bool {
+        !validationResults.isEmpty
+    }
+
+    /// Overall validation pass rate
+    var validationPassRate: Float? {
+        guard !validationResults.isEmpty else { return nil }
+        let passedCount = validationResults.filter { $0.passed }.count
+        return Float(passedCount) / Float(validationResults.count)
+    }
 }
 
 struct TranscriptPreview: Identifiable {
@@ -664,11 +1193,33 @@ struct HistoryHelpSheet: View {
                 // Overview Section
                 Section {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Review your past learning sessions. Each entry shows when you studied, how long, and key metrics.")
+                        Text("Review your past learning sessions. Each entry shows when you studied, how long, key metrics, and which AI models were used.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
+                }
+
+                // Session Types Section
+                Section("Session Types") {
+                    HistoryHelpRow(
+                        icon: "bubble.left.and.bubble.right.fill",
+                        iconColor: .blue,
+                        title: "Chat",
+                        description: "Free-form conversation with the AI tutor on any topic."
+                    )
+                    HistoryHelpRow(
+                        icon: "square.stack.3d.up.fill",
+                        iconColor: .purple,
+                        title: "Module",
+                        description: "Structured learning module with specific objectives."
+                    )
+                    HistoryHelpRow(
+                        icon: "book.closed.fill",
+                        iconColor: .orange,
+                        title: "Curriculum",
+                        description: "Curriculum-based learning following a study plan with progress tracking."
+                    )
                 }
 
                 // Metrics Explained Section
@@ -689,13 +1240,67 @@ struct HistoryHelpSheet: View {
                         icon: "dollarsign.circle.fill",
                         iconColor: .orange,
                         title: "Cost",
-                        description: "Estimated API usage costs. On-device and self-hosted options are free."
+                        description: "Estimated API usage costs. Only shown when paid cloud models were used. On-device and self-hosted options are free."
                     )
                     HistoryHelpRow(
                         icon: "timer",
                         iconColor: .purple,
                         title: "Avg Latency",
                         description: "Average response time. Lower is better. Target: under 500ms."
+                    )
+                }
+
+                // Models Section
+                Section("AI Models Used") {
+                    HistoryHelpRow(
+                        icon: "waveform",
+                        iconColor: .blue,
+                        title: "STT (Speech-to-Text)",
+                        description: "Converts your voice to text. Shows which provider processed your speech."
+                    )
+                    HistoryHelpRow(
+                        icon: "brain",
+                        iconColor: .purple,
+                        title: "LLM (Language Model)",
+                        description: "The AI that generates intelligent responses to your questions."
+                    )
+                    HistoryHelpRow(
+                        icon: "speaker.wave.2.fill",
+                        iconColor: .green,
+                        title: "TTS (Text-to-Speech)",
+                        description: "Converts AI responses to natural speech."
+                    )
+                }
+
+                // Provider Locations Section
+                Section("Where Models Run") {
+                    HistoryHelpRow(
+                        icon: "cloud.fill",
+                        iconColor: .cyan,
+                        title: "Cloud",
+                        description: "Runs on external servers (OpenAI, Anthropic, etc.). Highest quality but may have costs."
+                    )
+                    HistoryHelpRow(
+                        icon: "server.rack",
+                        iconColor: .indigo,
+                        title: "Self-Hosted",
+                        description: "Runs on your own server. No external costs, requires your hardware."
+                    )
+                    HistoryHelpRow(
+                        icon: "iphone",
+                        iconColor: .mint,
+                        title: "On-Device",
+                        description: "Runs entirely on your device. Free, works offline, maximum privacy."
+                    )
+                }
+
+                // Validation Section
+                Section("Assessments") {
+                    HistoryHelpRow(
+                        icon: "checkmark.seal.fill",
+                        iconColor: .green,
+                        title: "Validation Results",
+                        description: "Shows quiz scores, comprehension checks, and other assessments from the session."
                     )
                 }
 
@@ -734,8 +1339,8 @@ struct HistoryHelpSheet: View {
                         .foregroundStyle(.blue, .primary)
                     Label("Sessions are grouped by date automatically", systemImage: "calendar")
                         .foregroundStyle(.purple, .primary)
-                    Label("Pull down to refresh the session list", systemImage: "arrow.down.circle.fill")
-                        .foregroundStyle(.green, .primary)
+                    Label("Provider badges show where each AI model ran", systemImage: "cpu")
+                        .foregroundStyle(.orange, .primary)
                 }
             }
             .navigationTitle("History Help")

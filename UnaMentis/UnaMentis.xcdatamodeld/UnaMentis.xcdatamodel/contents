@@ -21,12 +21,16 @@
     </entity>
     <entity name="Session" representedClassName="Session" syncable="YES">
         <attribute name="config" optional="YES" attributeType="Binary"/>
+        <attribute name="curriculumInfo" optional="YES" attributeType="Binary"/>
         <attribute name="duration" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="endTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="metricsSnapshot" optional="YES" attributeType="Binary"/>
+        <attribute name="providersInfo" optional="YES" attributeType="Binary"/>
+        <attribute name="sessionTypeRaw" optional="YES" attributeType="String" defaultValueString="chat"/>
         <attribute name="startTime" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="totalCost" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="validationResults" optional="YES" attributeType="Binary"/>
         <relationship name="transcript" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="TranscriptEntry" inverseName="session" inverseEntity="TranscriptEntry"/>
         <relationship name="topic" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Topic" inverseName="sessions" inverseEntity="Topic"/>
     </entity>

@@ -1445,6 +1445,13 @@ class SessionViewModel: ObservableObject {
         let llmService: any LLMService
         let vadService: any VADService = SileroVADService()
 
+        // Track actual providers used for history
+        var actualSTTProvider: STTProvider = sttProviderSetting
+        var actualLLMProvider: LLMProvider = llmProviderSetting
+        var actualLLMModel: String = ""
+        var actualTTSProvider: TTSProvider = ttsProviderSetting
+        var actualTTSVoice: String? = nil
+
         // Configure STT based on settings
         logger.info("STT provider setting: \(sttProviderSetting.rawValue)")
         switch sttProviderSetting {
@@ -1455,58 +1462,72 @@ class SessionViewModel: ObservableObject {
             if isSupported {
                 logger.info("Using GLMASROnDeviceSTTService")
                 sttService = GLMASROnDeviceSTTService()
+                actualSTTProvider = .glmASROnDevice
             } else {
                 logger.warning("GLM-ASR not supported on this device/simulator, using Apple Speech fallback")
                 sttService = AppleSpeechSTTService()
+                actualSTTProvider = .appleSpeech
             }
         case .appleSpeech:
             logger.info("Using AppleSpeechSTTService (user selected)")
             sttService = AppleSpeechSTTService()
+            actualSTTProvider = .appleSpeech
         case .deepgramNova3:
             if let apiKey = await appState.apiKeys.getKey(.deepgram) {
                 sttService = DeepgramSTTService(apiKey: apiKey)
+                actualSTTProvider = .deepgramNova3
             } else {
                 logger.warning("Deepgram API key not configured, falling back to Apple Speech")
                 sttService = AppleSpeechSTTService()
+                actualSTTProvider = .appleSpeech
             }
         case .assemblyAI:
             if let apiKey = await appState.apiKeys.getKey(.assemblyAI) {
                 sttService = AssemblyAISTTService(apiKey: apiKey)
+                actualSTTProvider = .assemblyAI
             } else {
                 logger.warning("AssemblyAI API key not configured, falling back to Apple Speech")
                 sttService = AppleSpeechSTTService()
+                actualSTTProvider = .appleSpeech
             }
         default:
             // Default fallback to Apple Speech (always available)
             logger.info("Using Apple Speech as default STT provider")
             sttService = AppleSpeechSTTService()
+            actualSTTProvider = .appleSpeech
         }
 
         // Configure TTS based on settings
+        let ttsVoiceSetting = UserDefaults.standard.string(forKey: "ttsVoice") ?? "nova"
         logger.info("TTS provider setting: \(ttsProviderSetting.rawValue)")
         switch ttsProviderSetting {
         case .appleTTS:
             logger.info("Using AppleTTSService")
             ttsService = AppleTTSService()
+            actualTTSProvider = .appleTTS
         case .selfHosted:
             // Use SelfHostedTTSService to connect to Piper server (22050 Hz)
-            let ttsVoiceSetting = UserDefaults.standard.string(forKey: "ttsVoice") ?? "nova"
             if selfHostedEnabled && !serverIP.isEmpty {
                 logger.info("Using self-hosted TTS (Piper) at \(serverIP):11402 with voice: \(ttsVoiceSetting)")
                 ttsService = SelfHostedTTSService.piper(host: serverIP, voice: ttsVoiceSetting)
+                actualTTSProvider = .selfHosted
+                actualTTSVoice = ttsVoiceSetting
             } else {
                 logger.warning("Self-hosted TTS selected but no server IP configured - falling back to Apple TTS")
                 ttsService = AppleTTSService()
+                actualTTSProvider = .appleTTS
             }
         case .vibeVoice:
             // Use SelfHostedTTSService to connect to VibeVoice server (24000 Hz)
-            let ttsVoiceSetting = UserDefaults.standard.string(forKey: "ttsVoice") ?? "nova"
             if selfHostedEnabled && !serverIP.isEmpty {
                 logger.info("Using self-hosted TTS (VibeVoice) at \(serverIP):8880 with voice: \(ttsVoiceSetting)")
                 ttsService = SelfHostedTTSService.vibeVoice(host: serverIP, voice: ttsVoiceSetting)
+                actualTTSProvider = .vibeVoice
+                actualTTSVoice = ttsVoiceSetting
             } else {
                 logger.warning("VibeVoice TTS selected but no server IP configured - falling back to Apple TTS")
                 ttsService = AppleTTSService()
+                actualTTSProvider = .appleTTS
             }
         case .chatterbox:
             // Use ChatterboxTTSService with full configuration loaded from UserDefaults
@@ -1514,30 +1535,38 @@ class SessionViewModel: ObservableObject {
                 let config = ChatterboxConfig.fromUserDefaults()
                 logger.info("Using Chatterbox TTS at \(serverIP):8004 with exaggeration=\(config.exaggeration), cfg=\(config.cfgWeight), speed=\(config.speed)")
                 ttsService = ChatterboxTTSService.chatterbox(host: serverIP, config: config)
+                actualTTSProvider = .chatterbox
             } else {
                 logger.warning("Chatterbox TTS selected but no server IP configured - falling back to Apple TTS")
                 ttsService = AppleTTSService()
+                actualTTSProvider = .appleTTS
             }
         case .elevenLabsFlash, .elevenLabsTurbo:
             if let apiKey = await appState.apiKeys.getKey(.elevenLabs) {
                 ttsService = ElevenLabsTTSService(apiKey: apiKey)
+                actualTTSProvider = ttsProviderSetting
             } else {
                 logger.warning("ElevenLabs API key not configured, falling back to Apple TTS")
                 ttsService = AppleTTSService()
+                actualTTSProvider = .appleTTS
             }
         case .deepgramAura2:
             if let apiKey = await appState.apiKeys.getKey(.deepgram) {
                 ttsService = DeepgramTTSService(apiKey: apiKey)
+                actualTTSProvider = .deepgramAura2
             } else {
                 logger.warning("Deepgram TTS API key not configured, falling back to Apple TTS")
                 ttsService = AppleTTSService()
+                actualTTSProvider = .appleTTS
             }
         case .kyutaiPocket:
             logger.info("Initializing Kyutai Pocket TTS (on-device)")
             ttsService = KyutaiPocketTTSService()
+            actualTTSProvider = .kyutaiPocket
         default:
             logger.info("Using Apple TTS as default TTS provider")
             ttsService = AppleTTSService()
+            actualTTSProvider = .appleTTS
         }
 
         // Configure LLM based on settings with graceful fallback
@@ -1545,11 +1574,16 @@ class SessionViewModel: ObservableObject {
         logger.info("LLM provider setting: \(llmProviderSetting.rawValue)")
         logger.info("LLM config - selfHostedEnabled: \(selfHostedEnabled), serverIP: '\(serverIP)'")
 
+        // Get LLM model setting for tracking
+        let llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
+
         // Helper to create on-device LLM if available
         func createOnDeviceLLMIfAvailable() -> (any LLMService)? {
             #if LLAMA_AVAILABLE
             if OnDeviceLLMService.isDeviceSupported && OnDeviceLLMService.areModelsAvailable {
                 logger.info("Using OnDeviceLLMService as fallback (device supported, models available)")
+                actualLLMProvider = .localMLX
+                actualLLMModel = "ministral-3b"
                 return OnDeviceLLMService()
             }
             #endif
@@ -1559,8 +1593,9 @@ class SessionViewModel: ObservableObject {
         // Helper to create self-hosted LLM if available
         func createSelfHostedLLMIfAvailable() -> (any LLMService)? {
             if selfHostedEnabled && !serverIP.isEmpty {
-                let llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
                 logger.info("Using SelfHostedLLMService as fallback (host: \(serverIP), model: \(llmModelSetting))")
+                actualLLMProvider = .selfHosted
+                actualLLMModel = llmModelSetting
                 return SelfHostedLLMService.ollama(host: serverIP, model: llmModelSetting)
             }
             return nil
@@ -1573,6 +1608,8 @@ class SessionViewModel: ObservableObject {
             if OnDeviceLLMService.isDeviceSupported && OnDeviceLLMService.areModelsAvailable {
                 logger.info("localMLX selected - using OnDeviceLLMService")
                 llmService = OnDeviceLLMService()
+                actualLLMProvider = .localMLX
+                actualLLMModel = "ministral-3b"
             } else if let selfHosted = createSelfHostedLLMIfAvailable() {
                 logger.warning("On-device LLM not available, falling back to self-hosted")
                 llmService = selfHosted
@@ -1598,8 +1635,11 @@ class SessionViewModel: ObservableObject {
             #endif
 
         case .anthropic:
+            let anthropicModel = UserDefaults.standard.string(forKey: "anthropicModel") ?? "claude-3-5-sonnet-20241022"
             if let apiKey = await appState.apiKeys.getKey(.anthropic) {
                 llmService = AnthropicLLMService(apiKey: apiKey)
+                actualLLMProvider = .anthropic
+                actualLLMModel = anthropicModel
             } else if let selfHosted = createSelfHostedLLMIfAvailable() {
                 logger.warning("Anthropic API key not configured, falling back to self-hosted")
                 llmService = selfHosted
@@ -1614,8 +1654,11 @@ class SessionViewModel: ObservableObject {
             }
 
         case .openAI:
+            let openAIModel = UserDefaults.standard.string(forKey: "openaiModel") ?? "gpt-4o"
             if let apiKey = await appState.apiKeys.getKey(.openAI) {
                 llmService = OpenAILLMService(apiKey: apiKey)
+                actualLLMProvider = .openAI
+                actualLLMModel = openAIModel
             } else if let selfHosted = createSelfHostedLLMIfAvailable() {
                 logger.warning("OpenAI API key not configured, falling back to self-hosted")
                 llmService = selfHosted
@@ -1631,28 +1674,30 @@ class SessionViewModel: ObservableObject {
 
         case .selfHosted:
             // Use SelfHostedLLMService to connect to Ollama server
-            var llmModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
-            logger.info("selfHosted selected - initial llmModel from UserDefaults: '\(llmModelSetting)'")
+            var selfHostedModelSetting = UserDefaults.standard.string(forKey: "llmModel") ?? "llama3.2:3b"
+            logger.info("selfHosted selected - initial llmModel from UserDefaults: '\(selfHostedModelSetting)'")
 
             // If the model setting looks like an OpenAI model, use discovered models or fallback
             let openAIModels = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
-            if openAIModels.contains(llmModelSetting) {
-                logger.warning("Model '\(llmModelSetting)' looks like an OpenAI model, attempting to discover server models")
+            if openAIModels.contains(selfHostedModelSetting) {
+                logger.warning("Model '\(selfHostedModelSetting)' looks like an OpenAI model, attempting to discover server models")
                 // Get discovered models from server config
                 let discoveredModels = await ServerConfigManager.shared.getAllDiscoveredModels()
                 if !discoveredModels.isEmpty {
-                    llmModelSetting = discoveredModels.first!
-                    logger.info("Overriding OpenAI model with discovered server model: \(llmModelSetting)")
+                    selfHostedModelSetting = discoveredModels.first!
+                    logger.info("Overriding OpenAI model with discovered server model: \(selfHostedModelSetting)")
                 } else {
-                    llmModelSetting = "llama3.2:3b" // Safe fallback
-                    logger.warning("No discovered models, using fallback: \(llmModelSetting)")
+                    selfHostedModelSetting = "llama3.2:3b" // Safe fallback
+                    logger.warning("No discovered models, using fallback: \(selfHostedModelSetting)")
                 }
             }
 
             // Use configured server IP if available
             if selfHostedEnabled && !serverIP.isEmpty {
-                logger.info("Creating SelfHostedLLMService.ollama(host: \(serverIP), model: \(llmModelSetting))")
-                llmService = SelfHostedLLMService.ollama(host: serverIP, model: llmModelSetting)
+                logger.info("Creating SelfHostedLLMService.ollama(host: \(serverIP), model: \(selfHostedModelSetting))")
+                llmService = SelfHostedLLMService.ollama(host: serverIP, model: selfHostedModelSetting)
+                actualLLMProvider = .selfHosted
+                actualLLMModel = selfHostedModelSetting
             } else if let onDevice = createOnDeviceLLMIfAvailable() {
                 logger.warning("No server configured, falling back to on-device LLM")
                 llmService = onDevice
@@ -1660,7 +1705,9 @@ class SessionViewModel: ObservableObject {
                 #if targetEnvironment(simulator)
                 // Simulator can use localhost to reach Ollama on the Mac
                 logger.info("Using localhost for self-hosted LLM (simulator only)")
-                llmService = SelfHostedLLMService.ollama(model: llmModelSetting)
+                llmService = SelfHostedLLMService.ollama(model: selfHostedModelSetting)
+                actualLLMProvider = .selfHosted
+                actualLLMModel = selfHostedModelSetting
                 #else
                 // Physical device: localhost won't work, show error
                 errorMessage = "Self-hosted LLM requires a server IP. Please configure in Settings."
@@ -1687,6 +1734,27 @@ class SessionViewModel: ObservableObject {
                 logger.info("Starting lecture session for topic: \(topic?.title ?? "unknown")")
             }
 
+            // Build provider info for history tracking
+            let sttProviderInfo = ProviderDetection.sttInfo(
+                from: actualSTTProvider,
+                serverHost: selfHostedEnabled ? serverIP : nil
+            )
+            let llmProviderInfo = ProviderDetection.llmInfo(
+                from: actualLLMProvider,
+                model: actualLLMModel,
+                serverHost: selfHostedEnabled ? serverIP : nil
+            )
+            let ttsProviderInfo = ProviderDetection.ttsInfo(
+                from: actualTTSProvider,
+                voiceId: actualTTSVoice,
+                serverHost: selfHostedEnabled ? serverIP : nil
+            )
+            let sessionProviders = SessionProviders(
+                stt: sttProviderInfo,
+                llm: llmProviderInfo,
+                tts: ttsProviderInfo
+            )
+
             // Start Session
             try await manager.startSession(
                 sttService: sttService,
@@ -1694,7 +1762,9 @@ class SessionViewModel: ObservableObject {
                 llmService: llmService,
                 vadService: vadService,
                 systemPrompt: systemPrompt,
-                lectureMode: lectureMode
+                lectureMode: lectureMode,
+                sessionType: .chat,
+                providers: sessionProviders
             )
 
             // Set up Watch sync after session starts

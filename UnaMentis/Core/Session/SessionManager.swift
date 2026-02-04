@@ -247,6 +247,12 @@ public final class SessionManager: ObservableObject {
     /// Session tracking
     private var sessionStartTime: Date?
     private var currentTurnStartTime: Date?
+
+    /// Enhanced session info for history
+    private var currentSessionType: SessionType = .chat
+    private var currentProviders: SessionProviders?
+    private var currentCurriculumInfo: CurriculumSessionInfo?
+    private var currentValidationResults: [SessionValidationResult] = []
     
     /// Stream cancellation
     private var sttStreamTask: Task<Void, Never>?
@@ -340,13 +346,19 @@ public final class SessionManager: ObservableObject {
     ///   - vadService: Voice activity detection service
     ///   - systemPrompt: Optional override for system prompt (uses config default if nil)
     ///   - lectureMode: If true, AI speaks first immediately after session starts
+    ///   - sessionType: Type of session (chat, module, curriculum)
+    ///   - providers: Provider information for history tracking
+    ///   - curriculumInfo: Curriculum info if this is a curriculum session
     public func startSession(
         sttService: any STTService,
         ttsService: any TTSService,
         llmService: any LLMService,
         vadService: any VADService,
         systemPrompt: String? = nil,
-        lectureMode: Bool = false
+        lectureMode: Bool = false,
+        sessionType: SessionType = .chat,
+        providers: SessionProviders? = nil,
+        curriculumInfo: CurriculumSessionInfo? = nil
     ) async throws {
         guard state == .idle else {
             logger.warning("Cannot start session: not in idle state (current state: \(state.rawValue))")
@@ -368,6 +380,12 @@ public final class SessionManager: ObservableObject {
         self.sttService = sttService
         self.ttsService = ttsService
         self.llmService = llmService
+
+        // Store enhanced session info for history tracking
+        self.currentSessionType = sessionType
+        self.currentProviders = providers
+        self.currentCurriculumInfo = curriculumInfo
+        self.currentValidationResults = []
 
         // Create and configure audio engine
         audioEngine = AudioEngine(
@@ -529,6 +547,12 @@ public final class SessionManager: ObservableObject {
         ttsService = nil
         llmService = nil
 
+        // Clear enhanced session info
+        currentSessionType = .chat
+        currentProviders = nil
+        currentCurriculumInfo = nil
+        currentValidationResults = []
+
         await MainActor.run {
             userTranscript = ""
             aiResponse = ""
@@ -536,6 +560,38 @@ public final class SessionManager: ObservableObject {
         }
 
         logger.info("Session stopped - all services, tasks, and state cleared")
+    }
+
+    // MARK: - Validation Recording
+
+    /// Record a validation result for the current session
+    /// - Parameter result: The validation result to record
+    public func recordValidation(_ result: SessionValidationResult) {
+        currentValidationResults.append(result)
+        logger.info("Recorded validation: \(result.type.displayName), passed: \(result.passed)")
+    }
+
+    /// Record a quiz result
+    public func recordQuizResult(passed: Bool, score: Float? = nil, correctCount: Int? = nil, totalCount: Int? = nil, details: String? = nil) {
+        let result = SessionValidationResult(
+            type: .quiz,
+            passed: passed,
+            score: score,
+            correctCount: correctCount,
+            totalCount: totalCount,
+            details: details
+        )
+        recordValidation(result)
+    }
+
+    /// Record a comprehension check result
+    public func recordComprehensionCheck(passed: Bool, details: String? = nil) {
+        let result = SessionValidationResult(
+            type: .comprehensionCheck,
+            passed: passed,
+            details: details
+        )
+        recordValidation(result)
     }
 
     /// State preserved during pause for resumption
@@ -637,6 +693,12 @@ public final class SessionManager: ObservableObject {
             if let configData = try? JSONEncoder().encode(configSnapshot) {
                 session.config = configData
             }
+
+            // Save enhanced session info
+            session.sessionType = currentSessionType
+            session.providers = currentProviders
+            session.curriculum = currentCurriculumInfo
+            session.validations = currentValidationResults
 
             // Export and save metrics snapshot from telemetry
             let metricsSnapshot = await telemetry.exportMetrics()

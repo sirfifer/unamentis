@@ -58,12 +58,15 @@ targets:
           - "**/KyutaiPocketModelManager.swift"
           - "**/KyutaiPocketSettingsView.swift"
           - "**/KyutaiPocketSettingsViewModel.swift"
-          # Modules/KnowledgeBowl - exclude entire substructure, keep only KnowledgeBowlModule.swift
-          # The module facade references Core/ and UI/ versions for actual implementation
-          - "Modules/KnowledgeBowl/Models/**"    # Duplicates of Core/KnowledgeBowl/
-          - "Modules/KnowledgeBowl/Views/**"     # Duplicates of UI/KnowledgeBowl/
-          - "Modules/KnowledgeBowl/Services/**"  # Duplicates of Services/KnowledgeBowl/
-          - "Modules/KnowledgeBowl/Engine/**"    # Duplicates of Services/KnowledgeBowl/
+          # KnowledgeBowl subsystem - extensive interdependencies on excluded services
+          - "Services/KnowledgeBowl/**"     # References excluded TTS/LLM services
+          - "UI/KnowledgeBowl/**"           # References Services/KnowledgeBowl
+          - "Core/KnowledgeBowl/**"         # References Services/KnowledgeBowl
+          - "Core/Purchases/KBFeatureFlags.swift"
+          - "Core/Purchases/KBPremiumFeatures.swift"
+          - "Testing/KBAudioTestHarness/**" # References KnowledgeBowl services
+          # Modules/KnowledgeBowl - exclude entirely due to service dependencies
+          - "Modules/KnowledgeBowl/**"           # All KB module files
       - path: Shared
         excludes:
           - "**/.DS_Store"

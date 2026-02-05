@@ -71,6 +71,15 @@ public struct SettingsView: View {
                     Text("Audio, speech recognition, language model, and voice output settings.")
                 }
 
+                // Accessibility Section
+                Section {
+                    Toggle("Navigation Voice Announcements", isOn: $viewModel.accessibilityNavigationAnnouncements)
+                } header: {
+                    Text("Accessibility")
+                } footer: {
+                    Text("When enabled, the app announces menus and navigation changes for screen-free use outside of sessions. In-session voice feedback (countdowns, results) is always available.")
+                }
+
                 // On-Device AI Section
                 Section {
                     NavigationLink {
@@ -490,6 +499,9 @@ class SettingsViewModel: ObservableObject {
     var chatterboxPresetName: String {
         ChatterboxPreset(rawValue: chatterboxPresetRaw)?.displayName ?? "Default"
     }
+
+    // Accessibility
+    @AppStorage("accessibilityNavigationAnnouncements") var accessibilityNavigationAnnouncements: Bool = false
 
     // Debug
     @AppStorage("debugMode") var debugMode = false

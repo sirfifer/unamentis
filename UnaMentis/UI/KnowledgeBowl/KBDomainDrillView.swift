@@ -606,35 +606,12 @@ final class KBDomainDrillViewModel {
     var questionCount: Int { Int(questionCountDouble) }
 
     // Audio
-    private var speechSynthesizer: AVSpeechSynthesizer?
-    private var speechDelegate: SpeechDelegate?
+    private var announcementPlayer: AVAudioPlayer?
+    private var speakingTask: Task<Void, Never>?
     private(set) var isSpeaking: Bool = false
     private(set) var audioError: String?
 
     private static let logger = Logger(label: "com.unamentis.kb.domaindrill")
-
-    /// Thread-safe delegate class for AVSpeechSynthesizer that handles completion and cancellation
-    @MainActor
-    private final class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate {
-        var continuation: CheckedContinuation<Void, Never>?
-
-        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-            Task { @MainActor in
-                self.finish()
-            }
-        }
-
-        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-            Task { @MainActor in
-                self.finish()
-            }
-        }
-
-        func finish() {
-            continuation?.resume()
-            continuation = nil
-        }
-    }
 
     // Drilling
     private(set) var questions: [KBQuestion] = []
@@ -728,17 +705,7 @@ final class KBDomainDrillViewModel {
         }
     }
 
-    /// Setup speech synthesizer for TTS
-    private func setupSpeechSynthesizer() {
-        if speechSynthesizer == nil {
-            speechSynthesizer = AVSpeechSynthesizer()
-            speechDelegate = SpeechDelegate()
-            speechSynthesizer?.delegate = speechDelegate
-            Self.logger.info("Speech synthesizer setup complete")
-        }
-    }
-
-    /// Speak the current question via TTS
+    /// Speak the current question via the configured TTS provider
     private func speakCurrentQuestion() async {
         guard let question = currentQuestion else {
             // Fall through to drilling state if no question
@@ -747,31 +714,44 @@ final class KBDomainDrillViewModel {
             return
         }
 
-        setupSpeechSynthesizer()
-
-        guard let synthesizer = speechSynthesizer else {
-            state = .drilling
-            startQuestionTimer()
-            return
-        }
-
         isSpeaking = true
 
-        // Use continuation to wait for speech completion
-        await withCheckedContinuation { continuation in
-            speechDelegate?.continuation = continuation
+        let ttsService = TTSProvider.resolveConfiguredService()
 
-            let utterance = AVSpeechUtterance(string: question.text)
-            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9  // Slightly slower for clarity
-            utterance.pitchMultiplier = 1.0
-            utterance.volume = 1.0
+        do {
+            let stream = try await ttsService.synthesize(text: question.text)
 
-            // Use a natural-sounding voice if available
-            if let voice = AVSpeechSynthesisVoice(language: "en-US") {
-                utterance.voice = voice
+            // Collect all audio chunks
+            var audioData = Data()
+            for await chunk in stream {
+                guard !Task.isCancelled else {
+                    isSpeaking = false
+                    return
+                }
+                audioData.append(chunk.audioData)
             }
 
-            synthesizer.speak(utterance)
+            guard !audioData.isEmpty, !Task.isCancelled else {
+                isSpeaking = false
+                state = .drilling
+                startQuestionTimer()
+                return
+            }
+
+            // Play the collected audio
+            announcementPlayer = try AVAudioPlayer(data: audioData)
+            announcementPlayer?.play()
+
+            // Wait for playback to complete
+            if let duration = announcementPlayer?.duration {
+                try await Task.sleep(for: .milliseconds(Int(duration * 1000) + 50))
+            }
+
+            announcementPlayer = nil
+        } catch {
+            Self.logger.error("TTS failed for question reading: \(error.localizedDescription)")
+            audioError = error.localizedDescription
+            announcementPlayer = nil
         }
 
         isSpeaking = false
@@ -779,6 +759,15 @@ final class KBDomainDrillViewModel {
         // Transition to drilling state after TTS completes
         state = .drilling
         startQuestionTimer()
+    }
+
+    /// Stop any ongoing speech playback
+    private func stopSpeech() {
+        speakingTask?.cancel()
+        speakingTask = nil
+        announcementPlayer?.stop()
+        announcementPlayer = nil
+        isSpeaking = false
     }
 
     func submitAnswer() {
@@ -826,10 +815,7 @@ final class KBDomainDrillViewModel {
                 startQuestionTimer()
             }
         } else {
-            // Cleanup speech synthesizer
-            speechSynthesizer?.stopSpeaking(at: .immediate)
-            speechSynthesizer = nil
-            speechDelegate = nil
+            stopSpeech()
             state = .results
         }
     }
@@ -837,9 +823,7 @@ final class KBDomainDrillViewModel {
     func endDrill() {
         stopTimer()
         totalQuestions = questionResults.count
-        speechSynthesizer?.stopSpeaking(at: .immediate)
-        speechSynthesizer = nil
-        speechDelegate = nil
+        stopSpeech()
         state = .results
     }
 
@@ -849,9 +833,7 @@ final class KBDomainDrillViewModel {
 
     func resetToSetup() {
         stopTimer()
-        speechSynthesizer?.stopSpeaking(at: .immediate)
-        speechSynthesizer = nil
-        speechDelegate = nil
+        stopSpeech()
         state = .setup
     }
 

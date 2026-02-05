@@ -2126,12 +2126,10 @@ class SessionViewModel: ObservableObject {
         await startDirectStreamingForCurrentTopic()
     }
 
-    /// Speak a transition announcement using TTS
+    /// Speak a transition announcement using the configured TTS provider
     private func speakTransitionAnnouncement(_ text: String) async {
-        // Use Apple TTS for announcement - it's always available and reliable
-        // This is a brief interruption before continuing with the next topic
         do {
-            let ttsService = AppleTTSService()
+            let ttsService = TTSProvider.resolveConfiguredService()
 
             // Synthesize the announcement
             let stream = try await ttsService.synthesize(text: text)

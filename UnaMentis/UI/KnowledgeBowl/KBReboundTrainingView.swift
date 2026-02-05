@@ -789,32 +789,9 @@ final class KBReboundTrainingViewModel {
     var audioMode: Bool = false  // Audio toggle for TTS question reading
 
     // Audio
-    private var speechSynthesizer: AVSpeechSynthesizer?
-    private var speechDelegate: SpeechDelegate?
+    private var announcementPlayer: AVAudioPlayer?
+    private var speakingTask: Task<Void, Never>?
     private(set) var isSpeaking: Bool = false
-
-    /// Thread-safe delegate class for AVSpeechSynthesizer that handles completion and cancellation
-    @MainActor
-    private final class SpeechDelegate: NSObject, AVSpeechSynthesizerDelegate {
-        var continuation: CheckedContinuation<Void, Never>?
-
-        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-            Task { @MainActor in
-                self.finish()
-            }
-        }
-
-        nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-            Task { @MainActor in
-                self.finish()
-            }
-        }
-
-        func finish() {
-            continuation?.resume()
-            continuation = nil
-        }
-    }
 
     // Training state
     private(set) var currentQuestionIndex: Int = 0
@@ -912,40 +889,42 @@ final class KBReboundTrainingViewModel {
         }
     }
 
-    /// Setup speech synthesizer for TTS
-    private func setupSpeechSynthesizer() {
-        if speechSynthesizer == nil {
-            speechSynthesizer = AVSpeechSynthesizer()
-            speechDelegate = SpeechDelegate()
-            speechSynthesizer?.delegate = speechDelegate
-        }
-    }
-
-    /// Speak the question text via TTS
+    /// Speak the question text via the configured TTS provider
     private func speakQuestion(_ text: String) async {
-        setupSpeechSynthesizer()
-
-        guard let synthesizer = speechSynthesizer else {
-            return
-        }
-
         isSpeaking = true
 
-        // Use continuation to wait for speech completion
-        await withCheckedContinuation { continuation in
-            speechDelegate?.continuation = continuation
+        let ttsService = TTSProvider.resolveConfiguredService()
 
-            let utterance = AVSpeechUtterance(string: text)
-            utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9  // Slightly slower for clarity
-            utterance.pitchMultiplier = 1.0
-            utterance.volume = 1.0
+        do {
+            let stream = try await ttsService.synthesize(text: text)
 
-            // Use a natural-sounding voice if available
-            if let voice = AVSpeechSynthesisVoice(language: "en-US") {
-                utterance.voice = voice
+            // Collect all audio chunks
+            var audioData = Data()
+            for await chunk in stream {
+                guard !Task.isCancelled else {
+                    isSpeaking = false
+                    return
+                }
+                audioData.append(chunk.audioData)
             }
 
-            synthesizer.speak(utterance)
+            guard !audioData.isEmpty, !Task.isCancelled else {
+                isSpeaking = false
+                return
+            }
+
+            // Play the collected audio
+            announcementPlayer = try AVAudioPlayer(data: audioData)
+            announcementPlayer?.play()
+
+            // Wait for playback to complete
+            if let duration = announcementPlayer?.duration {
+                try await Task.sleep(for: .milliseconds(Int(duration * 1000) + 50))
+            }
+
+            announcementPlayer = nil
+        } catch {
+            announcementPlayer = nil
         }
 
         isSpeaking = false
@@ -953,8 +932,10 @@ final class KBReboundTrainingViewModel {
 
     /// Cancel any ongoing speech and clean up
     private func cancelSpeech() {
-        speechSynthesizer?.stopSpeaking(at: .immediate)
-        speechDelegate?.finish()
+        speakingTask?.cancel()
+        speakingTask = nil
+        announcementPlayer?.stop()
+        announcementPlayer = nil
         isSpeaking = false
     }
 
@@ -1056,8 +1037,6 @@ final class KBReboundTrainingViewModel {
 
     func restartTraining() {
         cancelSpeech()
-        speechSynthesizer = nil
-        speechDelegate = nil
         trainingResult = nil
         state = .setup
     }
@@ -1149,8 +1128,6 @@ final class KBReboundTrainingViewModel {
     private func endTraining() {
         stopReboundTimer()
         cancelSpeech()
-        speechSynthesizer = nil
-        speechDelegate = nil
 
         Task {
             let stats = await simulator.endSession()

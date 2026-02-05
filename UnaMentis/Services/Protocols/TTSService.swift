@@ -356,6 +356,33 @@ public enum TTSProvider: String, Codable, Sendable, CaseIterable {
     }
 }
 
+// MARK: - TTS Provider Factory
+
+extension TTSProvider {
+    /// Create the appropriate on-device TTSService for this provider.
+    /// For cloud/server providers, falls back to Pocket TTS for local use.
+    public func createLocalService() -> any TTSService {
+        switch self {
+        case .pocketTTS:
+            return KyutaiPocketTTSService(config: .lowLatency)
+        case .appleTTS:
+            return AppleTTSService()
+        default:
+            // Cloud/server providers can't be used for local announcements,
+            // fall back to Pocket TTS
+            return KyutaiPocketTTSService(config: .lowLatency)
+        }
+    }
+
+    /// Resolve the user's configured TTS provider from UserDefaults and create a local service.
+    /// Returns Pocket TTS by default if no provider is configured.
+    public static func resolveConfiguredService() -> any TTSService {
+        let rawValue = UserDefaults.standard.string(forKey: "ttsProvider") ?? ""
+        let provider = TTSProvider(rawValue: rawValue) ?? .pocketTTS
+        return provider.createLocalService()
+    }
+}
+
 // MARK: - TTS Errors
 
 /// Errors that can occur during TTS processing

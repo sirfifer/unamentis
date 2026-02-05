@@ -816,8 +816,8 @@ class TestHandleDeleteVisualAsset:
             "asset_id": "img-1",
         }
 
-        # Mock file operations
-        with patch("pathlib.Path.open", MagicMock()):
+        # Mock file operations (server.py uses builtin open(), not Path.open())
+        with patch("builtins.open", MagicMock()):
             with patch.object(state, "_load_curriculum_file", MagicMock()):
                 response = await handle_delete_visual_asset(mock_request)
 

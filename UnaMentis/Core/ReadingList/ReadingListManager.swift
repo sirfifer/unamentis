@@ -92,7 +92,7 @@ public actor ReadingListManager {
             logger.warning("Duplicate document detected: \(existingItem.title ?? "Unknown")")
             // Clean up the copied file
             try? FileManager.default.removeItem(at: destinationURL)
-            throw ReadingListError.duplicateDocument(existingItem)
+            throw ReadingListError.duplicateDocument(existingItem.title ?? "Unknown")
         }
 
         // Extract text and chunk
@@ -420,7 +420,7 @@ public struct ReadingListStatistics: Sendable {
 
 public enum ReadingListError: LocalizedError {
     case unsupportedFileType(String)
-    case duplicateDocument(ReadingListItem)
+    case duplicateDocument(String)
     case noTextContent
     case itemNotFound
 
@@ -428,8 +428,8 @@ public enum ReadingListError: LocalizedError {
         switch self {
         case .unsupportedFileType(let ext):
             return "Unsupported file type: .\(ext). Supported types: PDF, TXT"
-        case .duplicateDocument(let item):
-            return "This document has already been imported: \(item.title ?? "Unknown")"
+        case .duplicateDocument(let title):
+            return "This document has already been imported: \(title)"
         case .noTextContent:
             return "No readable text could be extracted from this document"
         case .itemNotFound:

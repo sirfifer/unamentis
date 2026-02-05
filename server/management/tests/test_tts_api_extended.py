@@ -659,9 +659,11 @@ class TestTTSRequestEdgeCases:
     """Additional edge case tests for TTS request handling."""
 
     @pytest.mark.asyncio
-    async def test_tts_request_with_piper_provider(self, mock_request, mock_app):
+    async def test_tts_request_with_piper_provider(
+        self, make_request, tts_server_responses
+    ):
         """Test TTS request with piper provider."""
-        request = mock_request(
+        request = make_request(
             json_data={
                 "text": "Hello with piper",
                 "voice_id": "piper_voice",
